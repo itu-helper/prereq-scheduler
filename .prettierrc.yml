@@ -1,0 +1,7 @@
+singleQuote: false
+trailingComma: es5
+proseWrap: always
+endOfLine: auto
+arrowParens: avoid
+tabWidth: 4
+printWidth: 150
