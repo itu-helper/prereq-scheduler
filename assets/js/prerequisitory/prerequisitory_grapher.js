@@ -14,6 +14,7 @@ class PrerequisitoryGrapher {
         this.coursesToTake = [];
 
         // graphMode Values:
+        // -1: Only Visualize.
         // 0: Choose Taken Courses.
         // 1: Choose Courses to Take.
         this.graphMode = 0;
@@ -38,6 +39,11 @@ class PrerequisitoryGrapher {
         } else if (desiredMode == 1) {
             this.graphMode = 1;
             this.updateTakeableCourses();
+        }
+        else if (desiredMode == -1) {
+            this.graphMode = -1;
+            this.takeableCourses = [];
+            this.coursesToTake = [];
         }
 
         this.refreshGraph();
@@ -376,6 +382,9 @@ class PrerequisitoryGrapher {
                 else
                     this.selectiveCourseClick(node);
             }
+            else if (this.graphMode == -1) {
+                this.selectSelectiveCourse(node);
+            }
         }
         // Info Node
         else if (this.isInfoNode(node)) {
@@ -423,6 +432,16 @@ class PrerequisitoryGrapher {
                 else if (this.takeableCourses.includes(course) && !this.coursesToTake.includes(course)) {
                     this.coursesToTake.push(course);
                 }
+            }
+            // Visualize prereqs of the selected course.
+            else if (this.graphMode == -1) {
+                var wasCourseSelected = this.takenCourseNodes.includes(node)
+
+                this.takenCourses = [];
+                this.takenCourseNodes = [];
+
+                if (!wasCourseSelected)
+                    this.addCourseToTakenCourse(node);
             }
         }
 
