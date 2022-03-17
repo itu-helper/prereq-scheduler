@@ -12,7 +12,7 @@ function generateDropdowns() {
         facultySel.options[facultySel.options.length] = new Option(x, x);
     }
 
-    facultySel.onchange = function() {
+    facultySel.onchange = function () {
         //empty program- and iteration- dropdowns
         iterationSel.length = 1;
         programSel.length = 1;
@@ -23,7 +23,7 @@ function generateDropdowns() {
         buttonClickability();
     };
 
-    programSel.onchange = function() {
+    programSel.onchange = function () {
         //empty iteration dropdown
         iterationSel.length = 1;
         //display correct values
@@ -37,7 +37,11 @@ function generateDropdowns() {
     iterationSel.onchange = buttonClickability;
 
     function buttonClickability() {
-        document.getElementById("submitPreqButton").disabled = iterationSel.selectedIndex == 0;
-        document.getElementById("submitProgButton").disabled = iterationSel.selectedIndex == 0;
+        let visibility = iterationSel.selectedIndex == 0
+        document.getElementById("submitPreqButton").disabled = visibility;
+
+        let programButton = document.getElementById("submitProgButton");
+        if (programButton != null)
+            programButton.disabled = visibility;
     }
 }
