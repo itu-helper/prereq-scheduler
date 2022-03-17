@@ -5,9 +5,8 @@ function getFormValues(name) {
     return getValue;
 }
 
-function graphPrerequistoryGraph() {
+function graphPrerequistoryGraph(startMode = 0) {
     $("#prerequisitoryChains").show();
-    stickyNavBar();
 
     if (prereqGrapher != undefined) {
         prereqGrapher.graph.destroy();
@@ -26,6 +25,7 @@ function graphPrerequistoryGraph() {
         return size;
     });
     prereqGrapher.graph.render();
-    document.getElementById("navbar").scrollIntoView({ behavior: "smooth" });
-    document.getElementById("currentStepText").innerHTML = texts[0];
+    document.getElementById("mountNode").scrollIntoView({ behavior: "smooth" });
+
+    prereqGrapher.switchGraphMode(startMode);
 }
