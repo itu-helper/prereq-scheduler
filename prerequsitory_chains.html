@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html>
+
+    <head>
+        <title>ITU Helper</title>
+        <link rel="icon" href="https://raw.githubusercontent.com/itu-helper/home/main/images/favicon.png" />
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+        <link rel="stylesheet" href="assets/css/main.css" />
+        <noscript>
+            <link rel="stylesheet" href="assets/css/noscript.css" />
+        </noscript>
+    </head>
+
+    <body class="is-preload">
+        <!-- Wrapper -->
+        <div id="wrapper">
+            <!-- Header -->
+            <header id="header">
+                <div class="logo">
+                    <a href="https://itu-helper.github.io/home/" style="border-bottom: 0em">
+                        <img src="https://raw.githubusercontent.com/itu-helper/home/main/images/logo.png" class="logo" />
+                    </a>
+                </div>
+                <div class="content" style="width: 85%">
+                    <div class="inner">
+                        <h1>İTÜ Yardımcı</h1>
+                        <p>İTÜ YARDIMCI İLE ÖN ŞART LİSTELERİNİ GÖRSELLEŞTİRMEK VE DERS PROGRAMI YAPMAK ARTIK ÇOK KOLAY!
+                        </p>
+                    </div>
+                </div>
+                <div style="width: 75%">
+                    <nav>
+                        <form id="iterationForm">
+                            <fieldset disabled id="formfieldset">
+                                <table style="table-layout: fixed">
+                                    <tr>
+                                        <th>
+                                            <label for="faculty"
+                                                style="display: inline; text-align: center">Fakülte</label>
+                                        </th>
+                                        <th>
+                                            <label for="program"
+                                                style="display: inline; text-align: center">Program</label>
+                                        </th>
+                                        <th>
+                                            <label for="iteration" style="display: inline; text-align: center">Ders
+                                                Planı</label>
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <td>
+                                            <select name="faculty" id="faculty">
+                                                <option value="default">-- Seçiniz --</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select name="program" id="program">
+                                                <option value="default">-- Seçiniz --</option>
+                                            </select>
+                                        </td>
+                                        <td>
+                                            <select name="iteration" id="iteration">
+                                                <option value="default">-- Seçiniz --</option>
+                                            </select>
+                                        </td>
+                                    </tr>
+                                </table>
+                                <input type="button" value="Ders Zincirini Göster"
+                                    id="submitPreqButton" onclick="graphPrerequistoryGraph()" disabled />
+                            </fieldset>
+                        </form>
+                    </nav>
+                </div>
+                <div hidden id="prerequisitoryChains" style="width: 100%; margin: 0rem">
+                    
+                    <div id="mountNode" class="canvas"></div>
+                </div>
+            </header>
+
+            <!-- Main -->
+            <div id="main" style="width: 85%">
+                <article id="SelectiveCourseSelection">
+                    <h3 class="major" id="selCourseTitle">😳👉👈 Iııh, şey... Sanırım hata verdim 🤭</h3>
+                    <select name="courseSel" id="selCourseDropdown">
+                        <option value="default">-- Seçiniz --</option>
+                    </select>
+                    <div class="close">Close</div>
+                </article>
+                <article id="0">
+                    <h3 class="major" id="selCourseTitle">😳👉👈 Iııh, şey... Sanırım hata verdim 🤭</h3>
+                    <div class="close">Close</div>
+                </article>
+            </div>
+
+            <!-- Footer -->
+            <footer id="footer">
+                <div style="display: flex">
+                    <div style="flex: 25%; align-self: flex-end">
+                        <p class="copyright">
+                            &copy; Copyright. Design:
+                            <a href="https://html5up.net">HTML5 UP</a>
+                        </p>
+                    </div>
+                    <div style="flex: 50%; align-self: center">
+                        <div>
+                            <p class="copyright">-İTÜ'lüler için İTÜ'lülerden-</p>
+                        </div>
+                        <div>
+                            <p class="copyright">Ata Türkoğlu & Evren Geydirici</p>
+                        </div>
+                    </div>
+                    <div style="flex: 25%; align-self: flex-end">
+                        <p class="copyright">
+                            <i class="fab fa-github"></i><a href="https://github.com/itu-helper"> Github</a>
+                        </p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+
+        <!-- BG -->
+        <div id="bg"></div>
+
+        <!-- Scripts -->
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+        <script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.7.1/dist/g6.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/itu-helper/data@master/assets/js/lesson.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/itu-helper/data@master/assets/js/course.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/itu-helper/data@master/assets/js/course_group.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/itu-helper/data@master/assets/js/data_manager.js"></script>
+
+        <script src="assets/js/index_onload.js"></script>
+        <script src="assets/js/prerequisitory/prerequisitory.js"></script>
+        <script src="assets/js/prerequisitory/prerequisitory_grapher.js"></script>
+        <script src="assets/js/prerequisitory/prerequisitory_grapher_styles.js"></script>
+        <script src="assets/js/ui/cascading_dropdown.js"></script>
+        <script src="assets/js/ui/sticky_navbar.js"></script>
+        <script src="assets/js/ui/sticky_navbar_content.js"></script>
+        <script src="assets/js/utilities.js"></script>
+        <script src="assets/js/website_template/breakpoints.min.js"></script>
+        <script src="assets/js/website_template/browser.min.js"></script>
+        <script src="assets/js/website_template/jquery.min.js"></script>
+        <script src="assets/js/website_template/jquery_utilities.js"></script>
+        <script src="assets/js/website_template/main.js"></script>
+
+    </body>
+
+</html>
