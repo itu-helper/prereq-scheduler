@@ -1,6 +1,6 @@
-var dataManager = new DataManager();
+var ituHelper = new ITUHelper();
 
 window.addEventListener('load', function () {
-    dataManager.onFileLoad = generateDropdowns;
-    dataManager.readAllTextFiles();
+    ituHelper.onFetchComplete = generateDropdowns;
+    ituHelper.fetchData();
 })
