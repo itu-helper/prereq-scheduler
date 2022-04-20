@@ -7,7 +7,7 @@ function generateDropdowns() {
     var programSel = document.getElementById("program");
     var iterationSel = document.getElementById("iteration");
 
-    var subjectObject = dataManager.semesters;
+    var subjectObject = ituHelper.semesters;
     for (var x in subjectObject) {
         facultySel.options[facultySel.options.length] = new Option(x, x);
     }

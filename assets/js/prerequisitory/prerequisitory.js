@@ -12,7 +12,7 @@ function graphPrerequistoryGraph(startMode = 0) {
         prereqGrapher.graph.destroy();
     }
 
-    let semesters = dataManager.semesters[getFormValues("faculty")][getFormValues("program")][getFormValues("iteration")];
+    let semesters = ituHelper.semesters[getFormValues("faculty")][getFormValues("program")][getFormValues("iteration")];
     prereqGrapher = new PrerequisitoryGrapher(semesters);
 
     prereqGrapher.createGraph(() => {
