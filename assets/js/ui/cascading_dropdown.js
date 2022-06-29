@@ -43,5 +43,5 @@ function generateDropdowns() {
         let programButton = document.getElementById("submitProgButton");
         if (programButton != null)
             programButton.disabled = visibility;
-    }
+    };
 }

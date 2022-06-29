@@ -1,15 +1,23 @@
-<!DOCTYPE html>
+<!DOCTYPE HTML>
 <html lang="tr">
 
     <head>
+
         <title>ITU Helper</title>
-        <link rel="icon" href="https://raw.githubusercontent.com/itu-helper/home/main/images/favicon.png" />
+
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+
+        <link rel="icon" href="https://raw.githubusercontent.com/itu-helper/home/main/images/favicon.png"
+            type="image/png" />
+        <link rel="shortcut icon" href="https://raw.githubusercontent.com/itu-helper/home/main/images/favicon.png"
+            type="image/png" />
         <link rel="stylesheet" href="assets/css/main.css" />
+
         <noscript>
             <link rel="stylesheet" href="assets/css/noscript.css" />
         </noscript>
+
     </head>
 
     <body class="is-preload">
@@ -19,14 +27,13 @@
             <header id="header">
                 <div class="logo">
                     <a href="https://itu-helper.github.io/home/" style="border-bottom: 0em">
-                        <img src="https://raw.githubusercontent.com/itu-helper/home/main/images/logo.png"
-                            class="logo" />
+                        <img src="https://raw.githubusercontent.com/itu-helper/home/main/images/logo.png" class="logo" />
                     </a>
                 </div>
                 <div class="content" style="width: 85%">
                     <div class="inner">
-                        <h1>ITU Helper</h1>
-                        <p>ITU HELPER İLE ÖN ŞART LİSTELERİNİ GÖRSELLEŞTİRMEK ARTIK ÇOK KOLAY!</p>
+                        <h1>DERS PROGRAMI OLUŞTURMA</h1>
+                        <p>ITU HELPER İLE DERS PROGRAMI YAPMAK ARTIK ÇOK KOLAY!</p>
                     </div>
                 </div>
                 <div style="width: 75%">
@@ -36,12 +43,10 @@
                                 <table style="table-layout: fixed">
                                     <tr>
                                         <th>
-                                            <label for="faculty"
-                                                style="display: inline; text-align: center">Fakülte</label>
+                                            <label for="faculty" style="display: inline; text-align: center">Fakülte</label>
                                         </th>
                                         <th>
-                                            <label for="program"
-                                                style="display: inline; text-align: center">Program</label>
+                                            <label for="program" style="display: inline; text-align: center">Program</label>
                                         </th>
                                         <th>
                                             <label for="iteration" style="display: inline; text-align: center">Ders
@@ -66,10 +71,9 @@
                                         </td>
                                     </tr>
                                 </table>
-                                <input type="button" value="Ön şart Grafiği ile Ders Programı Oluştur"
-                                    id="submitPreqButton" onclick="stickyNavBar();graphPrerequistoryGraph();"
-                                    disabled />
-                                <input type="button" value="Ders Programı Oluştur" id="submitProgButton"
+                                <input type="button" style="width: 45%;" value="Ön şart Grafiği ile Ders Programı Oluştur" id="submitPreqButton"
+                                    onclick="stickyNavBar();graphPrerequistoryGraph();" disabled />
+                                <input type="button" style="width: 45%;" value="Ders Programı Oluştur" id="submitProgButton"
                                     onclick="location.href='#CoursePlanCreator';" disabled />
                             </fieldset>
                         </form>

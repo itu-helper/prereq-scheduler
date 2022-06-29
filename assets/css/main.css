@@ -1345,7 +1345,7 @@ body.is-preload #bg:before {
     display: block;
     position: absolute;
     top: calc(-3.5rem - 1px);
-    left: calc(50% - 1px);
+    left: calc(50%);
     width: 1px;
     height: calc(3.5rem + 1px);
     background: #ffffff;
@@ -1460,7 +1460,7 @@ body.is-preload #bg:before {
     display: block;
     position: absolute;
     top: 0;
-    left: calc(50% - 1px);
+    left: calc(50%);
     width: 1px;
     height: 100%;
     background: #ffffff;
