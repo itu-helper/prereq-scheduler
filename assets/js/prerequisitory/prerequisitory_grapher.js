@@ -281,6 +281,11 @@ class PrerequisitoryGrapher {
         }
     }
 
+    /**
+     * Returns the nodes that are on the given `infoNode`.
+     * @param {Node} infoNode 
+     * @returns array of nodes that are on the given `infoNode`.
+     */
     getNodesOnInfoNode(infoNode) {
         let nodesOnInfoNode = [];
         const y = infoNode.id.split(" ")[1];
@@ -296,6 +301,11 @@ class PrerequisitoryGrapher {
         return nodesOnInfoNode;
     }
 
+    /**
+     * Prompts the user with a pop-up for selecting a course
+     * from a selective course.
+     * @param {Node} selectiveCourseNode 
+     */
     selectSelectiveCourse(selectiveCourseNode) {
         if (!this.isSelectiveNode(selectiveCourseNode)) return;
 
@@ -333,7 +343,7 @@ class PrerequisitoryGrapher {
             else
                 selectiveCourseNode.selectedCourse = undefined;
 
-            this.selectiveCourseClick(selectiveCourseNode);
+            this.onSelectiveNodeClick(selectiveCourseNode);
             this.refreshGraph();
 
             location.href = "#";
@@ -345,7 +355,7 @@ class PrerequisitoryGrapher {
         };
     }
 
-    selectiveCourseClick(node) {
+    onSelectiveNodeClick(node) {
         let selectedCourse = node.selectedCourse;
 
         // Choose Taken Course.
@@ -380,7 +390,7 @@ class PrerequisitoryGrapher {
                 if (node.selectedCourse == undefined)
                     this.selectSelectiveCourse(node);
                 else
-                    this.selectiveCourseClick(node);
+                    this.onSelectiveNodeClick(node);
             }
             else if (this.graphMode == -1) {
                 this.selectSelectiveCourse(node);
@@ -484,6 +494,13 @@ class PrerequisitoryGrapher {
         this.graph.refresh();
     }
 
+    /**
+     * Returns the position of the node on the canvas by using it's
+     * y value and the canvas's width
+     * @param {int} w width of the canvas 
+     * @param {int} y
+     * @returns an array with 2 elements containing [width, height]
+     */
     getInfoNodePos(y, w) {
         let size = this.getInfoNodeSize(w);
 
@@ -493,6 +510,14 @@ class PrerequisitoryGrapher {
         ];
     }
 
+    /**
+     * Returns the position of the node on the canvas by using it's
+     * x & y values and the canvas's width
+     * @param {int} w width of the canvas 
+     * @param {int} x 
+     * @param {int} y
+     * @returns an array with 2 elements containing [width, height]
+     */
     getNodePos(x, y, w) {
         let size = this.getNodeSize(w);
         let courseDiff = (this.maxCourseCountInSemesters - this.semesters[y].length);
@@ -503,6 +528,11 @@ class PrerequisitoryGrapher {
         ];
     }
 
+    /**
+     * Returns the size of the info node by using the given width.
+     * @param {int} w width of the canvas 
+     * @returns an array with 2 elements containing [width, height]
+     */
     getInfoNodeSize(w) {
         return [
             w,
@@ -510,6 +540,11 @@ class PrerequisitoryGrapher {
         ];
     }
 
+    /**
+     * Returns the size of the node by using the given width.
+     * @param {int} w width of the canvas 
+     * @returns an array with 2 elements containing [width, height]
+     */
     getNodeSize(w) {
         let maxWidth = this.getInfoNodeSize(w)[0];
         let height = this.calculateSemesterHeight(w) * .5;
@@ -520,10 +555,21 @@ class PrerequisitoryGrapher {
         ];
     }
 
+    /**
+     * Returns the height of the semester by using the aspect ratio and the given width.
+     * @param {int} w width of the canvas 
+     * @returns height of the semester
+     */
     calculateSemesterHeight(w) {
         return w * this.INVERSE_ASPECT_RATIO;
     }
 
+    /**
+     * Returns a list of 2 items where the first item contains all the nodes
+     * and the second one contains all the edges. They are created by parsing
+     * `this.semesters`.
+     * @returns [nodes, edges]
+     */
     getNodesAndEdges() {
         this.coordToNode = {};
         let nodes = [];
@@ -565,29 +611,30 @@ class PrerequisitoryGrapher {
         return [nodes, edges];
     }
 
-    getEdges() {
-        for (let i = 0; i < this.semesters.length; i++) {
-            for (let j = 0; j < this.semesters[i].length; j++) {
-                let course = this.semesters[i][j];
-                if (course.constructor.name === "CourseGroup") {
-                    // TODO: Implement Selective Courses.
-                    continue;
-                }
-
-            }
-        }
-
-        return edges;
-    }
-
+    /**
+     * @param {Course} course 
+     * @returns the label for the given `course`'s node.
+     */
     courseToNodeId(course) {
         return course.courseCode.toLowerCase().replace(" ", "");
     }
 
+    /**
+     * @param {Node} node 
+     * @returns is the given `node` info node.
+     */
     isInfoNode(node) {
         return node.id.includes("info_node");
     }
 
+    /**
+     * Returns a node at the given position, representing the given info node.
+     * @param {int} x 
+     * @param {int} y 
+     * @param {string} label text to display on the info node
+     * @param {Array.<Course>} courses courses that are on the info node.
+     * @returns Node
+     */
     getInfoNode(x, y, label, courses) {
         return {
             id: "info_node " + y.toString(),
@@ -611,10 +658,19 @@ class PrerequisitoryGrapher {
         }
     }
 
+    /**
+     * @param {Node} node 
+     * @returns is the given `node` selective.
+     */
     isSelectiveNode(node) {
         return node.id.includes("sel_");
     }
 
+    /**
+     * Returns a label, representing the given course or selective course.
+     * @param {Course|CourseGroup} labelObj 
+     * @returns 
+     */
     getNodeLabel(labelObj) {
         if (labelObj.constructor.name == "CourseGroup") {
             return wrap(fixPunctuation(labelObj.title), 15)
@@ -623,6 +679,13 @@ class PrerequisitoryGrapher {
         }
     }
 
+    /**
+     * Returns a node at the given position, representing the given selective course.
+     * @param {CourseGroup} courseGroup CourseGroup object of the selective course
+     * @param {int} x 
+     * @param {int} y 
+     * @returns Node
+     */
     getSelectiveNode(courseGroup, x, y) {
         return {
             id: "sel_" + courseGroup.title + y.toString() + x.toString(),
@@ -648,6 +711,13 @@ class PrerequisitoryGrapher {
         }
     }
 
+    /**
+     * Returns a node at the given position, representing the given course.
+     * @param {Course} course 
+     * @param {int} x 
+     * @param {int} y 
+     * @returns Node
+     */
     getNode(course, x, y) {
         return {
             id: this.courseToNodeId(course),
@@ -673,6 +743,12 @@ class PrerequisitoryGrapher {
         }
     }
 
+    /**
+     * Returns an edge that connects the given two nodes.
+     * @param {string} s id of the source node
+     * @param {string} t id of the target node
+     * @returns Edge that connects `s` to `t`
+     */
     getEdge(s, t) {
         return {
             source: s,
@@ -680,5 +756,30 @@ class PrerequisitoryGrapher {
             type: 'cubic-vertical',
             style: EDGE_STYLES[0],
         }
+    }
+
+    /**
+     * Returns an array of courses whose required courses
+     * are not present in the current program iteration
+     * @returns array of courses
+     */
+    getCoursesWithNoMatchingRequirements() {
+        let coursesToReturn = [];
+        for (let i = 0; i < this.courses.length; i++) {
+            let reqs = this.courses[i].requirements;
+            if (reqs == undefined) continue;
+            for (let j = 0; j < this.courses.length; j++) {
+                for (let k = 0; k < this.courses[i].requirements.length; k++) {
+                    if (reqs[k].includes(this.courses[j])) {
+                        reqs.splice(k)
+                        break
+                    }
+                }
+            }
+            if (reqs.length > 0)
+                coursesToReturn.push(this.courses[i]);
+        }
+
+        return coursesToReturn;
     }
 }

@@ -1,15 +1,23 @@
-<!DOCTYPE html>
-<html>
+<!DOCTYPE HTML>
+<html lang="tr">
 
     <head>
-        <title>İTÜ Yardımcı</title>
-        <link rel="icon" href="https://raw.githubusercontent.com/itu-helper/home/main/images/favicon.png" />
+
+        <title>ITU Helper</title>
+
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+
+        <link rel="icon" href="https://raw.githubusercontent.com/itu-helper/home/main/images/favicon.png"
+            type="image/png" />
+        <link rel="shortcut icon" href="https://raw.githubusercontent.com/itu-helper/home/main/images/favicon.png"
+            type="image/png" />
         <link rel="stylesheet" href="assets/css/main.css" />
+
         <noscript>
             <link rel="stylesheet" href="assets/css/noscript.css" />
         </noscript>
+
     </head>
 
     <body class="is-preload">
@@ -25,9 +33,8 @@
                 </div>
                 <div class="content" style="width: 85%">
                     <div class="inner">
-                        <h1>İTÜ Yardımcı</h1>
-                        <p>İTÜ YARDIMCI İLE ÖN ŞART LİSTELERİNİ GÖRSELLEŞTİRMEK VE DERS PROGRAMI YAPMAK ARTIK ÇOK KOLAY!
-                        </p>
+                        <h1>DERS PROGRAMI OLUŞTURMA</h1>
+                        <p>Powered by ITU Helper™️</p>
                     </div>
                 </div>
                 <div style="width: 75%">
@@ -67,11 +74,11 @@
                                         </td>
                                     </tr>
                                 </table>
-                                <input type="button" value="Ön şart Grafiği ile Ders Programı Oluştur"
-                                    id="submitPreqButton" onclick="stickyNavBar();graphPrerequistoryGraph();"
-                                    disabled />
-                                <input type="button" value="Ders Programı Oluştur" id="submitProgButton"
-                                    onclick="location.href='#CoursePlanCreator';" disabled />
+                                <input type="button" style="width: 45%;"
+                                    value="Ön şart Grafiği ile Ders Programı Oluştur" id="submitPreqButton"
+                                    onclick="stickyNavBar();graphPrerequistoryGraph();" disabled />
+                                <input type="button" style="width: 45%;" value="Ders Programı Oluştur"
+                                    id="submitProgButton" onclick="location.href='#CoursePlanCreator';" disabled />
                             </fieldset>
                         </form>
                     </nav>
@@ -98,215 +105,6 @@
 
             <!-- Main -->
             <div id="main" style="width: 85%">
-                <article id="CoursePlanCreator" style="display: none; width: 100%">
-                    <h2 class="major">Ders Programın</h2>
-                    <div class="cd-schedule loading">
-                        <!-- Timeline -->
-                        <div class="timeline">
-                            <ul>
-                                <li><span>08:00</span></li>
-                                <li><span>08:30</span></li>
-                                <li><span>09:00</span></li>
-                                <li><span>09:30</span></li>
-                                <li><span>10:00</span></li>
-                                <li><span>10:30</span></li>
-                                <li><span>11:00</span></li>
-                                <li><span>11:30</span></li>
-                                <li><span>12:00</span></li>
-                                <li><span>12:30</span></li>
-                                <li><span>13:00</span></li>
-                                <li><span>13:30</span></li>
-                                <li><span>14:00</span></li>
-                                <li><span>14:30</span></li>
-                                <li><span>15:00</span></li>
-                                <li><span>15:30</span></li>
-                                <li><span>16:00</span></li>
-                                <li><span>16:30</span></li>
-                                <li><span>17:00</span></li>
-                                <li><span>17:30</span></li>
-                                <li><span>18:00</span></li>
-                                <li><span>18:30</span></li>
-                                <li><span>19:00</span></li>
-                            </ul>
-                        </div>
-                        <!-- Lesson Display -->
-                        <div class="events">
-                            <ul class="wrap">
-                                <li class="events-group">
-                                    <div class="top-info"><span>Pazartesi</span></div>
-                                    <ul>
-                                        <li class="single-event" data-start="09:30" data-end="10:30"
-                                            data-content="event-abs-circuit" data-event="event-1">
-                                            <a href="#0">
-                                                <em class="event-name">Abs Circuit</em>
-                                            </a>
-                                        </li>
-
-                                        <li class="single-event" data-start="11:00" data-end="12:30"
-                                            data-content="event-rowing-workout" data-event="event-2">
-                                            <a href="#0">
-                                                <em class="event-name">Rowing Workout</em>
-                                            </a>
-                                        </li>
-
-                                        <li class="single-event" data-start="14:00" data-end="15:15"
-                                            data-content="event-yoga-1" data-event="event-3">
-                                            <a href="#0">
-                                                <em class="event-name">Yoga Level 1</em>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-
-                                <li class="events-group">
-                                    <div class="top-info"><span>Salı</span></div>
-                                    <ul>
-                                        <li class="single-event" data-start="10:00" data-end="11:00"
-                                            data-content="event-rowing-workout" data-event="event-2">
-                                            <a href="#0">
-                                                <em class="event-name">Rowing Workout</em>
-                                            </a>
-                                        </li>
-
-                                        <li class="single-event" data-start="11:30" data-end="13:00"
-                                            data-content="event-restorative-yoga" data-event="event-4">
-                                            <a href="#0">
-                                                <em class="event-name">Restorative Yoga</em>
-                                            </a>
-                                        </li>
-
-                                        <li class="single-event" data-start="13:30" data-end="15:00"
-                                            data-content="event-abs-circuit" data-event="event-1">
-                                            <a href="#0">
-                                                <em class="event-name">Abs Circuit</em>
-                                            </a>
-                                        </li>
-
-                                        <li class="single-event" data-start="15:45" data-end="16:45"
-                                            data-content="event-yoga-1" data-event="event-3">
-                                            <a href="#0">
-                                                <em class="event-name">Yoga Level 1</em>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-
-                                <li class="events-group">
-                                    <div class="top-info"><span>Çarşamba</span></div>
-                                    <ul>
-                                        <li class="single-event" data-start="09:00" data-end="10:15"
-                                            data-content="event-restorative-yoga" data-event="event-4">
-                                            <a href="#0">
-                                                <em class="event-name">Restorative Yoga</em>
-                                            </a>
-                                        </li>
-
-                                        <li class="single-event" data-start="10:45" data-end="11:45"
-                                            data-content="event-yoga-1" data-event="event-3">
-                                            <a href="#0">
-                                                <em class="event-name">Yoga Level 1</em>
-                                            </a>
-                                        </li>
-
-                                        <li class="single-event" data-start="12:00" data-end="13:45"
-                                            data-content="event-rowing-workout" data-event="event-2">
-                                            <a href="#0">
-                                                <em class="event-name">Rowing Workout</em>
-                                            </a>
-                                        </li>
-
-                                        <li class="single-event" data-start="13:45" data-end="15:00"
-                                            data-content="event-yoga-1" data-event="event-3">
-                                            <a href="#0">
-                                                <em class="event-name">Yoga Level 1</em>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-
-                                <li class="events-group">
-                                    <div class="top-info"><span>Perşembe</span></div>
-                                    <ul>
-                                        <li class="single-event" data-start="09:30" data-end="10:30"
-                                            data-content="event-abs-circuit" data-event="event-1">
-                                            <a href="#0">
-                                                <em class="event-name">Abs Circuit</em>
-                                            </a>
-                                        </li>
-
-                                        <li class="single-event" data-start="12:00" data-end="13:45"
-                                            data-content="event-restorative-yoga" data-event="event-4">
-                                            <a href="#0">
-                                                <em class="event-name">Restorative Yoga</em>
-                                            </a>
-                                        </li>
-
-                                        <li class="single-event" data-start="15:30" data-end="16:30"
-                                            data-content="event-abs-circuit" data-event="event-1">
-                                            <a href="#0">
-                                                <em class="event-name">Abs Circuit</em>
-                                            </a>
-                                        </li>
-
-                                        <li class="single-event" data-start="17:00" data-end="18:30"
-                                            data-content="event-rowing-workout" data-event="event-2">
-                                            <a href="#0">
-                                                <em class="event-name">Rowing Workout</em>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-
-                                <li class="events-group">
-                                    <div class="top-info"><span>Cuma</span></div>
-                                    <ul>
-                                        <li class="single-event" data-start="10:00" data-end="11:00"
-                                            data-content="event-rowing-workout" data-event="event-2">
-                                            <a href="#0">
-                                                <em class="event-name">Rowing Workout</em>
-                                            </a>
-                                        </li>
-
-                                        <li class="single-event" data-start="12:30" data-end="14:00"
-                                            data-content="event-abs-circuit" data-event="event-1">
-                                            <a href="#0">
-                                                <em class="event-name">Abs Circuit</em>
-                                            </a>
-                                        </li>
-
-                                        <li class="single-event" data-start="15:45" data-end="16:45"
-                                            data-content="event-yoga-1" data-event="event-3">
-                                            <a href="#0">
-                                                <em class="event-name">Yoga Level 1</em>
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
-                            </ul>
-                        </div>
-
-                        <div class="event-modal">
-                            <header class="header">
-                                <div class="content">
-                                    <span class="event-date"></span>
-                                    <h3 class="event-name"></h3>
-                                </div>
-
-                                <div class="header-bg"></div>
-                            </header>
-
-                            <div class="body">
-                                <div class="event-info"></div>
-                                <div class="body-bg"></div>
-                            </div>
-
-                            <a href="#0" class="close">Close</a>
-                        </div>
-
-                        <div class="cover-layer"></div>
-                    </div>
-                    <div class="close">Close</div>
-                </article>
                 <article id="SelectiveCourseSelection">
                     <h3 class="major" id="selCourseTitle">😳👉👈 Iııh, şey... Sanırım hata verdim 🤭</h3>
                     <select name="courseSel" id="selCourseDropdown">
@@ -370,7 +168,6 @@
         <script src="assets/js/website_template/jquery.min.js"></script>
         <script src="assets/js/website_template/jquery_utilities.js"></script>
         <script src="assets/js/website_template/main.js"></script>
-        <script src="assets/js/timeline.js"></script>
 
     </body>
 
