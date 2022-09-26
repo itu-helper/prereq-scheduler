@@ -45,6 +45,15 @@ NODE_STYLES = [
         radius: [10],
         lineDash: [2],
     },
+    // A Future Course
+    {
+        fill: '#b36b00',
+        fillOpacity: 1,
+        stroke: 'white',
+        strokeOpacity: 1,
+        lineWidth: 4,
+        radius: [10],
+    },
 ];
 EDGE_STYLES = [
     // Default
@@ -69,6 +78,13 @@ EDGE_STYLES = [
         lineDash: [2]
     },
     // A Lesson to Take
+    {
+        endArrow: false,
+        lineWidth: 4,
+        stroke: '#39819e',
+        lineDash: [0]
+    },
+    // Prereq Center
     {
         endArrow: false,
         lineWidth: 4,
