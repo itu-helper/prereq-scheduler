@@ -12,6 +12,8 @@ class PrerequisitoryGrapher {
         this.takenCourseNodes = [];
         this.takeableCourses = [];
         this.coursesToTake = [];
+        this.futureCourseNodes = [];
+        this.prereqCenter = undefined;
 
         // graphMode Values:
         // -1: Only Visualize.
@@ -32,6 +34,7 @@ class PrerequisitoryGrapher {
     }
 
     switchGraphMode(desiredMode) {
+        this.futureCourseNodes = [];
         if (desiredMode == 0) {
             this.graphMode = 0;
             this.takeableCourses = [];
@@ -142,7 +145,11 @@ class PrerequisitoryGrapher {
             var course = node.course;
             if (this.isSelectiveNode(node)) course = node.selectedCourse;
 
-            if (this.coursesToTake.includes(course))
+            if (this.prereqCenter == node)
+                node.style = NODE_STYLES[6];
+            else if (this.futureCourseNodes.includes(node))
+                node.style = NODE_STYLES[5];
+            else if (this.coursesToTake.includes(course))
                 node.style = NODE_STYLES[3];
             else if (this.takenCourseNodes.includes(node))
                 node.style = NODE_STYLES[1];
@@ -165,8 +172,26 @@ class PrerequisitoryGrapher {
     updateEdgeStyles() {
         for (let i = 0; i < this.edges.length; i++) {
             let target = this.edges[i].target;
-            // let source = this.edges[i].source;
+            let source = this.edges[i].source;
             let styleToUse = 0;
+
+            // Future Course
+            for (let j = 0; j < this.futureCourseNodes.length; j++) {
+                let foundSource = this.prereqCenter.id == source;
+                if (!foundSource) {
+                    for (let k = 0; k < this.futureCourseNodes.length; k++) {
+                        if (this.futureCourseNodes[k].id == source) {
+                            foundSource = true;
+                            break;
+                        }
+                    }
+                }
+
+                if (foundSource && target == this.futureCourseNodes[j].id) {
+                    styleToUse = 4;
+                    break;
+                }
+            }
 
             // Course to Take
             for (let j = 0; j < this.coursesToTake.length; j++) {
@@ -260,6 +285,42 @@ class PrerequisitoryGrapher {
             }
         }
     }
+
+    addCourseToFutureCourse(node) {
+        if (node == null) return;
+
+        if (!this.isInfoNode(node)) {
+            const courseOfNode = node.course;
+
+            // TODO: Implement Selective Courses.
+            if (courseOfNode == null) return;
+
+            for (let i = 0; i < this.courses.length; i++) {
+                const reqs = this.courses[i].requirements;
+                if (reqs == undefined || reqs == []) continue;
+
+                let found = false;
+                for (let j = 0; j < reqs.length; j++) {
+                    for (let k = 0; k < reqs[j].length; k++) {
+                        const req = reqs[j][k];
+                        if (req.courseCode == courseOfNode.courseCode) {
+                            found = true;
+                            break;
+                        }
+                    }
+                    if (found) break;
+                }
+                if (!found) continue;
+
+                const newNode = this.courseToNode(this.courses[i]);
+                if (this.futureCourseNodes.includes(newNode)) continue;
+
+                this.futureCourseNodes.push(newNode);
+                this.addCourseToFutureCourse(newNode);
+            }
+        }
+    }
+
 
     removeCourseFromTakenCourses(node) {
         if (node == null) return;
@@ -368,7 +429,6 @@ class PrerequisitoryGrapher {
         }
         // Choose Courses to Take.
         else if (this.graphMode == 1) {
-            console.log(selectedCourse);
             if (selectedCourse != undefined) {
                 if (this.coursesToTake.includes(selectedCourse)) {
                     this.coursesToTake.splice(this.coursesToTake.indexOf(selectedCourse), 1);
@@ -449,9 +509,14 @@ class PrerequisitoryGrapher {
 
                 this.takenCourses = [];
                 this.takenCourseNodes = [];
+                this.futureCourseNodes = [];
 
-                if (!wasCourseSelected)
+                if (!wasCourseSelected) {
                     this.addCourseToTakenCourse(node);
+                    this.addCourseToFutureCourse(node);
+                }
+
+                this.prereqCenter = node;
             }
         }
 
