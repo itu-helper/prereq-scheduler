@@ -146,9 +146,9 @@ class PrerequisitoryGrapher {
             if (this.isSelectiveNode(node)) course = node.selectedCourse;
 
             if (this.prereqCenter == node)
-                node.style = NODE_STYLES[5];
+                node.style = NODE_STYLES[6];
             else if (this.futureCourseNodes.includes(node))
-                node.style = NODE_STYLES[3];
+                node.style = NODE_STYLES[5];
             else if (this.coursesToTake.includes(course))
                 node.style = NODE_STYLES[3];
             else if (this.takenCourseNodes.includes(node))

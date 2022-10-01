@@ -28,7 +28,7 @@ NODE_STYLES = [
     },
     // A Lesson to Take
     {
-        fill: '#39819e',
+        fill: '#7895B2',
         fillOpacity: 1,
         stroke: 'white',
         strokeOpacity: 1,
@@ -47,7 +47,16 @@ NODE_STYLES = [
     },
     // A Future Course
     {
-        fill: '#b36b00',
+        fill: '#ba9359',
+        fillOpacity: 1,
+        stroke: 'white',
+        strokeOpacity: 1,
+        lineWidth: 4,
+        radius: [10],
+    },
+    // Prereq Center
+    {
+        fill: '#41505b',
         fillOpacity: 1,
         stroke: 'white',
         strokeOpacity: 1,
@@ -81,14 +90,14 @@ EDGE_STYLES = [
     {
         endArrow: false,
         lineWidth: 4,
-        stroke: '#39819e',
+        stroke: '#7895B2',
         lineDash: [0]
     },
-    // Prereq Center
+    // Future Course
     {
         endArrow: false,
         lineWidth: 4,
-        stroke: '#39819e',
+        stroke: '#ba9359',
         lineDash: [0]
     },
 ];
