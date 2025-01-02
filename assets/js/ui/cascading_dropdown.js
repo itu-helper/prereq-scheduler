@@ -7,29 +7,40 @@ function generateDropdowns() {
     var programSel = document.getElementById("program");
     var iterationSel = document.getElementById("iteration");
 
-    var subjectObject = ituHelper.semesters;
-    for (var x in subjectObject) {
-        facultySel.options[facultySel.options.length] = new Option(x, x);
+    var semesters = ituHelper.semesters;
+    for (var faculty in semesters) {
+        facultySel.options[facultySel.options.length] = new Option(faculty, faculty);
     }
 
     facultySel.onchange = function () {
-        //empty program- and iteration- dropdowns
+        // Empty program- and iteration- dropdowns
         iterationSel.length = 1;
         programSel.length = 1;
-        //display correct values
-        for (var y in subjectObject[this.value]) {
-            programSel.options[programSel.options.length] = new Option(y, y);
+
+        // Collect the program options into an array
+        let programs = [];
+        for (var program in semesters[this.value]) {
+            programs.push(program);
         }
+
+        // Sort the programs alphabetically
+        programs.sort();
+
+        // Populate the programSel with sorted options
+        programs.forEach(function (program) {
+            programSel.options[programSel.options.length] = new Option(program, program);
+        });
+
         buttonClickability();
     };
 
     programSel.onchange = function () {
         //empty iteration dropdown
         iterationSel.length = 1;
+
         //display correct values
-        var z = subjectObject[facultySel.value][this.value];
-        for (var z in subjectObject[facultySel.value][this.value]) {
-            iterationSel.options[iterationSel.options.length] = new Option(z, z);
+        for (var iteration in semesters[facultySel.value][this.value]) {
+            iterationSel.options[iterationSel.options.length] = new Option(iteration, iteration);
         }
         buttonClickability();
     };
