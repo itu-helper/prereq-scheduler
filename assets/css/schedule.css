@@ -224,3 +224,122 @@ body, html {
 .add-course-row-btn i {
     font-size: 1rem;
 }
+
+/* Schedule Grid Styles */
+.schedule-container {
+    width: 100%;
+    height: calc(100% - 60px);
+    overflow: auto;
+    margin-top: 20px;
+}
+
+.schedule-grid {
+    display: grid;
+    grid-template-columns: 80px repeat(5, 1fr);
+    gap: 1px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    min-width: 800px;
+}
+
+.time-column,
+.day-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.time-header,
+.day-header {
+    background: rgba(201, 146, 8, 0.3);
+    color: #fff;
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border-bottom: 2px solid rgba(201, 146, 8, 0.5);
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.day-header:hover {
+    background: rgba(201, 146, 8, 0.45);
+}
+
+.time-slot {
+    background: rgba(0, 0, 0, 0.3);
+    color: rgba(255, 255, 255, 0.7);
+    padding: 8px;
+    text-align: right;
+    font-size: 0.85rem;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+}
+
+.time-slot:hover {
+    background: rgba(0, 0, 0, 0.5);
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.schedule-cell {
+    background: rgba(255, 255, 255, 0.03);
+    height: 30px;
+    cursor: pointer;
+    transition: background 0.2s, border 0.2s;
+    border: 1px solid transparent;
+    position: relative;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+.schedule-cell:hover {
+    background: rgba(201, 146, 8, 0.1);
+    border-color: rgba(201, 146, 8, 0.3);
+}
+
+.schedule-cell.selected {
+    background: rgb(19, 19, 19);
+    /* border-color: rgba(201, 146, 8, 0.6); */
+}
+
+.schedule-cell.selected:hover {
+    background: rgb(32, 24, 3);
+}
+
+/* Scrollbar styling for schedule container */
+.schedule-container::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+}
+
+.schedule-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.schedule-container::-webkit-scrollbar-thumb {
+    background: rgba(201, 146, 8, 0.4);
+    border-radius: 5px;
+}
+
+.schedule-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(201, 146, 8, 0.6);
+}
+
+.calendar-note {
+    font-size: 0.8rem;
+    color: #797979;
+    margin-top: 3px;
+    text-align: center;
+    font-style: italic;
+}

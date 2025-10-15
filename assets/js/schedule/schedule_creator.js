@@ -292,4 +292,190 @@ function initializeScheduleCreator() {
     loadCoursesFromURL();
     
     renderSelectedCourses();
+    
+    // Initialize schedule cell selection
+    initializeScheduleCellSelection();
+}
+
+// Schedule Cell Selection with Drag Support
+function initializeScheduleCellSelection() {
+    const scheduleCells = document.querySelectorAll('.schedule-cell');
+    const cellsArray = Array.from(scheduleCells);
+    
+    let isMouseDown = false;
+    let startCell = null;
+    let cellStates = new Map(); // Store original state of each cell before drag started
+    let toggleMode = null; // 'select' or 'deselect' - determined by first cell
+    
+    // Get grid coordinates (column, row) for a cell
+    function getCellCoordinates(cell) {
+        const parent = cell.parentElement;
+        const dayColumns = document.querySelectorAll('.day-column');
+        let colIndex = -1;
+        
+        dayColumns.forEach((col, index) => {
+            if (col === parent) {
+                colIndex = index;
+            }
+        });
+        
+        const cellsInColumn = Array.from(parent.querySelectorAll('.schedule-cell'));
+        const rowIndex = cellsInColumn.indexOf(cell);
+        
+        return { col: colIndex, row: rowIndex };
+    }
+    
+    // Get all cells in a rectangular area between two cells
+    function getCellsInRange(startCell, endCell) {
+        const start = getCellCoordinates(startCell);
+        const end = getCellCoordinates(endCell);
+        
+        const minCol = Math.min(start.col, end.col);
+        const maxCol = Math.max(start.col, end.col);
+        const minRow = Math.min(start.row, end.row);
+        const maxRow = Math.max(start.row, end.row);
+        
+        const dayColumns = document.querySelectorAll('.day-column');
+        const cellsInRange = [];
+        
+        for (let col = minCol; col <= maxCol; col++) {
+            const column = dayColumns[col];
+            const cellsInColumn = column.querySelectorAll('.schedule-cell');
+            
+            for (let row = minRow; row <= maxRow; row++) {
+                const cell = cellsInColumn[row];
+                if (cell) {
+                    cellsInRange.push(cell);
+                }
+            }
+        }
+        
+        return cellsInRange;
+    }
+    
+    // Update selection preview based on current drag position
+    function updateSelectionPreview(endCell) {
+        // First, restore all cells to their original state
+        cellStates.forEach((wasSelected, cell) => {
+            if (wasSelected) {
+                cell.classList.add('selected');
+            } else {
+                cell.classList.remove('selected');
+            }
+        });
+        
+        // Then apply the new selection range
+        const cellsInRange = getCellsInRange(startCell, endCell);
+        cellsInRange.forEach(cell => {
+            if (toggleMode === 'select') {
+                cell.classList.add('selected');
+            } else {
+                cell.classList.remove('selected');
+            }
+        });
+    }
+    
+    scheduleCells.forEach((cell) => {
+        // Mouse down - start selection
+        cell.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            isMouseDown = true;
+            startCell = this;
+            
+            // Store the original state of all cells
+            cellStates.clear();
+            scheduleCells.forEach(c => {
+                cellStates.set(c, c.classList.contains('selected'));
+            });
+            
+            // Determine toggle mode based on starting cell's state
+            // If starting cell is selected, we're deselecting; otherwise selecting
+            toggleMode = this.classList.contains('selected') ? 'deselect' : 'select';
+            
+            // Apply initial selection to just the starting cell
+            updateSelectionPreview(this);
+        });
+        
+        // Mouse enter - continue selection while dragging
+        cell.addEventListener('mouseenter', function(e) {
+            if (isMouseDown && startCell) {
+                updateSelectionPreview(this);
+            }
+        });
+    });
+    
+    // Mouse up - end selection
+    document.addEventListener('mouseup', function() {
+        if (isMouseDown) {
+            isMouseDown = false;
+            startCell = null;
+            cellStates.clear();
+            toggleMode = null;
+        }
+    });
+    
+    // Prevent text selection during drag
+    document.addEventListener('selectstart', function(e) {
+        if (isMouseDown) {
+            e.preventDefault();
+        }
+    });
+    
+    // Add click handlers for time slots (select entire row)
+    const timeSlots = document.querySelectorAll('.time-slot');
+    timeSlots.forEach((timeSlot, rowIndex) => {
+        timeSlot.addEventListener('click', function() {
+            const dayColumns = document.querySelectorAll('.day-column');
+            const cellsInRow = [];
+            
+            // Collect all cells in this row across all days
+            dayColumns.forEach(column => {
+                const cellsInColumn = column.querySelectorAll('.schedule-cell');
+                if (cellsInColumn[rowIndex]) {
+                    cellsInRow.push(cellsInColumn[rowIndex]);
+                }
+            });
+            
+            // Check if all cells in row are selected
+            const allSelected = cellsInRow.every(cell => cell.classList.contains('selected'));
+            
+            // Toggle all cells in the row
+            cellsInRow.forEach(cell => {
+                if (allSelected) {
+                    cell.classList.remove('selected');
+                } else {
+                    cell.classList.add('selected');
+                }
+            });
+        });
+        
+        // Add hover effect
+        timeSlot.style.cursor = 'pointer';
+    });
+    
+    // Add click handlers for day headers (select entire column)
+    const dayHeaders = document.querySelectorAll('.day-header');
+    dayHeaders.forEach((dayHeader) => {
+        dayHeader.addEventListener('click', function() {
+            const dayColumn = this.parentElement;
+            const cellsInColumn = dayColumn.querySelectorAll('.schedule-cell');
+            
+            // Check if all cells in column are selected
+            const allSelected = Array.from(cellsInColumn).every(cell => 
+                cell.classList.contains('selected')
+            );
+            
+            // Toggle all cells in the column
+            cellsInColumn.forEach(cell => {
+                if (allSelected) {
+                    cell.classList.remove('selected');
+                } else {
+                    cell.classList.add('selected');
+                }
+            });
+        });
+        
+        // Add hover effect
+        dayHeader.style.cursor = 'pointer';
+    });
 }
