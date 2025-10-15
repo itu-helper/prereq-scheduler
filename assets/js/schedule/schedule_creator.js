@@ -147,7 +147,11 @@ function onCourseChange(rowId) {
     } else {
         selectedCourses.push({ rowId, course });
     }
-    
+
+    let options = CourseSchedule.generateAllAvailableSchedules(selectedCourses.map(c => c.course));
+    console.log(`Generated ${options.length} valid schedule(s) with current selection.`);
+    console.log(options);
+
     // Update URL with new course selection
     updateURLWithCourses();
 }
@@ -219,9 +223,24 @@ function renderSelectedCourses() {
                 courseDropdown.innerHTML = '<option value="">Ders Seç...</option>';
                 const coursenames = coursePrefixMap[prefix] || [];
                 coursenames.sort().forEach(courseName => {
+                    // Ignore auto-generated courses.
+                    // if (ituHelper.coursesDict[courseName].courseTitle === "Auto Generated Course") return;
+
                     const c = ituHelper.coursesDict[courseName];
+
+                    let foundPositiveCapacity = false;
+                    for (const lesson of c.lessons) {
+                        if (lesson.capacity > 0) {
+                            foundPositiveCapacity = true;
+                            break;
+                        }
+                    }
+
+                    let isInvalid = c.lessons.length === 0 || !foundPositiveCapacity;
+
                     const option = document.createElement('option');
                     option.value = courseName;
+                    option.disabled = isInvalid;
                     option.textContent = getCourseDisplayText(c);
                     courseDropdown.appendChild(option);
                 });
