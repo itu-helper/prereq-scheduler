@@ -1,0 +1,220 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body, html {
+    height: 100%;
+    overflow: hidden;
+}
+
+/* Keep the default background visible */
+#bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+}
+
+.container {
+    display: flex;
+    height: 100vh;
+    width: 100vw;
+    position: relative;
+    z-index: 1;
+}
+
+.left-section {
+    width: 30%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5) !important;
+    overflow-y: auto;
+    position: relative;
+    padding: 20px;
+    color: white !important;
+}
+
+.left-section * {
+    color: white !important;
+}
+
+.left-section-header {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.left-section-header img {
+    width: 50px;
+    height: 50px;
+}
+
+.left-section-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+}
+
+.right-section {
+    width: 70%;
+    height: 100%;
+    background: linear-gradient(135deg, #282828 0%, #222222 100%) !important;
+    overflow-y: auto;
+    position: relative;
+    padding: 20px;
+}
+
+/* Course Selection Styles */
+.course-selection {
+    margin-top: 20px;
+}
+
+.course-selection h3 {
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.selected-courses-list {
+    margin-bottom: 20px;
+    min-height: 50px;
+}
+
+.course-row {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 12px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 5px;
+    border-left: 3px solid #c99208;
+    transition: background 0.2s;
+}
+
+.course-row:hover {
+    background: rgba(255, 255, 255, 0.08);
+}
+
+.course-prefix-dropdown,
+.course-code-dropdown {
+    flex: 1;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 5px;
+    color: white !important;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: background 0.2s, border-color 0.2s;
+}
+
+.course-prefix-dropdown:disabled,
+.course-code-dropdown:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.course-prefix-dropdown:not(:disabled):hover,
+.course-code-dropdown:not(:disabled):hover {
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(255, 255, 255, 0.4);
+}
+
+.course-prefix-dropdown:focus,
+.course-code-dropdown:focus {
+    outline: none;
+    border-color: #c99208;
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.course-prefix-dropdown option,
+.course-code-dropdown option {
+    background: #1a1a1a;
+    color: white;
+    padding: 10px;
+}
+
+.course-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 15px;
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 5px;
+    border-left: 3px solid #c99208;
+    transition: background 0.2s;
+}
+
+.course-item-name {
+    flex: 1;
+    font-weight: 500;
+    font-size: 0.95rem;
+}
+
+.remove-course-btn {
+    background: rgba(220, 53, 69, 0.8);
+    border: none;
+    padding: 0;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    font-size: 0.85rem;
+    line-height: 1;
+    transition: background 0.2s, transform 0.1s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+}
+
+.remove-course-btn i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.remove-course-btn:hover {
+    background: rgba(220, 53, 69, 1);
+    transform: scale(1.1);
+}
+
+.remove-course-btn:active {
+    transform: scale(0.95);
+}
+
+.add-course-row-btn {
+    width: 100%;
+    padding: 12px 20px;
+    background: rgba(201, 146, 8, 0.2);
+    color: #c99208;
+    font-weight: 600;
+    font-size: 0.95rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+}
+
+.add-course-row-btn:hover {
+    background: rgba(201, 146, 8, 0.3);
+    color: #d9a209;
+    transform: translateY(-2px);
+}
+
+.add-course-row-btn:active {
+    transform: translateY(0);
+}
+
+.add-course-row-btn i {
+    font-size: 1rem;
+}

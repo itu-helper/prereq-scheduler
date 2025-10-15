@@ -1,0 +1,69 @@
+<!DOCTYPE HTML>
+<html lang="tr">
+
+    <head>
+
+        <title>ITU Helper | Ders Programı Oluşturucu</title>
+
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+        <meta name="google-site-verification" content="yqErOJ5_XnqUKuK2YMuN8eW55AbV4kH_SWN9D1O7uuQ" />
+
+        <link rel="icon" href="https://raw.githubusercontent.com/itu-helper/home/main/images/favicon.png"
+            type="image/png" />
+        <link rel="shortcut icon" href="https://raw.githubusercontent.com/itu-helper/home/main/images/favicon.png"
+            type="image/png" />
+        <link rel="stylesheet" href="assets/css/main.css" />
+        <link rel="stylesheet" href="assets/css/schedule.css" />
+
+        <noscript>
+            <link rel="stylesheet" href="assets/css/noscript.css" />
+        </noscript>
+
+    </head>
+
+    <body>
+        
+        <div class="container">
+            <div class="left-section">
+                <div class="left-section-header">
+                    <img src="https://raw.githubusercontent.com/itu-helper/home/main/images/favicon.png" alt="ITU Helper Logo">
+                    <h2>ITU Helper</h2>
+                </div>
+                
+                <div class="course-selection">
+                    <h3>Seçili Dersler</h3>
+                    <div id="selected-courses-list" class="selected-courses-list">
+                        <!-- Selected courses will be added here dynamically -->
+                    </div>
+                    
+                    <button id="add-course-row-btn" class="add-course-row-btn">
+                        <i class="fa-solid fa-plus"></i> Ders Ekle
+                    </button>
+                </div>
+            </div>
+            
+            <div class="right-section">
+                <h2>Ders Planı</h2>
+            </div>
+        </div>
+
+        <!-- BG -->
+        <div id="bg"></div>
+
+        <!-- Scripts -->
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/itu-helper/sdk@master/js/dist/bundle.min.js"></script>
+        <script src="https://kit.fontawesome.com/f1677e7b85.js" crossorigin="anonymous"></script>
+        
+        <script src="assets/js/website_template/breakpoints.min.js"></script>
+        <script src="assets/js/website_template/browser.min.js"></script>
+        <script src="assets/js/website_template/jquery.min.js"></script>
+        <script src="assets/js/website_template/jquery_utilities.js"></script>
+        <script src="assets/js/website_template/main.js"></script>
+        
+        <!-- Schedule Creator Scripts -->
+        <script src="assets/js/schedule/schedule_onload.js"></script>
+        <script src="assets/js/schedule/schedule_creator.js"></script>
+    </body>
+</html>
