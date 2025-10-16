@@ -72,6 +72,128 @@ body, html {
     padding: 20px;
 }
 
+/* Schedule Header with Navigation */
+.schedule-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.schedule-header h2 {
+    margin: 0;
+    font-size: 1.5rem;
+    color: white;
+}
+
+.schedule-navigation {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.schedule-counter {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-right: 5px;
+}
+
+.schedule-nav-btn {
+    background: rgba(201, 146, 8, 0.2);
+    border: 1px solid rgba(201, 146, 8, 0.4);
+    color: #c99208;
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.schedule-nav-btn:hover:not(:disabled) {
+    background: rgba(201, 146, 8, 0.3);
+    border-color: rgba(201, 146, 8, 0.6);
+    color: #d9a209;
+    transform: translateY(-1px);
+}
+
+.schedule-nav-btn:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+.schedule-nav-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+/* Programme Selection Styles */
+.programme-selection {
+    margin-top: 20px;
+    padding-bottom: 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    flex-shrink: 0;
+}
+
+.programme-selection h3 {
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.dropdown-group {
+    margin-bottom: 15px;
+}
+
+.dropdown-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.9) !important;
+    font-weight: 500;
+}
+
+.programme-dropdown {
+    width: 100%;
+    padding: 10px 12px;
+    background: rgba(255, 255, 255, 0.1) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 4px;
+    color: white !important;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23ffffff' d='M10.293 3.293L6 7.586 1.707 3.293A1 1 0 00.293 4.707l5 5a1 1 0 001.414 0l5-5a1 1 0 10-1.414-1.414z'/%3E%3C/svg%3E") !important;
+    background-repeat: no-repeat !important;
+    background-position: right 10px center !important;
+    padding-right: 35px !important;
+}
+
+.programme-dropdown:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.15) !important;
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.programme-dropdown:focus {
+    outline: none;
+    border-color: rgba(201, 146, 8, 0.6);
+    background: rgba(255, 255, 255, 0.15) !important;
+}
+
+.programme-dropdown:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.programme-dropdown option {
+    background: #1a1a1a;
+    color: white;
+    padding: 10px;
+}
+
 /* Course Selection Styles */
 .course-selection {
     margin-top: 20px;
@@ -168,7 +290,7 @@ body, html {
 }
 
 .remove-course-btn {
-    background: rgba(220, 53, 69, 0.8);
+    background: rgba(220, 53, 69, 0);
     border: none;
     padding: 0;
     padding-left: 4px;
@@ -342,4 +464,24 @@ body, html {
     margin-top: 3px;
     text-align: center;
     font-style: italic;
+}
+
+/* Schedule Lesson Display Styles */
+.schedule-lesson {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 0;
+    z-index: 10;
+    color: white !important;
+    border-left: 3px solid rgba(255, 255, 255, 0.3);
+    pointer-events: auto;
+}
+
+.schedule-lesson * {
+    color: white !important;
+}
+
+.schedule-cell {
+    position: relative;
 }

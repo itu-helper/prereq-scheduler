@@ -11,9 +11,13 @@ class CourseSchedule {
 
     _doLessonsOverlap(l1, l2)
     {
+        // Extract the lesson object if wrapped in course info
+        const lesson1 = l1.lesson || l1;
+        const lesson2 = l2.lesson || l2;
+        
         // Parse days and times
-        let l1d = l1.day.split(" ");
-        let l1t = l1.time.split(" ");
+        let l1d = lesson1.day.split(" ");
+        let l1t = lesson1.time.split(" ");
         let dates1 = [];
         for (let k = 0; k < l1d.length; k++) {
             dates1.push({
@@ -22,8 +26,8 @@ class CourseSchedule {
             })
         }
 
-        let l2d = l2.day.split(" ");
-        let l2t = l2.time.split(" ");
+        let l2d = lesson2.day.split(" ");
+        let l2t = lesson2.time.split(" ");
         let dates2 = [];
         for (let k = 0; k < l2d.length; k++) {
             dates2.push({
@@ -45,7 +49,7 @@ class CourseSchedule {
 
                 //  (t1 < t3 < t2        or t1 < t4 < t2       )        or (t3 < t1 < t2 < t4)
                 if ((t1 <= t3 && t3 <= t2) || (t1 <= t4 && t4 <= t2) || (t3 <= t1 && t1 <= t4 && t4 <= t2)) {
-                    console.log(`Overlap detected between lessons:`, d1.time, d2.time);
+                    // console.log(`Overlap detected between lessons:`, d1.time, d2.time);
                     return true;
                 }
             }
@@ -65,6 +69,35 @@ class CourseSchedule {
             }
         }
 
+        return true;
+    }
+
+    static _isValidLesson(lesson) {
+        // Check if lesson has valid day and time values
+        if (!lesson || !lesson.day || !lesson.time) {
+            return false;
+        }
+        
+        const day = lesson.day.trim();
+        const time = lesson.time.trim();
+        
+        // Check if day or time is just a dash or empty
+        if (day === '-' || day === '' || time === '-' || time === '') {
+            return false;
+        }
+
+        // Check if lesson has major restrictions
+        if (lesson.majors && lesson.majors.length > 0) {
+            // If no programmes are selected, skip this check
+            if (!selectedProgrammeCodes || selectedProgrammeCodes.length === 0) {
+                return true;
+            }
+            
+            if (!selectedProgrammeCodes.some(p => lesson.majors.map(m => m.code).includes(p))) {
+                return false;
+            }
+        }
+        
         return true;
     }
 
@@ -92,10 +125,26 @@ class CourseSchedule {
             const currentCourse = validCourses[courseIndex];
             const lessons = currentCourse.lessons;
             
+            // Filter out lessons without valid day/time
+            const validLessons = lessons.filter(lesson => CourseSchedule._isValidLesson(lesson));
+            
+            // If no valid lessons, skip this course
+            if (validLessons.length === 0) {
+                console.warn(`Course ${currentCourse.courseCode} has no valid lessons with day/time`);
+                return;
+            }
+            
             // For each lesson in the current course, recurse with it added to the schedule
-            for (let i = 0; i < lessons.length; i++) {
-                const lesson = lessons[i];
-                currentSchedule.push(lesson);
+            for (let i = 0; i < validLessons.length; i++) {
+                const lesson = validLessons[i];
+                // Wrap lesson with course information
+                const lessonWithCourse = {
+                    lesson: lesson,
+                    course: currentCourse,
+                    courseCode: currentCourse.courseCode,
+                    courseTitle: currentCourse.courseTitle
+                };
+                currentSchedule.push(lessonWithCourse);
                 generateCombinations(courseIndex + 1, currentSchedule);
                 currentSchedule.pop(); // Backtrack
             }

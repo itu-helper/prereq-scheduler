@@ -2,20 +2,37 @@
 
 let selectedCourses = [];
 let coursePrefixMap = {}; // Maps prefix to array of full course names
+let availableSchedules = []; // Store all generated schedules
+let currentScheduleIndex = 0; // Current schedule being displayed
+let selectedProgrammeCodes = []; // Array to store selected programme codes
 
 const getCourseDisplayText = (course) => course.courseCode + " (" + course.courseTitle + ")";
 
-// Update URL with selected course codes
+// Update URL with selected course codes, programmes, and schedule index
 function updateURLWithCourses() {
     const courseCodes = selectedCourses
         .filter(c => c.course !== null)
         .map(c => c.course.courseCode);
     const url = new URL(window.location);
     
+    // Update programmes parameter
+    if (selectedProgrammeCodes.length > 0) {
+        url.searchParams.set('programmes', selectedProgrammeCodes.join(','));
+    } else {
+        url.searchParams.delete('programmes');
+    }
+    
     if (courseCodes.length > 0) {
         url.searchParams.set('courses', courseCodes.join(','));
+        // Only add schedule index if there are multiple schedules and not on the first one
+        if (availableSchedules.length > 1 && currentScheduleIndex > 0) {
+            url.searchParams.set('scheduleIndex', currentScheduleIndex.toString());
+        } else {
+            url.searchParams.delete('scheduleIndex');
+        }
     } else {
         url.searchParams.delete('courses');
+        url.searchParams.delete('scheduleIndex');
     }
     
     // Update URL without reloading the page
@@ -46,6 +63,24 @@ function loadCoursesFromURL() {
             selectedCourses.push({ rowId, course });
         }
     });
+    
+    // Generate schedules for the loaded courses
+    availableSchedules = CourseSchedule.generateAllAvailableSchedules(
+        selectedCourses.filter(c => c.course !== null).map(c => c.course)
+    );
+    
+    // Load schedule index from URL if present
+    const scheduleIndexParam = url.searchParams.get('scheduleIndex');
+    if (scheduleIndexParam) {
+        const index = parseInt(scheduleIndexParam, 10);
+        if (!isNaN(index) && index >= 0 && index < availableSchedules.length) {
+            currentScheduleIndex = index;
+        } else {
+            currentScheduleIndex = 0;
+        }
+    } else {
+        currentScheduleIndex = 0;
+    }
     
     renderSelectedCourses();
 }
@@ -148,12 +183,67 @@ function onCourseChange(rowId) {
         selectedCourses.push({ rowId, course });
     }
 
-    let options = CourseSchedule.generateAllAvailableSchedules(selectedCourses.map(c => c.course));
-    console.log(`Generated ${options.length} valid schedule(s) with current selection.`);
-    console.log(options);
+    // Generate all available schedules
+    availableSchedules = CourseSchedule.generateAllAvailableSchedules(selectedCourses.map(c => c.course));
+    currentScheduleIndex = 0;
+    
+    console.log(`Generated ${availableSchedules.length} valid schedule(s) with current selection.`);
+    console.log(availableSchedules);
+
+    // Display the first schedule and update navigation
+    displayCurrentSchedule();
 
     // Update URL with new course selection
     updateURLWithCourses();
+}
+
+// Display the current schedule and update navigation UI
+function displayCurrentSchedule() {
+    const counterElement = document.getElementById('schedule-counter');
+    const prevButton = document.getElementById('prev-schedule-btn');
+    const nextButton = document.getElementById('next-schedule-btn');
+    
+    if (availableSchedules.length === 0) {
+        // No schedules available
+        counterElement.textContent = 'Plan Yok';
+        prevButton.disabled = true;
+        nextButton.disabled = true;
+        
+        // Clear the display
+        const displayer = new ScheduleDisplayer(null);
+        displayer.clear();
+        return;
+    }
+    
+    // Update counter
+    counterElement.textContent = `Plan ${currentScheduleIndex + 1} / ${availableSchedules.length}`;
+    
+    // Update button states
+    prevButton.disabled = currentScheduleIndex === 0;
+    nextButton.disabled = currentScheduleIndex === availableSchedules.length - 1;
+    
+    // Display the current schedule
+    const displayer = new ScheduleDisplayer(availableSchedules[currentScheduleIndex]);
+    displayer.display();
+    
+    // Update URL with current schedule index
+    updateURLWithCourses();
+}
+
+// Navigate to previous schedule
+function navigateToPreviousSchedule() {
+    if (currentScheduleIndex > 0) {
+        currentScheduleIndex--;
+        displayCurrentSchedule();
+    }
+}
+
+// Navigate to next schedule
+function navigateToNextSchedule() {
+    if (currentScheduleIndex < availableSchedules.length - 1) {
+        currentScheduleIndex++;
+        displayCurrentSchedule();
+    }
 }
 
 // Add a new course row
@@ -169,10 +259,17 @@ function removeCourseRow(rowId) {
     if (index > -1) {
         selectedCourses.splice(index, 1);
         
+        // Regenerate schedules with remaining courses
+        availableSchedules = CourseSchedule.generateAllAvailableSchedules(
+            selectedCourses.filter(c => c.course !== null).map(c => c.course)
+        );
+        currentScheduleIndex = 0;
+        
         // Update URL after removing course
         updateURLWithCourses();
         
         renderSelectedCourses();
+        displayCurrentSchedule();
     }
 }
 
@@ -229,14 +326,25 @@ function renderSelectedCourses() {
                     const c = ituHelper.coursesDict[courseName];
 
                     let foundPositiveCapacity = false;
+                    let hasValidLesson = false;
+                    
                     for (const lesson of c.lessons) {
-                        if (lesson.capacity > 0) {
-                            foundPositiveCapacity = true;
-                            break;
+                        // Check if lesson has valid day and time (not just "-")
+                        const hasValidDayTime = lesson.day && lesson.time && 
+                                                lesson.day.trim() !== '-' && 
+                                                lesson.time.trim() !== '-' &&
+                                                lesson.day.trim() !== '' && 
+                                                lesson.time.trim() !== '';
+                        
+                        if (hasValidDayTime) {
+                            hasValidLesson = true;
+                            if (lesson.capacity > 0) {
+                                foundPositiveCapacity = true;
+                            }
                         }
                     }
 
-                    let isInvalid = c.lessons.length === 0 || !foundPositiveCapacity;
+                    let isInvalid = c.lessons.length === 0 || !foundPositiveCapacity || !hasValidLesson;
 
                     const option = document.createElement('option');
                     option.value = courseName;
@@ -276,17 +384,182 @@ function renderSelectedCourses() {
 }
 
 // Initialize when ituHelper data is fetched (called by schedule_onload.js)
+// Programme Selection Functions
+function loadProgrammesFromURL() {
+    const url = new URL(window.location);
+    const programmesParam = url.searchParams.get('programmes');
+    
+    if (!programmesParam) {
+        return;
+    }
+    
+    const programmeCodes = programmesParam.split(',').filter(code => code.trim());
+    
+    if (programmeCodes.length === 0) {
+        return;
+    }
+    
+    const firstSelect = document.getElementById('first-programme-select');
+    const secondSelect = document.getElementById('second-programme-select');
+    
+    if (!firstSelect || !secondSelect) {
+        return;
+    }
+    
+    // Set first programme
+    if (programmeCodes[0]) {
+        firstSelect.value = programmeCodes[0];
+        selectedProgrammeCodes = [programmeCodes[0]];
+        
+        // Enable and populate second dropdown
+        secondSelect.disabled = false;
+        secondSelect.innerHTML = '<option value="">İkinci bölümünüzü seçiniz...</option>';
+        populateProgrammeDropdown(secondSelect, programmeCodes[0]);
+        
+        // Set second programme if exists
+        if (programmeCodes.length > 1 && programmeCodes[1]) {
+            secondSelect.value = programmeCodes[1];
+            selectedProgrammeCodes.push(programmeCodes[1]);
+        }
+    }
+    
+    console.log('Loaded programmes from URL:', selectedProgrammeCodes);
+}
+
+function initializeProgrammeSelection() {
+    const firstSelect = document.getElementById('first-programme-select');
+    const secondSelect = document.getElementById('second-programme-select');
+    
+    if (!firstSelect || !secondSelect) {
+        console.error('Programme select elements not found');
+        return;
+    }
+    
+    // Populate first dropdown with programmes
+    populateProgrammeDropdown(firstSelect);
+    
+    // Add event listeners
+    firstSelect.addEventListener('change', handleFirstProgrammeChange);
+    secondSelect.addEventListener('change', handleSecondProgrammeChange);
+    
+    // Load programmes from URL if present
+    loadProgrammesFromURL();
+}
+
+function populateProgrammeDropdown(selectElement, excludeCode = null) {
+    if (!window.ituHelper || !window.ituHelper.programmes) {
+        console.error('ituHelper.programmes not available');
+        return;
+    }
+    
+    // Clear existing options except the first one
+    while (selectElement.options.length > 1) {
+        selectElement.remove(1);
+    }
+    
+    // Sort programmes by name
+    const programmes = Object.values(window.ituHelper.programmes)
+        .filter(prog => prog.code !== excludeCode) // Exclude the selected programme from first dropdown
+        .sort((a, b) => a.name.localeCompare(b.name, 'tr'));
+    
+    // Add programme options
+    programmes.forEach(programme => {
+        const option = document.createElement('option');
+        option.value = programme.code;
+        option.textContent = `${programme.code} - ${programme.name}`;
+        selectElement.appendChild(option);
+    });
+}
+
+function handleFirstProgrammeChange(event) {
+    const firstSelect = event.target;
+    const secondSelect = document.getElementById('second-programme-select');
+    const selectedValue = firstSelect.value;
+    
+    if (selectedValue) {
+        // Enable second dropdown and populate it (excluding the first selection)
+        secondSelect.disabled = false;
+        secondSelect.innerHTML = '<option value="">İkinci bölümünüzü seçiniz...</option>';
+        populateProgrammeDropdown(secondSelect, selectedValue);
+        
+        // Update selected programmes array
+        selectedProgrammeCodes = [selectedValue];
+        if (secondSelect.value) {
+            selectedProgrammeCodes.push(secondSelect.value);
+        }
+    } else {
+        // Disable and reset second dropdown
+        secondSelect.disabled = true;
+        secondSelect.innerHTML = '<option value="">Önce ilk bölümü seçiniz...</option>';
+        selectedProgrammeCodes = [];
+    }
+    
+    console.log('Selected programmes:', selectedProgrammeCodes);
+    
+    // Update URL with new programmes
+    updateURLWithCourses();
+    
+    // Regenerate schedules if there are selected courses
+    if (selectedCourses.length > 0) {
+        availableSchedules = CourseSchedule.generateAllAvailableSchedules(
+            selectedCourses.filter(c => c.course !== null).map(c => c.course)
+        );
+        currentScheduleIndex = 0;
+        displayCurrentSchedule();
+    }
+}
+
+function handleSecondProgrammeChange(event) {
+    const firstSelect = document.getElementById('first-programme-select');
+    const secondSelect = event.target;
+    const selectedValue = secondSelect.value;
+    
+    // Update selected programmes array
+    selectedProgrammeCodes = [firstSelect.value];
+    if (selectedValue) {
+        selectedProgrammeCodes.push(selectedValue);
+    }
+    
+    console.log('Selected programmes:', selectedProgrammeCodes);
+    
+    // Update URL with new programmes
+    updateURLWithCourses();
+    
+    // Regenerate schedules if there are selected courses
+    if (selectedCourses.length > 0) {
+        availableSchedules = CourseSchedule.generateAllAvailableSchedules(
+            selectedCourses.filter(c => c.course !== null).map(c => c.course)
+        );
+        currentScheduleIndex = 0;
+        displayCurrentSchedule();
+    }
+}
+
 function initializeScheduleCreator() {
     console.log('Schedule Creator: ituHelper data loaded');
     
     const addRowButton = document.getElementById('add-course-row-btn');
+    const prevButton = document.getElementById('prev-schedule-btn');
+    const nextButton = document.getElementById('next-schedule-btn');
     
     // Add event listener to add course row button
     if (addRowButton) {
         addRowButton.addEventListener('click', addCourseRow);
     }
     
+    // Add event listeners to navigation buttons
+    if (prevButton) {
+        prevButton.addEventListener('click', navigateToPreviousSchedule);
+    }
+    
+    if (nextButton) {
+        nextButton.addEventListener('click', navigateToNextSchedule);
+    }
+    
     initializeCoursePrefixMap();
+    
+    // Initialize programme selection
+    initializeProgrammeSelection();
     
     // Load courses from URL if present
     loadCoursesFromURL();
@@ -295,6 +568,38 @@ function initializeScheduleCreator() {
     
     // Initialize schedule cell selection
     initializeScheduleCellSelection();
+    
+    // Initialize navigation UI
+    displayCurrentSchedule();
+    
+    // Add keyboard shortcuts for schedule navigation
+    document.addEventListener('keydown', (e) => {
+        // Left arrow or 'p' for previous
+        if ((e.key === 'ArrowLeft' || e.key === 'p') && !e.ctrlKey && !e.metaKey) {
+            if (currentScheduleIndex > 0 && !isInputFocused()) {
+                e.preventDefault();
+                navigateToPreviousSchedule();
+            }
+        }
+        // Right arrow or 'n' for next
+        if ((e.key === 'ArrowRight' || e.key === 'n') && !e.ctrlKey && !e.metaKey) {
+            if (currentScheduleIndex < availableSchedules.length - 1 && !isInputFocused()) {
+                e.preventDefault();
+                navigateToNextSchedule();
+            }
+        }
+    });
+}
+
+// Helper function to check if an input/select element is focused
+function isInputFocused() {
+    const activeElement = document.activeElement;
+    return activeElement && (
+        activeElement.tagName === 'INPUT' || 
+        activeElement.tagName === 'SELECT' || 
+        activeElement.tagName === 'TEXTAREA' ||
+        activeElement.isContentEditable
+    );
 }
 
 // Schedule Cell Selection with Drag Support
