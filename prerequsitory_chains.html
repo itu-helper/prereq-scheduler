@@ -14,6 +14,7 @@
         <link rel="shortcut icon" href="https://raw.githubusercontent.com/itu-helper/home/main/images/favicon.png"
             type="image/png" />
         <link rel="stylesheet" href="assets/css/main.css" />
+        <link rel="stylesheet" href="assets/css/promo_popup.css" />
 
         <noscript>
             <link rel="stylesheet" href="assets/css/noscript.css" />
@@ -22,6 +23,23 @@
     </head>
 
     <body class="is-preload">
+        <div id="extensionPopup" class="popup-overlay" style="display: none;">
+            <div class="popup-content">
+                <h2>ITU Helper Chrome Eklentisi</h2>
+                <p>Tüm İTÜ sitelerini birbirine bağlayarak daha akıcı bir deneyim sunan eklentimiz şimdi yayınlandı.</p>
+                <img class="popup-image"
+                    src="https://lh3.googleusercontent.com/6MRq_VU5EJSF5VfX-1Ej_igSWqB1igfStHAWzHFfwUK8MszNR8T72N1Uo1c6HoOz2LpcSq9R8c030fWDPit9vR-snw=s800-w800-h500"
+                    alt="ITU Helper Extension Screenshot">
+                <p>Eklentiyi indirmek için <a href="https://chromewebstore.google.com/detail/ITU%20Helper/cinnpmhpiddpbjmmdmlncnlfhjanigkl?hl=en&authuser=0&utm_source=itu_helper&utm_medium=web&utm_campaign=on_sart_diyagrami" target="_blank">buraya</a> tıkla!</p>
+                <div class="popup-footer">
+                    <div>
+                        <input type="checkbox" id="hideExtensionPopup" name="hideExtensionPopup" />
+                        <label for="hideExtensionPopup">Bir daha gösterme</label>
+                    </div>
+                    <button id="closePopup">Kapat</button>
+                </div>
+            </div>
+        </div>
         <!-- Wrapper -->
         <div id="wrapper">
             <!-- Header -->
@@ -137,6 +155,7 @@
         <script src="https://cdn.jsdelivr.net/gh/itu-helper/sdk@master/js/dist/bundle.min.js"></script>
 
         <script src="assets/js/index_onload.js"></script>
+        <script src="assets/js/ui/promo_popup.js"></script>
         <script src="assets/js/prerequisitory/prerequisitory.js"></script>
         <script src="assets/js/prerequisitory/prerequisitory_grapher.js"></script>
         <script src="assets/js/prerequisitory/prerequisitory_grapher_styles.js"></script>
