@@ -23,24 +23,25 @@
     </head>
 
     <body>
-        
+
         <div class="container">
             <div class="left-section">
                 <div class="left-section-header">
-                    <img src="https://raw.githubusercontent.com/itu-helper/home/main/images/favicon.png" alt="ITU Helper Logo">
+                    <img src="https://raw.githubusercontent.com/itu-helper/home/main/images/favicon.png"
+                        alt="ITU Helper Logo">
                     <h2>ITU Helper</h2>
                 </div>
-                
+
                 <div class="programme-selection">
                     <h3>Bölüm Seçimi</h3>
-                    
+
                     <div class="dropdown-group">
                         <label for="first-programme-select">Bölüm</label>
                         <select id="first-programme-select" class="programme-dropdown">
                             <option value="">Bölüm seçiniz...</option>
                         </select>
                     </div>
-                    
+
                     <div class="dropdown-group">
                         <label for="second-programme-select">ÇAP Bölüm</label>
                         <select id="second-programme-select" class="programme-dropdown" disabled>
@@ -48,23 +49,26 @@
                         </select>
                     </div>
                 </div>
-                
+
                 <div class="course-selection">
                     <h3>Seçili Dersler</h3>
                     <div id="selected-courses-list" class="selected-courses-list">
                         <!-- Selected courses will be added here dynamically -->
                     </div>
-                    
+
                     <button id="add-course-row-btn" class="add-course-row-btn">
                         <i class="fa-solid fa-plus"></i> Ders Ekle
                     </button>
                 </div>
             </div>
-            
+
             <div class="right-section">
                 <div class="schedule-header">
                     <h2>Ders Planı</h2>
                     <div class="schedule-navigation">
+                        <button id="random-schedule-btn" class="schedule-nav-btn" title="Rastgele Plan">
+                            <i class="fa-solid fa-dice"></i>
+                        </button>
                         <span id="schedule-counter" class="schedule-counter">Plan 1 / 1</span>
                         <button id="prev-schedule-btn" class="schedule-nav-btn" title="Önceki Plan">
                             <i class="fa-solid fa-chevron-left"></i>
@@ -78,7 +82,11 @@
                     <div class="schedule-grid">
                         <!-- Time column -->
                         <div class="time-column">
-                            <div class="time-header"></div>
+                            <div class="time-header">
+                                <button id="unselect-all-btn" class="unselect-all-btn" title="Tüm Seçimleri Kaldır">
+                                    <i class="fa-solid fa-rotate"></i>
+                                </button>
+                            </div>
                             <div class="time-slot">08:00</div>
                             <div class="time-slot">08:30</div>
                             <div class="time-slot">09:00</div>
@@ -104,7 +112,7 @@
                             <div class="time-slot">19:00</div>
                             <div class="time-slot">19:30</div>
                         </div>
-                        
+
                         <!-- Monday -->
                         <div class="day-column">
                             <div class="day-header">Pazartesi</div>
@@ -133,7 +141,7 @@
                             <div class="schedule-cell" data-day="monday" data-time="19:00"></div>
                             <div class="schedule-cell" data-day="monday" data-time="19:30"></div>
                         </div>
-                        
+
                         <!-- Tuesday -->
                         <div class="day-column">
                             <div class="day-header">Salı</div>
@@ -162,7 +170,7 @@
                             <div class="schedule-cell" data-day="tuesday" data-time="19:00"></div>
                             <div class="schedule-cell" data-day="tuesday" data-time="19:30"></div>
                         </div>
-                        
+
                         <!-- Wednesday -->
                         <div class="day-column">
                             <div class="day-header">Çarşamba</div>
@@ -191,7 +199,7 @@
                             <div class="schedule-cell" data-day="wednesday" data-time="19:00"></div>
                             <div class="schedule-cell" data-day="wednesday" data-time="19:30"></div>
                         </div>
-                        
+
                         <!-- Thursday -->
                         <div class="day-column">
                             <div class="day-header">Perşembe</div>
@@ -220,7 +228,7 @@
                             <div class="schedule-cell" data-day="thursday" data-time="19:00"></div>
                             <div class="schedule-cell" data-day="thursday" data-time="19:30"></div>
                         </div>
-                        
+
                         <!-- Friday -->
                         <div class="day-column">
                             <div class="day-header">Cuma</div>
@@ -263,17 +271,18 @@
         <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
         <script src="https://cdn.jsdelivr.net/gh/itu-helper/sdk@main/js/dist/bundle.min.js"></script>
         <script src="https://kit.fontawesome.com/f1677e7b85.js" crossorigin="anonymous"></script>
-        
+
         <script src="assets/js/website_template/breakpoints.min.js"></script>
         <script src="assets/js/website_template/browser.min.js"></script>
         <script src="assets/js/website_template/jquery.min.js"></script>
         <script src="assets/js/website_template/jquery_utilities.js"></script>
         <script src="assets/js/website_template/main.js"></script>
-        
+
         <!-- Schedule Creator Scripts -->
         <script src="assets/js/schedule/schedule_onload.js"></script>
         <script src="assets/js/schedule/schedule_creator.js"></script>
         <script src="assets/js/schedule/course_schedule.js"></script>
         <script src="assets/js/schedule/schedule_displayer.js"></script>
     </body>
+
 </html>

@@ -149,20 +149,20 @@ body, html {
 
 .dropdown-group label {
     display: block;
-    margin-bottom: 8px;
-    font-size: 0.9rem;
+    margin-bottom: 3px;
+    font-size: 0.8rem;
     color: rgba(255, 255, 255, 0.9) !important;
     font-weight: 500;
 }
 
 .programme-dropdown {
     width: 100%;
-    padding: 10px 12px;
+    padding: 8px 12px;
     background: rgba(255, 255, 255, 0.1) !important;
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 4px;
     color: white !important;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     cursor: pointer;
     transition: all 0.2s;
     appearance: none;
@@ -233,7 +233,8 @@ body, html {
 }
 
 .course-prefix-dropdown,
-.course-code-dropdown {
+.course-code-dropdown,
+.instructor-dropdown {
     flex: 1;
     padding: 10px 12px;
     background: rgba(255, 255, 255, 0.15);
@@ -243,32 +244,78 @@ body, html {
     font-size: 0.9rem;
     cursor: pointer;
     transition: background 0.2s, border-color 0.2s;
+    /* Fix scrolling issues in dropdown */
+    overflow-y: auto;
+    max-height: 300px;
+    scroll-behavior: smooth;
 }
 
 .course-prefix-dropdown:disabled,
-.course-code-dropdown:disabled {
+.course-code-dropdown:disabled,
+.instructor-dropdown:disabled {
     opacity: 0.5;
     cursor: not-allowed;
 }
 
 .course-prefix-dropdown:not(:disabled):hover,
-.course-code-dropdown:not(:disabled):hover {
+.course-code-dropdown:not(:disabled):hover,
+.instructor-dropdown:not(:disabled):hover {
     background: rgba(255, 255, 255, 0.2);
     border-color: rgba(255, 255, 255, 0.4);
 }
 
 .course-prefix-dropdown:focus,
-.course-code-dropdown:focus {
+.course-code-dropdown:focus,
+.instructor-dropdown:focus {
     outline: none;
     border-color: #c99208;
     background: rgba(255, 255, 255, 0.2);
 }
 
+/* Invalid selection styling */
+.course-prefix-dropdown.invalid-selection,
+.course-code-dropdown.invalid-selection,
+.instructor-dropdown.invalid-selection {
+    border: 2px solid #ff4444 !important;
+    background: rgba(255, 68, 68, 0.1) !important;
+    animation: pulse-red 2s ease-in-out infinite;
+}
+
+@keyframes pulse-red {
+    0%, 100% {
+        box-shadow: 0 0 0 0 rgba(255, 68, 68, 0.4);
+    }
+    50% {
+        box-shadow: 0 0 0 4px rgba(255, 68, 68, 0);
+    }
+}
+
 .course-prefix-dropdown option,
-.course-code-dropdown option {
+.course-code-dropdown option,
+.instructor-dropdown option {
     background: #1a1a1a;
     color: white;
     padding: 10px;
+}
+
+/* Fix dropdown scrolling behavior */
+.course-prefix-dropdown option:hover,
+.course-code-dropdown option:hover,
+.instructor-dropdown option:hover {
+    background: rgba(201, 146, 8, 0.3);
+}
+
+.course-prefix-dropdown option:checked,
+.course-code-dropdown option:checked,
+.instructor-dropdown option:checked {
+    background: rgba(201, 146, 8, 0.5);
+}
+
+.course-prefix-dropdown option:disabled,
+.course-code-dropdown option:disabled,
+.instructor-dropdown option:disabled {
+    color: #666;
+    opacity: 0.5;
 }
 
 .course-item {
@@ -386,6 +433,41 @@ body, html {
     justify-content: center;
     cursor: pointer;
     transition: background 0.2s;
+    position: relative;
+}
+
+.unselect-all-btn {
+    background: transparent !important;
+    border: none !important;
+    outline: none !important;
+    box-shadow: none !important;
+    color: #fff;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.9rem;
+    padding: 0;
+}
+
+.unselect-all-btn:focus {
+    outline: none !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+.unselect-all-btn i {
+    transition: transform 0.2s;
+}
+
+.unselect-all-btn:hover i {
+    transform: scale(1.05);
+}
+
+.unselect-all-btn:active i {
+    transform: scale(0.95);
 }
 
 .day-header:hover {

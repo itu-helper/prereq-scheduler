@@ -5,10 +5,70 @@ let coursePrefixMap = {}; // Maps prefix to array of full course names
 let availableSchedules = []; // Store all generated schedules
 let currentScheduleIndex = 0; // Current schedule being displayed
 let selectedProgrammeCodes = []; // Array to store selected programme codes
+let courseInstructorsMap = {}; // Maps courseCode to array of unique instructors
 
 const getCourseDisplayText = (course) => course.courseCode + " (" + course.courseTitle + ")";
 
-// Update URL with selected course codes, programmes, and schedule index
+// Day mapping from Turkish abbreviations to English
+const dayMap = {
+    'Pzt': 'monday',
+    'Sal': 'tuesday',
+    'Çar': 'wednesday',
+    'Per': 'thursday',
+    'Cum': 'friday',
+    'Monday': 'monday',
+    'Tuesday': 'tuesday',
+    'Wednesday': 'wednesday',
+    'Thursday': 'thursday',
+    'Friday': 'friday',
+    'Mon': 'monday',
+    'Tue': 'tuesday',
+    'Wed': 'wednesday',
+    'Thu': 'thursday',
+    'Fri': 'friday'
+};
+
+// Function to get unavailable time slots from selected cells
+function getUnavailableSlotsFromSelectedCells() {
+    const unavailableSlots = [];
+    const selectedCells = document.querySelectorAll('.schedule-cell.selected');
+    
+    console.log('Getting unavailable slots from', selectedCells.length, 'selected cells');
+    
+    selectedCells.forEach(cell => {
+        const dayEnglish = cell.getAttribute('data-day');
+        const startTime = cell.getAttribute('data-time');
+        
+        if (!dayEnglish || !startTime) {
+            console.warn('Cell missing data attributes:', cell);
+            return;
+        }
+        
+        // Each cell represents a 30-minute slot
+        // Calculate end time (30 minutes after start)
+        const [hours, minutes] = startTime.split(':').map(Number);
+        const totalMinutes = hours * 60 + minutes + 30;
+        const endHours = Math.floor(totalMinutes / 60);
+        const endMinutes = totalMinutes % 60;
+        
+        // Convert time to float for comparison (same format as in CourseSchedule)
+        // Format: HH.MM where MM is actual minutes (not a fraction)
+        // E.g., 09:30 becomes 9.30, 10:00 becomes 10.00
+        const startFloat = minutes * 0.01 + hours;
+        const endFloat = endMinutes * 0.01 + endHours;
+        
+        unavailableSlots.push({
+            day: dayEnglish,
+            startTime: startFloat,
+            endTime: endFloat
+        });
+    });
+    
+    console.log('Total unavailable slots:', unavailableSlots);
+    return unavailableSlots;
+}
+
+// Update URL with selected course codes, programmes, instructors, and schedule index
 function updateURLWithCourses() {
     const courseCodes = selectedCourses
         .filter(c => c.course !== null)
@@ -24,6 +84,38 @@ function updateURLWithCourses() {
     
     if (courseCodes.length > 0) {
         url.searchParams.set('courses', courseCodes.join(','));
+        
+        // Build instructor indices array (instructor name -> index in instructor list for that course)
+        const instructorIndices = selectedCourses
+            .filter(c => c.course !== null)
+            .map(c => {
+                if (!c.instructor) {
+                    return '-1'; // -1 means "Fark etmez" (no specific instructor selected)
+                }
+                
+                // Get all unique instructors for this course that match programme requirements
+                const instructors = new Set();
+                c.course.lessons.forEach(lesson => {
+                    if (isLessonValidForProgrammes(lesson) && 
+                        lesson.instructor && 
+                        lesson.instructor.trim() !== '' && 
+                        lesson.instructor !== '-') {
+                        instructors.add(lesson.instructor);
+                    }
+                });
+                
+                const sortedInstructors = Array.from(instructors).sort();
+                const instructorIndex = sortedInstructors.indexOf(c.instructor);
+                return instructorIndex >= 0 ? instructorIndex.toString() : '-1';
+            });
+        
+        // Only add instructors parameter if any instructors are selected
+        if (instructorIndices.some(idx => idx !== '-1')) {
+            url.searchParams.set('instructors', instructorIndices.join(','));
+        } else {
+            url.searchParams.delete('instructors');
+        }
+        
         // Only add schedule index if there are multiple schedules and not on the first one
         if (availableSchedules.length > 1 && currentScheduleIndex > 0) {
             url.searchParams.set('scheduleIndex', currentScheduleIndex.toString());
@@ -32,6 +124,7 @@ function updateURLWithCourses() {
         }
     } else {
         url.searchParams.delete('courses');
+        url.searchParams.delete('instructors');
         url.searchParams.delete('scheduleIndex');
     }
     
@@ -49,6 +142,10 @@ function loadCoursesFromURL() {
     }
     
     const courseCodes = coursesParam.split(',').filter(code => code.trim());
+    const instructorsParam = url.searchParams.get('instructors');
+    const instructorIndices = instructorsParam 
+        ? instructorsParam.split(',').map(idx => parseInt(idx, 10))
+        : [];
     
     if (!window.ituHelper || !window.ituHelper.coursesDict) {
         console.error('ituHelper.coursesDict not available when loading from URL');
@@ -56,17 +153,40 @@ function loadCoursesFromURL() {
     }
     
     // Find courses by course code and add them to selected courses
-    courseCodes.forEach(courseCode => {
+    courseCodes.forEach((courseCode, index) => {
         const course = Object.values(ituHelper.coursesDict).find(c => c.courseCode === courseCode);
         if (course) {
             const rowId = Date.now() + selectedCourses.length; // Unique ID
-            selectedCourses.push({ rowId, course });
+            
+            // Restore instructor selection if available
+            let selectedInstructor = null;
+            if (instructorIndices[index] !== undefined && instructorIndices[index] >= 0) {
+                // Get instructors for this course
+                const instructors = new Set();
+                course.lessons.forEach(lesson => {
+                    if (isLessonValidForProgrammes(lesson) && 
+                        lesson.instructor && 
+                        lesson.instructor.trim() !== '' && 
+                        lesson.instructor !== '-') {
+                        instructors.add(lesson.instructor);
+                    }
+                });
+                
+                const sortedInstructors = Array.from(instructors).sort();
+                if (instructorIndices[index] < sortedInstructors.length) {
+                    selectedInstructor = sortedInstructors[instructorIndices[index]];
+                }
+            }
+            
+            selectedCourses.push({ rowId, course, instructor: selectedInstructor });
         }
     });
     
     // Generate schedules for the loaded courses
+    const unavailableSlots = getUnavailableSlotsFromSelectedCells();
     availableSchedules = CourseSchedule.generateAllAvailableSchedules(
-        selectedCourses.filter(c => c.course !== null).map(c => c.course)
+        selectedCourses.filter(c => c.course !== null).map(c => ({ course: c.course, instructor: c.instructor })),
+        unavailableSlots
     );
     
     // Load schedule index from URL if present
@@ -130,16 +250,41 @@ function initializeCoursePrefixMap() {
     console.log('Course prefixes found:', prefixes.length);
 }
 
+// Helper function to check if a course is valid for selected programmes
+function isCourseValidForProgrammes(course) {
+    // Check if course has any valid lessons for selected programmes
+    let hasValidLessonForProgramme = false;
+    let foundPositiveCapacity = false;
+    
+    for (const lesson of course.lessons) {
+        if (isLessonValidForProgrammes(lesson) && lesson.capacity > 0) {
+            hasValidLessonForProgramme = true;
+            foundPositiveCapacity = true;
+            break;
+        }
+    }
+    
+    // Course is valid if it has lessons with positive capacity that match programme requirements
+    return course.lessons.length > 0 && foundPositiveCapacity && hasValidLessonForProgramme;
+}
+
 // Handle prefix dropdown change for a specific row
 function onPrefixChange(rowId) {
     const prefixDropdown = document.querySelector(`#course-row-${rowId} .course-prefix-dropdown`);
     const courseDropdown = document.querySelector(`#course-row-${rowId} .course-code-dropdown`);
+    const instructorDropdown = document.querySelector(`#course-row-${rowId} .instructor-dropdown`);
     const selectedPrefix = prefixDropdown.value;
+    
+    // Remove invalid-selection class as user is making a change
+    prefixDropdown.classList.remove('invalid-selection');
+    prefixDropdown.removeAttribute('title');
     
     // Clear and disable course dropdown if no prefix selected
     if (!selectedPrefix) {
         courseDropdown.innerHTML = '<option value="">Ders Kodu Seç</option>';
         courseDropdown.disabled = true;
+        instructorDropdown.innerHTML = '<option value="">Fark etmez</option>';
+        instructorDropdown.disabled = true;
         return;
     }
     
@@ -147,14 +292,23 @@ function onPrefixChange(rowId) {
     courseDropdown.disabled = false;
     courseDropdown.innerHTML = '<option value="">Ders Seç...</option>';
     
+    // Disable instructor dropdown until course is selected
+    instructorDropdown.innerHTML = '<option value="">Önce ders seçiniz...</option>';
+    instructorDropdown.disabled = true;
+    
     const coursenames = coursePrefixMap[selectedPrefix] || [];
     const sortedCourseNames = coursenames.sort();
     
     sortedCourseNames.forEach(courseName => {
         const course = ituHelper.coursesDict[courseName];
         // Skip if already selected (excluding the current row)
-        const existingCourseInOtherRow = selectedCourses.find(c => c.rowId !== rowId && c.course.courseCode === course.courseCode);
+        const existingCourseInOtherRow = selectedCourses.find(c => c.rowId !== rowId && c.course && c.course.courseCode === course.courseCode);
         if (existingCourseInOtherRow) {
+            return;
+        }
+        
+        // Only show courses that have valid lessons for the selected programmes
+        if (!isCourseValidForProgrammes(course)) {
             return;
         }
         
@@ -169,22 +323,40 @@ function onPrefixChange(rowId) {
 function onCourseChange(rowId) {
     const prefixDropdown = document.querySelector(`#course-row-${rowId} .course-prefix-dropdown`);
     const courseDropdown = document.querySelector(`#course-row-${rowId} .course-code-dropdown`);
+    const instructorDropdown = document.querySelector(`#course-row-${rowId} .instructor-dropdown`);
     const courseName = courseDropdown.value;
     
-    if (!courseName) return;
+    if (!courseName) {
+        // Clear instructor dropdown
+        instructorDropdown.innerHTML = '<option value="">Önce ders seçiniz...</option>';
+        instructorDropdown.disabled = true;
+        return;
+    }
     
     const course = ituHelper.coursesDict[courseName];
+    
+    // Remove invalid-selection class as user is making a change
+    courseDropdown.classList.remove('invalid-selection');
+    courseDropdown.removeAttribute('title');
+    
+    // Populate instructor dropdown
+    populateInstructorDropdown(course, instructorDropdown);
     
     // Update or add the course in selectedCourses
     const existingIndex = selectedCourses.findIndex(c => c.rowId === rowId);
     if (existingIndex >= 0) {
         selectedCourses[existingIndex].course = course;
+        selectedCourses[existingIndex].instructor = null; // Reset instructor when course changes
     } else {
-        selectedCourses.push({ rowId, course });
+        selectedCourses.push({ rowId, course, instructor: null });
     }
 
     // Generate all available schedules
-    availableSchedules = CourseSchedule.generateAllAvailableSchedules(selectedCourses.map(c => c.course));
+    const unavailableSlots = getUnavailableSlotsFromSelectedCells();
+    availableSchedules = CourseSchedule.generateAllAvailableSchedules(
+        selectedCourses.map(c => ({ course: c.course, instructor: c.instructor })),
+        unavailableSlots
+    );
     currentScheduleIndex = 0;
     
     console.log(`Generated ${availableSchedules.length} valid schedule(s) with current selection.`);
@@ -197,16 +369,113 @@ function onCourseChange(rowId) {
     updateURLWithCourses();
 }
 
+// Helper function to check if a lesson is valid for selected programmes
+function isLessonValidForProgrammes(lesson) {
+    // Check if lesson has valid day and time values
+    if (!lesson || !lesson.day || !lesson.time) {
+        return false;
+    }
+    
+    const day = lesson.day.trim();
+    const time = lesson.time.trim();
+    
+    // Check if day or time is just a dash or empty
+    if (day === '-' || day === '' || time === '-' || time === '') {
+        return false;
+    }
+
+    // Check if lesson has major restrictions
+    if (lesson.majors && lesson.majors.length > 0) {
+        // If no programmes are selected, allow all lessons
+        if (!selectedProgrammeCodes || selectedProgrammeCodes.length === 0) {
+            return true;
+        }
+        
+        // Check if any selected programme matches the lesson's major requirements
+        if (!selectedProgrammeCodes.some(p => lesson.majors.map(m => m.code).includes(p))) {
+            return false;
+        }
+    }
+    
+    return true;
+}
+
+// Populate instructor dropdown for a course
+function populateInstructorDropdown(course, instructorDropdown) {
+    // Get unique instructors from course lessons that are valid for selected programmes
+    const instructors = new Set();
+    course.lessons.forEach(lesson => {
+        // Only include instructors from lessons that are valid for the selected programmes
+        if (isLessonValidForProgrammes(lesson) && 
+            lesson.instructor && 
+            lesson.instructor.trim() !== '' && 
+            lesson.instructor !== '-') {
+            instructors.add(lesson.instructor);
+        }
+    });
+    
+    const sortedInstructors = Array.from(instructors).sort();
+    
+    // Enable and populate instructor dropdown
+    instructorDropdown.disabled = false;
+    instructorDropdown.innerHTML = '<option value="">Fark etmez</option>';
+    
+    sortedInstructors.forEach(instructor => {
+        const option = document.createElement('option');
+        option.value = instructor;
+        option.textContent = instructor;
+        instructorDropdown.appendChild(option);
+    });
+    
+    // Return the sorted instructors list for validation purposes
+    return sortedInstructors;
+}
+
+// Handle instructor selection change
+function onInstructorChange(rowId) {
+    const instructorDropdown = document.querySelector(`#course-row-${rowId} .instructor-dropdown`);
+    const selectedInstructor = instructorDropdown.value || null;
+    
+    // Remove invalid-selection class as user is making a change
+    instructorDropdown.classList.remove('invalid-selection');
+    instructorDropdown.removeAttribute('title');
+    
+    // Update the instructor in selectedCourses
+    const existingIndex = selectedCourses.findIndex(c => c.rowId === rowId);
+    if (existingIndex >= 0) {
+        selectedCourses[existingIndex].instructor = selectedInstructor;
+    }
+
+    // Generate all available schedules with instructor filter
+    const unavailableSlots = getUnavailableSlotsFromSelectedCells();
+    availableSchedules = CourseSchedule.generateAllAvailableSchedules(
+        selectedCourses.map(c => ({ course: c.course, instructor: c.instructor })),
+        unavailableSlots
+    );
+    currentScheduleIndex = 0;
+    
+    console.log(`Generated ${availableSchedules.length} valid schedule(s) with instructor filter.`);
+    console.log(availableSchedules);
+
+    // Display the first schedule and update navigation
+    displayCurrentSchedule();
+
+    // Update URL with new selection
+    updateURLWithCourses();
+}
+
 // Display the current schedule and update navigation UI
 function displayCurrentSchedule() {
     const counterElement = document.getElementById('schedule-counter');
     const prevButton = document.getElementById('prev-schedule-btn');
+    const randomButton = document.getElementById('random-schedule-btn');
     const nextButton = document.getElementById('next-schedule-btn');
     
     if (availableSchedules.length === 0) {
         // No schedules available
         counterElement.textContent = 'Plan Yok';
         prevButton.disabled = true;
+        if (randomButton) randomButton.disabled = true;
         nextButton.disabled = true;
         
         // Clear the display
@@ -220,6 +489,7 @@ function displayCurrentSchedule() {
     
     // Update button states
     prevButton.disabled = currentScheduleIndex === 0;
+    if (randomButton) randomButton.disabled = availableSchedules.length <= 1;
     nextButton.disabled = currentScheduleIndex === availableSchedules.length - 1;
     
     // Display the current schedule
@@ -246,10 +516,24 @@ function navigateToNextSchedule() {
     }
 }
 
+// Navigate to random schedule
+function navigateToRandomSchedule() {
+    if (availableSchedules.length > 1) {
+        // Generate a random index that's different from current
+        let randomIndex;
+        do {
+            randomIndex = Math.floor(Math.random() * availableSchedules.length);
+        } while (randomIndex === currentScheduleIndex && availableSchedules.length > 1);
+        
+        currentScheduleIndex = randomIndex;
+        displayCurrentSchedule();
+    }
+}
+
 // Add a new course row
 function addCourseRow() {
     const rowId = Date.now(); // Use timestamp as unique ID
-    selectedCourses.push({ rowId, course: null });
+    selectedCourses.push({ rowId, course: null, instructor: null });
     renderSelectedCourses();
 }
 
@@ -260,8 +544,10 @@ function removeCourseRow(rowId) {
         selectedCourses.splice(index, 1);
         
         // Regenerate schedules with remaining courses
+        const unavailableSlots = getUnavailableSlotsFromSelectedCells();
         availableSchedules = CourseSchedule.generateAllAvailableSchedules(
-            selectedCourses.filter(c => c.course !== null).map(c => c.course)
+            selectedCourses.filter(c => c.course !== null).map(c => ({ course: c.course, instructor: c.instructor })),
+            unavailableSlots
         );
         currentScheduleIndex = 0;
         
@@ -271,6 +557,20 @@ function removeCourseRow(rowId) {
         renderSelectedCourses();
         displayCurrentSchedule();
     }
+}
+
+// Helper function to check if a prefix has any valid courses for selected programmes
+function prefixHasValidCourses(prefix) {
+    const coursenames = coursePrefixMap[prefix] || [];
+    
+    for (const courseName of coursenames) {
+        const course = ituHelper.coursesDict[courseName];
+        if (course && isCourseValidForProgrammes(course)) {
+            return true;
+        }
+    }
+    
+    return false;
 }
 
 // Render the list of selected courses
@@ -286,7 +586,7 @@ function renderSelectedCourses() {
     // Get all prefixes for dropdowns
     const prefixes = Object.keys(coursePrefixMap).sort();
     
-    selectedCourses.forEach(({ rowId, course }) => {
+    selectedCourses.forEach(({ rowId, course, instructor }) => {
         const courseRow = document.createElement('div');
         courseRow.className = 'course-row';
         courseRow.id = `course-row-${rowId}`;
@@ -299,6 +599,13 @@ function renderSelectedCourses() {
             const option = document.createElement('option');
             option.value = prefix;
             option.textContent = prefix;
+            
+            // Disable prefix if it has no valid courses for selected programmes
+            const hasValidCourses = prefixHasValidCourses(prefix);
+            if (!hasValidCourses) {
+                option.disabled = true;
+            }
+            
             prefixDropdown.appendChild(option);
         });
         
@@ -308,12 +615,32 @@ function renderSelectedCourses() {
         courseDropdown.innerHTML = '<option value="">Ders Kodu Seç</option>';
         courseDropdown.disabled = true;
         
+        // Create instructor dropdown
+        const instructorDropdown = document.createElement('select');
+        instructorDropdown.className = 'instructor-dropdown';
+        instructorDropdown.innerHTML = '<option value="">Fark etmez</option>';
+        instructorDropdown.disabled = true;
+        
         // If there's a selected course, populate the dropdowns
         if (course) {
+            // Check if the course is still valid for the selected programmes
+            const isCourseValid = isCourseValidForProgrammes(course);
+            
             const spaceIndex = course.courseCode.indexOf(' ');
             if (spaceIndex > 0) {
                 const prefix = course.courseCode.substring(0, spaceIndex);
                 prefixDropdown.value = prefix;
+                
+                // Check if the prefix has any valid courses for selected programmes
+                const prefixHasValid = prefixHasValidCourses(prefix);
+                if (!prefixHasValid) {
+                    // Highlight prefix dropdown as invalid
+                    prefixDropdown.classList.add('invalid-selection');
+                    prefixDropdown.setAttribute('title', 'Bu ders kategorisinde seçili programlar için ders bulunmuyor');
+                } else {
+                    prefixDropdown.classList.remove('invalid-selection');
+                    prefixDropdown.removeAttribute('title');
+                }
                 
                 // Populate course dropdown for this prefix
                 courseDropdown.disabled = false;
@@ -327,6 +654,7 @@ function renderSelectedCourses() {
 
                     let foundPositiveCapacity = false;
                     let hasValidLesson = false;
+                    let hasValidLessonForProgramme = false;
                     
                     for (const lesson of c.lessons) {
                         // Check if lesson has valid day and time (not just "-")
@@ -341,10 +669,23 @@ function renderSelectedCourses() {
                             if (lesson.capacity > 0) {
                                 foundPositiveCapacity = true;
                             }
+                            
+                            // Check if this lesson is valid for the selected programmes
+                            if (isLessonValidForProgrammes(lesson)) {
+                                hasValidLessonForProgramme = true;
+                            }
                         }
                     }
 
-                    let isInvalid = c.lessons.length === 0 || !foundPositiveCapacity || !hasValidLesson;
+                    // Course is invalid if:
+                    // - No lessons at all
+                    // - No lessons with positive capacity
+                    // - No valid lessons (day/time)
+                    // - No lessons that match the selected programme requirements
+                    let isInvalid = c.lessons.length === 0 || 
+                                   !foundPositiveCapacity || 
+                                   !hasValidLesson ||
+                                   !hasValidLessonForProgramme;
 
                     const option = document.createElement('option');
                     option.value = courseName;
@@ -360,12 +701,41 @@ function renderSelectedCourses() {
                 if (fullCourseName) {
                     courseDropdown.value = fullCourseName;
                 }
+                
+                // Highlight course dropdown if invalid for selected programmes
+                if (!isCourseValid) {
+                    courseDropdown.classList.add('invalid-selection');
+                    courseDropdown.setAttribute('title', 'Bu ders seçili programlar için mevcut değil');
+                } else {
+                    courseDropdown.classList.remove('invalid-selection');
+                    courseDropdown.removeAttribute('title');
+                }
+                
+                // Populate instructor dropdown
+                const availableInstructors = populateInstructorDropdown(course, instructorDropdown);
+                
+                // Set selected instructor if exists and is still valid
+                if (instructor) {
+                    // Check if the previously selected instructor is still available
+                    if (availableInstructors.includes(instructor)) {
+                        instructorDropdown.value = instructor;
+                        instructorDropdown.classList.remove('invalid-selection');
+                        instructorDropdown.removeAttribute('title');
+                    } else {
+                        // Instructor is no longer valid for the selected programmes
+                        // Keep the selection but highlight it as invalid
+                        instructorDropdown.value = instructor;
+                        instructorDropdown.classList.add('invalid-selection');
+                        instructorDropdown.setAttribute('title', 'Bu öğretim üyesi seçili programlar için mevcut değil');
+                    }
+                }
             }
         }
         
         // Add event listeners
         prefixDropdown.addEventListener('change', () => onPrefixChange(rowId));
         courseDropdown.addEventListener('change', () => onCourseChange(rowId));
+        instructorDropdown.addEventListener('change', () => onInstructorChange(rowId));
         
         // Create remove button
         const removeBtn = document.createElement('button');
@@ -378,6 +748,7 @@ function renderSelectedCourses() {
         // Assemble the row
         courseRow.appendChild(prefixDropdown);
         courseRow.appendChild(courseDropdown);
+        courseRow.appendChild(instructorDropdown);
         courseRow.appendChild(removeBtn);
         container.appendChild(courseRow);
     });
@@ -499,10 +870,21 @@ function handleFirstProgrammeChange(event) {
     // Update URL with new programmes
     updateURLWithCourses();
     
+    // Re-render course dropdowns to reflect major filtering
+    // This will also validate and highlight any invalid course/instructor selections
+    renderSelectedCourses();
+    
     // Regenerate schedules if there are selected courses
+    // Only include courses that are valid for the selected programmes
     if (selectedCourses.length > 0) {
+        const validCourses = selectedCourses.filter(c => {
+            return c.course !== null && isCourseValidForProgrammes(c.course);
+        });
+        
+        const unavailableSlots = getUnavailableSlotsFromSelectedCells();
         availableSchedules = CourseSchedule.generateAllAvailableSchedules(
-            selectedCourses.filter(c => c.course !== null).map(c => c.course)
+            validCourses.map(c => ({ course: c.course, instructor: c.instructor })),
+            unavailableSlots
         );
         currentScheduleIndex = 0;
         displayCurrentSchedule();
@@ -525,10 +907,21 @@ function handleSecondProgrammeChange(event) {
     // Update URL with new programmes
     updateURLWithCourses();
     
+    // Re-render course dropdowns to reflect major filtering
+    // This will also validate and highlight any invalid course/instructor selections
+    renderSelectedCourses();
+    
     // Regenerate schedules if there are selected courses
+    // Only include courses that are valid for the selected programmes
     if (selectedCourses.length > 0) {
+        const validCourses = selectedCourses.filter(c => {
+            return c.course !== null && isCourseValidForProgrammes(c.course);
+        });
+        
+        const unavailableSlots = getUnavailableSlotsFromSelectedCells();
         availableSchedules = CourseSchedule.generateAllAvailableSchedules(
-            selectedCourses.filter(c => c.course !== null).map(c => c.course)
+            validCourses.map(c => ({ course: c.course, instructor: c.instructor })),
+            unavailableSlots
         );
         currentScheduleIndex = 0;
         displayCurrentSchedule();
@@ -540,7 +933,9 @@ function initializeScheduleCreator() {
     
     const addRowButton = document.getElementById('add-course-row-btn');
     const prevButton = document.getElementById('prev-schedule-btn');
+    const randomButton = document.getElementById('random-schedule-btn');
     const nextButton = document.getElementById('next-schedule-btn');
+    const unselectAllButton = document.getElementById('unselect-all-btn');
     
     // Add event listener to add course row button
     if (addRowButton) {
@@ -552,8 +947,17 @@ function initializeScheduleCreator() {
         prevButton.addEventListener('click', navigateToPreviousSchedule);
     }
     
+    if (randomButton) {
+        randomButton.addEventListener('click', navigateToRandomSchedule);
+    }
+    
     if (nextButton) {
         nextButton.addEventListener('click', navigateToNextSchedule);
+    }
+    
+    // Add event listener to unselect all button
+    if (unselectAllButton) {
+        unselectAllButton.addEventListener('click', unselectAllCells);
     }
     
     initializeCoursePrefixMap();
@@ -716,6 +1120,9 @@ function initializeScheduleCellSelection() {
             startCell = null;
             cellStates.clear();
             toggleMode = null;
+            
+            // Regenerate schedules with updated unavailable slots
+            regenerateSchedulesWithUnavailableSlots();
         }
     });
     
@@ -752,6 +1159,9 @@ function initializeScheduleCellSelection() {
                     cell.classList.add('selected');
                 }
             });
+            
+            // Regenerate schedules with updated unavailable slots
+            regenerateSchedulesWithUnavailableSlots();
         });
         
         // Add hover effect
@@ -778,9 +1188,56 @@ function initializeScheduleCellSelection() {
                     cell.classList.add('selected');
                 }
             });
+            
+            // Regenerate schedules with updated unavailable slots
+            regenerateSchedulesWithUnavailableSlots();
         });
         
         // Add hover effect
         dayHeader.style.cursor = 'pointer';
     });
+}
+
+// Function to regenerate schedules when unavailable slots change
+function regenerateSchedulesWithUnavailableSlots() {
+    // Only regenerate if there are selected courses
+    if (selectedCourses.length === 0 || selectedCourses.every(c => c.course === null)) {
+        console.log('No courses selected, skipping schedule regeneration');
+        return;
+    }
+    
+    const unavailableSlots = getUnavailableSlotsFromSelectedCells();
+    const validCourses = selectedCourses.filter(c => c.course !== null);
+    
+    console.log('Regenerating schedules for', validCourses.length, 'courses with', unavailableSlots.length, 'unavailable slots');
+    
+    availableSchedules = CourseSchedule.generateAllAvailableSchedules(
+        validCourses.map(c => ({ course: c.course, instructor: c.instructor })),
+        unavailableSlots
+    );
+    
+    // Reset to first schedule
+    currentScheduleIndex = 0;
+    
+    console.log(`Regenerated ${availableSchedules.length} valid schedule(s) with unavailable slots.`);
+    
+    // Display the updated schedule
+    displayCurrentSchedule();
+}
+
+// Function to unselect all cells
+function unselectAllCells(e) {
+    if (e) {
+        e.stopPropagation(); // Prevent triggering the time-header click event
+    }
+    
+    const scheduleCells = document.querySelectorAll('.schedule-cell');
+    scheduleCells.forEach(cell => {
+        cell.classList.remove('selected');
+    });
+    
+    // Regenerate schedules without unavailable slots
+    regenerateSchedulesWithUnavailableSlots();
+    
+    console.log('All cells unselected');
 }

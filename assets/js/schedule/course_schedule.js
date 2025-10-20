@@ -1,6 +1,7 @@
 class CourseSchedule {
-    constructor(lessons) {
+    constructor(lessons, unavailableSlots = []) {
         this.lessons = lessons;
+        this.unavailableSlots = unavailableSlots;
     }
 
     _timeTextToFloat(timeText) {
@@ -59,7 +60,17 @@ class CourseSchedule {
     }
 
     isValid() {
+        console.log('Validating schedule with', this.lessons.length, 'lessons and', this.unavailableSlots.length, 'unavailable slots');
+        
         for (let i = 0; i < this.lessons.length; i++) {
+            // Check if lesson overlaps with unavailable slots
+            const lesson = this.lessons[i].lesson || this.lessons[i];
+            if (this._doesLessonOverlapWithUnavailableSlots(lesson)) {
+                console.log('Schedule INVALID: Lesson overlaps with unavailable slot');
+                return false;
+            }
+
+            // Check if lessons overlap with each other
             for (let j = 0; j < this.lessons.length && j != i; j++) {
                 const l1 = this.lessons[i];
                 const l2 = this.lessons[j];
@@ -69,10 +80,62 @@ class CourseSchedule {
             }
         }
 
+        console.log('Schedule VALID');
         return true;
     }
 
-    static _isValidLesson(lesson) {
+    _doesLessonOverlapWithUnavailableSlots(lesson) {
+        // If no unavailable slots, no overlap possible
+        if (!this.unavailableSlots || this.unavailableSlots.length === 0) {
+            return false;
+        }
+
+        // Parse lesson days and times
+        let lessonDays = lesson.day.split(" ");
+        let lessonTimes = lesson.time.split(" ");
+        let lessonSlots = [];
+        
+        for (let i = 0; i < lessonDays.length; i++) {
+            const timeRange = lessonTimes[i].split("/").map(t => this._timeTextToFloat(t.trim()));
+            lessonSlots.push({
+                day: lessonDays[i],
+                startTime: timeRange[0],
+                endTime: timeRange[1]
+            });
+        }
+
+        // Check if any lesson slot overlaps with unavailable slots
+        for (let lessonSlot of lessonSlots) {
+            for (let unavailableSlot of this.unavailableSlots) {
+                // Days must match
+                if (lessonSlot.day.toLowerCase() !== unavailableSlot.day) continue;
+
+                const lt1 = lessonSlot.startTime;
+                const lt2 = lessonSlot.endTime;
+                const ut1 = unavailableSlot.startTime;
+                const ut2 = unavailableSlot.endTime;
+
+                // Check for time overlap
+                // Two time ranges overlap if: start1 < end2 AND start2 < end1
+                const overlaps = (lt1 < ut2 && ut1 < lt2);
+                
+                if (overlaps) {
+                    console.log('Lesson overlaps with unavailable slot:', {
+                        lessonDay: lessonSlot.day,
+                        lessonTime: `${lt1}-${lt2}`,
+                        unavailableDay: unavailableSlot.day,
+                        unavailableTime: `${ut1}-${ut2}`,
+                        lesson: lesson
+                    });
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    static _isValidLesson(lesson, unavailableSlots = []) {
         // Check if lesson has valid day and time values
         if (!lesson || !lesson.day || !lesson.time) {
             return false;
@@ -101,11 +164,14 @@ class CourseSchedule {
         return true;
     }
 
-    static generateAllAvailableSchedules(courses) {
+    static generateAllAvailableSchedules(courses, unavailableSlots = []) {
         const allSchedules = [];
         
         // Filter out courses that don't have lessons or have empty lessons array
-        const validCourses = courses.filter(course => course.lessons && course.lessons.length > 0);
+        const validCourses = courses.filter(courseInfo => {
+            const course = courseInfo.course || courseInfo;
+            return course.lessons && course.lessons.length > 0;
+        });
         
         // If no valid courses, return empty array
         if (validCourses.length === 0) {
@@ -116,21 +182,28 @@ class CourseSchedule {
         function generateCombinations(courseIndex, currentSchedule) {
             // Base case: if we've processed all courses, add the current schedule
             if (courseIndex === validCourses.length) {
-                const sch = new CourseSchedule([...currentSchedule]);
+                const sch = new CourseSchedule([...currentSchedule], unavailableSlots);
                 if (sch.isValid()) allSchedules.push(sch);
                 return;
             }
             
             // Get the current course's lessons
-            const currentCourse = validCourses[courseIndex];
+            const courseInfo = validCourses[courseIndex];
+            const currentCourse = courseInfo.course || courseInfo;
+            const selectedInstructor = courseInfo.instructor || null;
             const lessons = currentCourse.lessons;
             
             // Filter out lessons without valid day/time
-            const validLessons = lessons.filter(lesson => CourseSchedule._isValidLesson(lesson));
+            let validLessons = lessons.filter(lesson => CourseSchedule._isValidLesson(lesson, unavailableSlots));
+            
+            // Filter by instructor if specified
+            if (selectedInstructor) {
+                validLessons = validLessons.filter(lesson => lesson.instructor === selectedInstructor);
+            }
             
             // If no valid lessons, skip this course
             if (validLessons.length === 0) {
-                console.warn(`Course ${currentCourse.courseCode} has no valid lessons with day/time`);
+                console.warn(`Course ${currentCourse.courseCode} has no valid lessons with day/time${selectedInstructor ? ` for instructor ${selectedInstructor}` : ''}`);
                 return;
             }
             
