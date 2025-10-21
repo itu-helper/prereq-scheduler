@@ -1,3 +1,5 @@
+MAX_SCHEDULE_COMBINATIONS = 100;
+
 class CourseSchedule {
     constructor(lessons, unavailableSlots = []) {
         this.lessons = lessons;
@@ -50,7 +52,6 @@ class CourseSchedule {
 
                 //  (t1 < t3 < t2        or t1 < t4 < t2       )        or (t3 < t1 < t2 < t4)
                 if ((t1 <= t3 && t3 <= t2) || (t1 <= t4 && t4 <= t2) || (t3 <= t1 && t1 <= t4 && t4 <= t2)) {
-                    // console.log(`Overlap detected between lessons:`, d1.time, d2.time);
                     return true;
                 }
             }
@@ -60,13 +61,11 @@ class CourseSchedule {
     }
 
     isValid() {
-        console.log('Validating schedule with', this.lessons.length, 'lessons and', this.unavailableSlots.length, 'unavailable slots');
         
         for (let i = 0; i < this.lessons.length; i++) {
             // Check if lesson overlaps with unavailable slots
             const lesson = this.lessons[i].lesson || this.lessons[i];
             if (this._doesLessonOverlapWithUnavailableSlots(lesson)) {
-                console.log('Schedule INVALID: Lesson overlaps with unavailable slot');
                 return false;
             }
 
@@ -80,7 +79,6 @@ class CourseSchedule {
             }
         }
 
-        console.log('Schedule VALID');
         return true;
     }
 
@@ -120,13 +118,6 @@ class CourseSchedule {
                 const overlaps = (lt1 < ut2 && ut1 < lt2);
                 
                 if (overlaps) {
-                    console.log('Lesson overlaps with unavailable slot:', {
-                        lessonDay: lessonSlot.day,
-                        lessonTime: `${lt1}-${lt2}`,
-                        unavailableDay: unavailableSlot.day,
-                        unavailableTime: `${ut1}-${ut2}`,
-                        lesson: lesson
-                    });
                     return true;
                 }
             }
@@ -186,6 +177,10 @@ class CourseSchedule {
                 if (sch.isValid()) allSchedules.push(sch);
                 return;
             }
+
+            if (allSchedules.length >= MAX_SCHEDULE_COMBINATIONS) {
+                return;
+            }
             
             // Get the current course's lessons
             const courseInfo = validCourses[courseIndex];
@@ -226,6 +221,10 @@ class CourseSchedule {
         // Start the recursive generation
         generateCombinations(0, []);
         
+        if (allSchedules.length >= MAX_SCHEDULE_COMBINATIONS) {
+            return allSchedules.slice(0, MAX_SCHEDULE_COMBINATIONS);
+        }
+
         return allSchedules;
     }
 }

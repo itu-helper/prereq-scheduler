@@ -42,7 +42,7 @@
                         </select>
                     </div>
 
-                    <div class="dropdown-group">
+                    <div class="dropdown-group" style="display: none;">
                         <label for="second-programme-select">ÇAP Bölüm</label>
                         <select id="second-programme-select" class="programme-dropdown" disabled>
                             <option value="">Önce bölüm seçiniz...</option>
@@ -65,6 +65,12 @@
             <div class="right-section">
                 <div class="schedule-header">
                     <h2>Ders Planı</h2>
+
+                    <div id="schedule-warning" class="schedule-warning" style="display: none;">
+                        <i class="fa-solid fa-triangle-exclamation"></i>
+                        <span id="schedule-warning-text"></span>
+                    </div>
+
                     <div class="schedule-navigation">
                         <button id="random-schedule-btn" class="schedule-nav-btn" title="Rastgele Plan">
                             <i class="fa-solid fa-dice"></i>

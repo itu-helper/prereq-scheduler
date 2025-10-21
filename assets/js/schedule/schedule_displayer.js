@@ -67,7 +67,7 @@ class ScheduleDisplayer {
         
         // Use a simple hash of the course code to consistently assign colors
         let hash = 0;
-        for (let i = 0; i < courseCode.length; i++) {
+        for (let i = 2; i < courseCode.length; i++) {
             hash = courseCode.charCodeAt(i) + ((hash << 5) - hash);
         }
         return this.colors[Math.abs(hash) % this.colors.length];
@@ -126,7 +126,7 @@ class ScheduleDisplayer {
     /**
      * Create a lesson element to display on the schedule
      */
-    _createLessonElement(schedule, courseColor) {
+    _createLessonElement(schedule, courseColor, ghostStyle = false) {
         const lessonDiv = document.createElement('div');
         lessonDiv.className = 'schedule-lesson';
         
@@ -145,8 +145,22 @@ class ScheduleDisplayer {
         lessonDiv.style.lineHeight = '1.3';
         lessonDiv.style.overflow = 'hidden';
         lessonDiv.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
-        lessonDiv.style.cursor = 'pointer';
+        lessonDiv.style.cursor = 'default';
         lessonDiv.style.transition = 'transform 0.2s, box-shadow 0.2s';
+        lessonDiv.style.position = 'relative';
+        lessonDiv.style.pointerEvents = 'auto'; // Block clicks from reaching cells
+        
+        // Apply ghost style if requested (for conflict situations)
+        if (ghostStyle) {
+            lessonDiv.style.backgroundColor = '#272727';
+            lessonDiv.style.border = '2px dashed #959595';
+            lessonDiv.classList.add('conflicted-lesson');
+        }
+        
+        // Prevent cell selection when clicking on lesson
+        lessonDiv.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+        });
         
         // Add hover effect
         lessonDiv.addEventListener('mouseenter', () => {
@@ -159,35 +173,66 @@ class ScheduleDisplayer {
             lessonDiv.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
         });
         
+        // Create pin icon
+        const pinIcon = document.createElement('i');
+        const lessonCRN = schedule.lesson.crn;
+        const isPinned = window.pinnedLessons && window.pinnedLessons.has(lessonCRN);
+        pinIcon.className = isPinned ? 'fa-solid fa-thumbtack lesson-pin-icon pinned' : 'fa-solid fa-thumbtack lesson-pin-icon';
+        pinIcon.setAttribute('data-crn', lessonCRN);
+        pinIcon.style.position = 'absolute';
+        pinIcon.style.top = '4px';
+        pinIcon.style.right = '4px';
+        pinIcon.style.cursor = 'pointer';
+        pinIcon.style.fontSize = '0.9rem';
+        pinIcon.style.zIndex = '20';
+        pinIcon.style.transition = 'color 0.2s, transform 0.2s';
+        pinIcon.style.padding = '4px';
+        pinIcon.style.pointerEvents = 'auto'; // Enable clicks on pin icon
+        
+        pinIcon.addEventListener('click', (e) => {
+            e.stopPropagation();
+            window.togglePinLesson(lessonCRN);
+        });
+        
         // Create content
         const courseCode = document.createElement('div');
         courseCode.style.fontWeight = 'bold';
         courseCode.style.marginBottom = '4px';
+        courseCode.style.paddingRight = '24px'; // Make room for pin icon
+        courseCode.style.fontSize = '0.7rem';
+
+        const courseNameTitle = schedule.lessonWithCourse?.courseTitle ||
+            schedule.lesson.courseTitle ||
+            '';
+
+        const courseCodeTitle = schedule.lessonWithCourse?.courseCode ||
+            schedule.lesson.courseCode ||
+            'Unknown Course';
+
         // Get course code from the wrapper object if available, otherwise from lesson
-        courseCode.textContent = schedule.lessonWithCourse?.courseCode || 
-                                  schedule.lesson.courseCode || 
-                                  'Unknown Course';
+        courseCode.textContent = courseCodeTitle + ": " + courseNameTitle;
         
         const timeInfo = document.createElement('div');
-        timeInfo.style.fontSize = '0.75rem';
+        timeInfo.style.fontSize = '0.7rem';
         timeInfo.style.opacity = '0.9';
         timeInfo.textContent = `${schedule.startTime} - ${schedule.endTime}`;
         
         const crn = document.createElement('div');
         crn.style.fontSize = '0.7rem';
-        crn.style.opacity = '0.8';
+        crn.style.opacity = '0.9';
         crn.style.marginTop = '2px';
-        crn.textContent = `CRN: ${schedule.lesson.crn || 'N/A'}`;
+        crn.innerHTML = `CRN: ${schedule.lesson.crn || 'N/A'}`;
         
         const instructor = document.createElement('div');
         instructor.style.fontSize = '0.7rem';
-        instructor.style.opacity = '0.8';
+        instructor.style.opacity = '0.9';
         instructor.style.marginTop = '2px';
         instructor.style.whiteSpace = 'nowrap';
         instructor.style.overflow = 'hidden';
         instructor.style.textOverflow = 'ellipsis';
         instructor.textContent = schedule.lesson.instructor || 'TBA';
         
+        lessonDiv.appendChild(pinIcon);
         lessonDiv.appendChild(courseCode);
         lessonDiv.appendChild(timeInfo);
         lessonDiv.appendChild(crn);
@@ -211,7 +256,7 @@ class ScheduleDisplayer {
     /**
      * Display the course schedule on the grid
      */
-    display() {
+    display(useGhostStyle = false) {
         // Clear existing lessons
         this.clear();
         
@@ -251,7 +296,7 @@ class ScheduleDisplayer {
                 }
                 
                 // Create and append the lesson element
-                const lessonElement = this._createLessonElement(schedule, courseColor);
+                const lessonElement = this._createLessonElement(schedule, courseColor, useGhostStyle);
                 targetCell.appendChild(lessonElement);
             });
         });

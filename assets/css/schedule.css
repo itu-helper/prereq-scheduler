@@ -92,6 +92,25 @@ body, html {
     gap: 10px;
 }
 
+.schedule-warning {
+    background: rgba(255, 193, 7, 0.15);
+    border: 1px solid rgba(255, 193, 7, 0.3);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: #ffc107;
+    font-size: 0.9rem;
+    line-height: 1.4;
+}
+
+.schedule-warning i {
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+
 .schedule-counter {
     color: rgba(255, 255, 255, 0.7);
     font-size: 0.9rem;
@@ -144,7 +163,7 @@ body, html {
 }
 
 .dropdown-group {
-    margin-bottom: 15px;
+    margin-bottom: 10px;
 }
 
 .dropdown-group label {
@@ -152,7 +171,7 @@ body, html {
     margin-bottom: 3px;
     font-size: 0.8rem;
     color: rgba(255, 255, 255, 0.9) !important;
-    font-weight: 500;
+    font-weight: 600;
 }
 
 .programme-dropdown {
@@ -170,6 +189,7 @@ body, html {
     background-repeat: no-repeat !important;
     background-position: right 10px center !important;
     padding-right: 35px !important;
+    max-height: 50px;
 }
 
 .programme-dropdown:hover:not(:disabled) {
@@ -220,7 +240,8 @@ body, html {
     display: flex;
     gap: 10px;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
+    margin-right: 10px;
     padding: 10px;
     background: rgba(255, 255, 255, 0.05);
     border-radius: 5px;
@@ -232,11 +253,27 @@ body, html {
     background: rgba(255, 255, 255, 0.08);
 }
 
+/* Blinking animation for newly added courses */
+@keyframes blink-highlight {
+    0%, 100% {
+        background: rgba(255, 255, 255, 0.05);
+        border-left-color: #c99208;
+    }
+    50% {
+        background: rgba(201, 146, 8, 0.2);
+        border-left-color: #f5b91c;
+    }
+}
+
+.course-row.newly-added {
+    animation: blink-highlight 0.8s ease-in-out 3;
+}
+
 .course-prefix-dropdown,
 .course-code-dropdown,
 .instructor-dropdown {
     flex: 1;
-    padding: 10px 12px;
+    padding: 0px 12px;
     background: rgba(255, 255, 255, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.3);
     border-radius: 5px;
@@ -246,7 +283,7 @@ body, html {
     transition: background 0.2s, border-color 0.2s;
     /* Fix scrolling issues in dropdown */
     overflow-y: auto;
-    max-height: 300px;
+    max-height: 30px;
     scroll-behavior: smooth;
 }
 
@@ -308,7 +345,7 @@ body, html {
 .course-prefix-dropdown option:checked,
 .course-code-dropdown option:checked,
 .instructor-dropdown option:checked {
-    background: rgba(201, 146, 8, 0.5);
+    background: rgb(82, 64, 17);
 }
 
 .course-prefix-dropdown option:disabled,
@@ -557,13 +594,41 @@ body, html {
     z-index: 10;
     color: white !important;
     border-left: 3px solid rgba(255, 255, 255, 0.3);
-    pointer-events: auto;
+    pointer-events: auto; /* Block clicks from reaching cells behind */
 }
 
 .schedule-lesson * {
     color: white !important;
 }
 
+.schedule-lesson.conflicted-lesson {
+    background-color: #272727 !important;
+    border: 2px dashed #959595 !important;
+    border-left: 2px dashed #959595 !important;
+}
+
 .schedule-cell {
     position: relative;
+}
+
+/* Lesson Pin Icon Styles */
+.lesson-pin-icon {
+    color: rgba(255, 255, 255, 0.3) !important;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.3));
+    pointer-events: auto !important; /* Enable clicks on pin icon */
+}
+
+.lesson-pin-icon:hover {
+    color: rgba(255, 255, 255, 0.6) !important;
+    transform: scale(1.1);
+}
+
+.lesson-pin-icon.pinned {
+    color: #c99208 !important;
+    transform: rotate(15deg);
+}
+
+.lesson-pin-icon.pinned:hover {
+    color: #d9a209 !important;
+    transform: rotate(15deg) scale(1.1);
 }

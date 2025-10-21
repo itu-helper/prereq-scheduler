@@ -6,8 +6,67 @@ let availableSchedules = []; // Store all generated schedules
 let currentScheduleIndex = 0; // Current schedule being displayed
 let selectedProgrammeCodes = []; // Array to store selected programme codes
 let courseInstructorsMap = {}; // Maps courseCode to array of unique instructors
+let pinnedLessons = new Set(); // Set of pinned lesson CRNs
+
+// Make pinnedLessons globally accessible
+window.pinnedLessons = pinnedLessons;
 
 const getCourseDisplayText = (course) => course.courseCode + " (" + course.courseTitle + ")";
+
+// Pin/Unpin lesson functionality
+window.togglePinLesson = function(crn) {
+    if (pinnedLessons.has(crn)) {
+        pinnedLessons.delete(crn);
+    } else {
+        pinnedLessons.add(crn);
+    }
+    
+    // Regenerate all schedules first
+    const unavailableSlots = getUnavailableSlotsFromSelectedCells();
+    const validCourses = selectedCourses.filter(c => c.course !== null);
+    
+    availableSchedules = CourseSchedule.generateAllAvailableSchedules(
+        validCourses.map(c => ({ course: c.course, instructor: c.instructor })),
+        unavailableSlots
+    );
+    
+    // Filter schedules based on pinned lessons
+    if (pinnedLessons.size > 0) {
+        filterSchedulesByPinnedLessons();
+    }
+    
+    // Reset to first schedule
+    currentScheduleIndex = 0;
+    
+    // Update URL with pinned lessons
+    updateURLWithCourses();
+    
+    // Redisplay to update pin icon appearance
+    displayCurrentSchedule();
+};
+
+// Filter available schedules to only show those containing all pinned lessons
+function filterSchedulesByPinnedLessons() {
+    if (pinnedLessons.size === 0) {
+        // No pinned lessons, show all schedules
+        return;
+    }
+    
+    // Filter schedules to only include those with all pinned lessons
+    const filteredSchedules = availableSchedules.filter(schedule => {
+        const scheduleCRNs = new Set(schedule.lessons.map(l => l.lesson.crn));
+        // Check if all pinned lessons are in this schedule
+        for (const pinnedCRN of pinnedLessons) {
+            if (!scheduleCRNs.has(pinnedCRN)) {
+                return false;
+            }
+        }
+        return true;
+    });
+    
+    // Update available schedules with filtered results
+    availableSchedules = filteredSchedules;
+}
 
 // Day mapping from Turkish abbreviations to English
 const dayMap = {
@@ -32,8 +91,6 @@ const dayMap = {
 function getUnavailableSlotsFromSelectedCells() {
     const unavailableSlots = [];
     const selectedCells = document.querySelectorAll('.schedule-cell.selected');
-    
-    console.log('Getting unavailable slots from', selectedCells.length, 'selected cells');
     
     selectedCells.forEach(cell => {
         const dayEnglish = cell.getAttribute('data-day');
@@ -64,7 +121,6 @@ function getUnavailableSlotsFromSelectedCells() {
         });
     });
     
-    console.log('Total unavailable slots:', unavailableSlots);
     return unavailableSlots;
 }
 
@@ -128,6 +184,13 @@ function updateURLWithCourses() {
         url.searchParams.delete('scheduleIndex');
     }
     
+    // Add pinned lessons parameter
+    if (pinnedLessons.size > 0) {
+        url.searchParams.set('pinned', Array.from(pinnedLessons).join(','));
+    } else {
+        url.searchParams.delete('pinned');
+    }
+    
     // Update URL without reloading the page
     window.history.replaceState({}, '', url);
 }
@@ -146,6 +209,14 @@ function loadCoursesFromURL() {
     const instructorIndices = instructorsParam 
         ? instructorsParam.split(',').map(idx => parseInt(idx, 10))
         : [];
+    
+    // Load pinned lessons from URL
+    const pinnedParam = url.searchParams.get('pinned');
+    if (pinnedParam) {
+        const pinnedCRNs = pinnedParam.split(',').filter(crn => crn.trim());
+        pinnedCRNs.forEach(crn => pinnedLessons.add(crn));
+        console.log('Loaded pinned lessons from URL:', Array.from(pinnedLessons));
+    }
     
     if (!window.ituHelper || !window.ituHelper.coursesDict) {
         console.error('ituHelper.coursesDict not available when loading from URL');
@@ -189,6 +260,11 @@ function loadCoursesFromURL() {
         unavailableSlots
     );
     
+    // Filter by pinned lessons if any
+    if (pinnedLessons.size > 0) {
+        filterSchedulesByPinnedLessons();
+    }
+    
     // Load schedule index from URL if present
     const scheduleIndexParam = url.searchParams.get('scheduleIndex');
     if (scheduleIndexParam) {
@@ -230,8 +306,6 @@ function initializeCoursePrefixMap() {
     const allCourseNames = Object.keys(ituHelper.coursesDict)
         .filter(courseName => isValidValue(courseName));
     
-    console.log('Total valid courses:', allCourseNames.length);
-    
     // Group courses by prefix (part before first space)
     coursePrefixMap = {};
     allCourseNames.forEach(courseName => {
@@ -247,7 +321,6 @@ function initializeCoursePrefixMap() {
     
     // Sort prefixes
     const prefixes = Object.keys(coursePrefixMap).sort();
-    console.log('Course prefixes found:', prefixes.length);
 }
 
 // Helper function to check if a course is valid for selected programmes
@@ -357,11 +430,14 @@ function onCourseChange(rowId) {
         selectedCourses.map(c => ({ course: c.course, instructor: c.instructor })),
         unavailableSlots
     );
+    
+    // Filter by pinned lessons if any
+    if (pinnedLessons.size > 0) {
+        filterSchedulesByPinnedLessons();
+    }
+    
     currentScheduleIndex = 0;
     
-    console.log(`Generated ${availableSchedules.length} valid schedule(s) with current selection.`);
-    console.log(availableSchedules);
-
     // Display the first schedule and update navigation
     displayCurrentSchedule();
 
@@ -452,11 +528,14 @@ function onInstructorChange(rowId) {
         selectedCourses.map(c => ({ course: c.course, instructor: c.instructor })),
         unavailableSlots
     );
+    
+    // Filter by pinned lessons if any
+    if (pinnedLessons.size > 0) {
+        filterSchedulesByPinnedLessons();
+    }
+    
     currentScheduleIndex = 0;
     
-    console.log(`Generated ${availableSchedules.length} valid schedule(s) with instructor filter.`);
-    console.log(availableSchedules);
-
     // Display the first schedule and update navigation
     displayCurrentSchedule();
 
@@ -470,6 +549,8 @@ function displayCurrentSchedule() {
     const prevButton = document.getElementById('prev-schedule-btn');
     const randomButton = document.getElementById('random-schedule-btn');
     const nextButton = document.getElementById('next-schedule-btn');
+    const warningElement = document.getElementById('schedule-warning');
+    const warningTextElement = document.getElementById('schedule-warning-text');
     
     if (availableSchedules.length === 0) {
         // No schedules available
@@ -478,9 +559,19 @@ function displayCurrentSchedule() {
         if (randomButton) randomButton.disabled = true;
         nextButton.disabled = true;
         
-        // Clear the display
-        const displayer = new ScheduleDisplayer(null);
-        displayer.clear();
+        // Hide warning when no schedules
+        if (warningElement) {
+            warningElement.style.display = 'none';
+        }
+        
+        // If there are pinned lessons, display them with reduced opacity
+        if (pinnedLessons.size > 0) {
+            displayPinnedLessonsOnly();
+        } else {
+            // Clear the display
+            const displayer = new ScheduleDisplayer(null);
+            displayer.clear();
+        }
         return;
     }
     
@@ -492,12 +583,56 @@ function displayCurrentSchedule() {
     if (randomButton) randomButton.disabled = availableSchedules.length <= 1;
     nextButton.disabled = currentScheduleIndex === availableSchedules.length - 1;
     
+    // Show warning if schedule count >= MAX_SCHEDULE_COMBINATIONS
+    if (warningElement && warningTextElement) {
+        if (availableSchedules.length >= MAX_SCHEDULE_COMBINATIONS) {
+            warningTextElement.textContent = `${MAX_SCHEDULE_COMBINATIONS} üzeri olası ders planı mevcut, filtreler girerek olasılıkları azaltmayı deneyin.`;
+            warningElement.style.display = 'flex';
+        } else {
+            warningElement.style.display = 'none';
+        }
+    }
+    
     // Display the current schedule
     const displayer = new ScheduleDisplayer(availableSchedules[currentScheduleIndex]);
     displayer.display();
     
     // Update URL with current schedule index
     updateURLWithCourses();
+}
+
+// Display only pinned lessons when no schedules are available
+function displayPinnedLessonsOnly() {
+    // Clear existing display
+    const displayer = new ScheduleDisplayer(null);
+    displayer.clear();
+    
+    // Find all pinned lessons from selected courses
+    const pinnedLessonObjects = [];
+    
+    selectedCourses.forEach(courseInfo => {
+        if (!courseInfo.course) return;
+        
+        courseInfo.course.lessons.forEach(lesson => {
+            if (pinnedLessons.has(lesson.crn)) {
+                pinnedLessonObjects.push({
+                    lesson: lesson,
+                    course: courseInfo.course,
+                    courseCode: courseInfo.course.courseCode,
+                    courseTitle: courseInfo.course.courseTitle
+                });
+            }
+        });
+    });
+    
+    // Create a dummy schedule with just pinned lessons
+    const dummySchedule = {
+        lessons: pinnedLessonObjects
+    };
+    
+    // Display with reduced opacity flag
+    const pinnedDisplayer = new ScheduleDisplayer(dummySchedule);
+    pinnedDisplayer.display(true); // true = show with reduced opacity
 }
 
 // Navigate to previous schedule
@@ -535,6 +670,29 @@ function addCourseRow() {
     const rowId = Date.now(); // Use timestamp as unique ID
     selectedCourses.push({ rowId, course: null, instructor: null });
     renderSelectedCourses();
+    
+    // Smooth scroll to the bottom to show the newly added course
+    const container = document.getElementById('selected-courses-list');
+    if (container) {
+        // Use a small timeout to ensure the DOM has updated
+        setTimeout(() => {
+            container.scrollTo({
+                top: container.scrollHeight,
+                behavior: 'smooth'
+            });
+            
+            // Add blinking animation to the newly added row
+            const newRow = document.getElementById(`course-row-${rowId}`);
+            if (newRow) {
+                newRow.classList.add('newly-added');
+                
+                // Remove the class after animation completes (0.8s * 2 = 1.6s)
+                setTimeout(() => {
+                    newRow.classList.remove('newly-added');
+                }, 1600);
+            }
+        }, 10);
+    }
 }
 
 // Remove course row from selected list
@@ -549,6 +707,12 @@ function removeCourseRow(rowId) {
             selectedCourses.filter(c => c.course !== null).map(c => ({ course: c.course, instructor: c.instructor })),
             unavailableSlots
         );
+        
+        // Filter by pinned lessons if any
+        if (pinnedLessons.size > 0) {
+            filterSchedulesByPinnedLessons();
+        }
+        
         currentScheduleIndex = 0;
         
         // Update URL after removing course
@@ -865,8 +1029,6 @@ function handleFirstProgrammeChange(event) {
         selectedProgrammeCodes = [];
     }
     
-    console.log('Selected programmes:', selectedProgrammeCodes);
-    
     // Update URL with new programmes
     updateURLWithCourses();
     
@@ -886,6 +1048,12 @@ function handleFirstProgrammeChange(event) {
             validCourses.map(c => ({ course: c.course, instructor: c.instructor })),
             unavailableSlots
         );
+        
+        // Filter by pinned lessons if any
+        if (pinnedLessons.size > 0) {
+            filterSchedulesByPinnedLessons();
+        }
+        
         currentScheduleIndex = 0;
         displayCurrentSchedule();
     }
@@ -902,8 +1070,6 @@ function handleSecondProgrammeChange(event) {
         selectedProgrammeCodes.push(selectedValue);
     }
     
-    console.log('Selected programmes:', selectedProgrammeCodes);
-    
     // Update URL with new programmes
     updateURLWithCourses();
     
@@ -923,13 +1089,19 @@ function handleSecondProgrammeChange(event) {
             validCourses.map(c => ({ course: c.course, instructor: c.instructor })),
             unavailableSlots
         );
+        
+        // Filter by pinned lessons if any
+        if (pinnedLessons.size > 0) {
+            filterSchedulesByPinnedLessons();
+        }
+        
         currentScheduleIndex = 0;
         displayCurrentSchedule();
     }
 }
 
 function initializeScheduleCreator() {
-    console.log('Schedule Creator: ituHelper data loaded');
+    console.log('ituHelper data loaded');
     
     const addRowButton = document.getElementById('add-course-row-btn');
     const prevButton = document.getElementById('prev-schedule-btn');
@@ -1202,24 +1374,24 @@ function initializeScheduleCellSelection() {
 function regenerateSchedulesWithUnavailableSlots() {
     // Only regenerate if there are selected courses
     if (selectedCourses.length === 0 || selectedCourses.every(c => c.course === null)) {
-        console.log('No courses selected, skipping schedule regeneration');
         return;
     }
     
     const unavailableSlots = getUnavailableSlotsFromSelectedCells();
     const validCourses = selectedCourses.filter(c => c.course !== null);
     
-    console.log('Regenerating schedules for', validCourses.length, 'courses with', unavailableSlots.length, 'unavailable slots');
-    
     availableSchedules = CourseSchedule.generateAllAvailableSchedules(
         validCourses.map(c => ({ course: c.course, instructor: c.instructor })),
         unavailableSlots
     );
     
+    // Filter by pinned lessons if any
+    if (pinnedLessons.size > 0) {
+        filterSchedulesByPinnedLessons();
+    }
+    
     // Reset to first schedule
     currentScheduleIndex = 0;
-    
-    console.log(`Regenerated ${availableSchedules.length} valid schedule(s) with unavailable slots.`);
     
     // Display the updated schedule
     displayCurrentSchedule();
@@ -1238,6 +1410,4 @@ function unselectAllCells(e) {
     
     // Regenerate schedules without unavailable slots
     regenerateSchedulesWithUnavailableSlots();
-    
-    console.log('All cells unselected');
 }
