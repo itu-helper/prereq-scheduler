@@ -470,6 +470,7 @@ body, html {
     height: calc(100% - 60px);
     overflow: auto;
     margin-top: 20px;
+    position: relative; /* For loading overlay positioning */
 }
 
 .schedule-grid {
@@ -858,3 +859,53 @@ body, html {
 .export-popup-content::-webkit-scrollbar-thumb:hover {
     background: rgba(201, 146, 8, 0.6);
 }
+
+/* Loading Overlay Styles */
+.schedule-loading-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 500;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(4px);
+}
+
+.schedule-loading-overlay.active {
+    display: flex;
+}
+
+.schedule-loading-content {
+    text-align: center;
+    color: white;
+}
+
+.schedule-loading-spinner {
+    width: 48px;
+    height: 48px;
+    border: 4px solid rgba(201, 146, 8, 0.2);
+    border-top-color: #c99208;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 16px;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.schedule-loading-text {
+    font-size: 1.1rem;
+    font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.schedule-loading-subtext {
+    font-size: 0.9rem;
+    opacity: 0.7;
+}
+

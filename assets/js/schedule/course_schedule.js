@@ -1,4 +1,4 @@
-MAX_SCHEDULE_COMBINATIONS = 100;
+MAX_SCHEDULE_COMBINATIONS = 500;
 
 class CourseSchedule {
     constructor(lessons, unavailableSlots = []) {
@@ -155,7 +155,7 @@ class CourseSchedule {
         return true;
     }
 
-    static generateAllAvailableSchedules(courses, unavailableSlots = []) {
+    static async generateAllAvailableSchedules(courses, unavailableSlots = [], cancellationToken = null) {
         const allSchedules = [];
         
         // Filter out courses that don't have lessons or have empty lessons array
@@ -169,8 +169,17 @@ class CourseSchedule {
             return allSchedules;
         }
         
-        // Recursive function to generate all combinations
-        function generateCombinations(courseIndex, currentSchedule) {
+        // Track iterations to periodically yield control to browser
+        let iterationCount = 0;
+        const YIELD_INTERVAL = 500; // Yield every 500 iterations
+        
+        // Async recursive function to generate all combinations
+        async function generateCombinations(courseIndex, currentSchedule) {
+            // Check if operation was cancelled
+            if (cancellationToken && cancellationToken.cancelled) {
+                return;
+            }
+            
             // Base case: if we've processed all courses, add the current schedule
             if (courseIndex === validCourses.length) {
                 const sch = new CourseSchedule([...currentSchedule], unavailableSlots);
@@ -204,6 +213,21 @@ class CourseSchedule {
             
             // For each lesson in the current course, recurse with it added to the schedule
             for (let i = 0; i < validLessons.length; i++) {
+                // Check cancellation before processing
+                if (cancellationToken && cancellationToken.cancelled) {
+                    return;
+                }
+                
+                // Yield control to browser periodically to prevent freezing
+                iterationCount++;
+                if (iterationCount % YIELD_INTERVAL === 0) {
+                    await new Promise(resolve => setTimeout(resolve, 0));
+                }
+                
+                if (allSchedules.length >= MAX_SCHEDULE_COMBINATIONS) {
+                    return;
+                }
+                
                 const lesson = validLessons[i];
                 // Wrap lesson with course information
                 const lessonWithCourse = {
@@ -213,13 +237,18 @@ class CourseSchedule {
                     courseTitle: currentCourse.courseTitle
                 };
                 currentSchedule.push(lessonWithCourse);
-                generateCombinations(courseIndex + 1, currentSchedule);
+                await generateCombinations(courseIndex + 1, currentSchedule);
                 currentSchedule.pop(); // Backtrack
             }
         }
         
         // Start the recursive generation
-        generateCombinations(0, []);
+        await generateCombinations(0, []);
+        
+        // Check if operation was cancelled before returning
+        if (cancellationToken && cancellationToken.cancelled) {
+            return []; // Return empty array if cancelled
+        }
         
         if (allSchedules.length >= MAX_SCHEDULE_COMBINATIONS) {
             return allSchedules.slice(0, MAX_SCHEDULE_COMBINATIONS);

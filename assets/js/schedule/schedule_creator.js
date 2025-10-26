@@ -11,38 +11,96 @@ let pinnedLessons = new Set(); // Set of pinned lesson CRNs
 // Make pinnedLessons globally accessible
 window.pinnedLessons = pinnedLessons;
 
+// Loading overlay management
+let loadingOverlayTimeout = null;
+let currentGenerationId = 0; // Track the current generation process
+
+function showLoadingOverlay() {
+    // Clear any existing timeout
+    if (loadingOverlayTimeout) {
+        clearTimeout(loadingOverlayTimeout);
+    }
+
+    // Show overlay after {delay}ms delay
+    const delay = 150;
+    loadingOverlayTimeout = setTimeout(() => {
+        const overlay = document.getElementById('schedule-loading-overlay');
+        if (overlay) {
+            overlay.classList.add('active');
+        }
+    }, delay);
+}
+
+function hideLoadingOverlay() {
+    // Clear timeout if it hasn't fired yet
+    if (loadingOverlayTimeout) {
+        clearTimeout(loadingOverlayTimeout);
+        loadingOverlayTimeout = null;
+    }
+    
+    // Hide overlay immediately
+    const overlay = document.getElementById('schedule-loading-overlay');
+    if (overlay) {
+        overlay.classList.remove('active');
+    }
+}
+
 const getCourseDisplayText = (course) => course.courseCode + " (" + course.courseTitle + ")";
 
 // Pin/Unpin lesson functionality
-window.togglePinLesson = function(crn) {
+window.togglePinLesson = async function(crn) {
     if (pinnedLessons.has(crn)) {
         pinnedLessons.delete(crn);
     } else {
         pinnedLessons.add(crn);
     }
     
-    // Regenerate all schedules first
-    const unavailableSlots = getUnavailableSlotsFromSelectedCells();
-    const validCourses = selectedCourses.filter(c => c.course !== null);
+    // Cancel any ongoing generation and start a new one
+    currentGenerationId++;
+    const myGenerationId = currentGenerationId;
+    const cancellationToken = { cancelled: false };
     
-    availableSchedules = CourseSchedule.generateAllAvailableSchedules(
-        validCourses.map(c => ({ course: c.course, instructor: c.instructor })),
-        unavailableSlots
-    );
+    // Show loading overlay
+    showLoadingOverlay();
     
-    // Filter schedules based on pinned lessons
-    if (pinnedLessons.size > 0) {
-        filterSchedulesByPinnedLessons();
+    try {
+        // Regenerate all schedules first
+        const unavailableSlots = getUnavailableSlotsFromSelectedCells();
+        const validCourses = selectedCourses.filter(c => c.course !== null);
+        
+        const schedules = await CourseSchedule.generateAllAvailableSchedules(
+            validCourses.map(c => ({ course: c.course, instructor: c.instructor })),
+            unavailableSlots,
+            cancellationToken
+        );
+        
+        // Check if this generation was superseded
+        if (myGenerationId !== currentGenerationId) {
+            console.log('Schedule generation was superseded, discarding results');
+            return;
+        }
+        
+        availableSchedules = schedules;
+        
+        // Filter schedules based on pinned lessons
+        if (pinnedLessons.size > 0) {
+            filterSchedulesByPinnedLessons();
+        }
+        
+        // Reset to first schedule
+        currentScheduleIndex = 0;
+        
+        // Update URL with pinned lessons
+        updateURLWithCourses();
+        
+        // Redisplay to update pin icon appearance
+        displayCurrentSchedule();
+    } finally {
+        // Only hide overlay if this is still the current generation
+        if (myGenerationId === currentGenerationId) {
+            hideLoadingOverlay();
+        }
     }
-    
-    // Reset to first schedule
-    currentScheduleIndex = 0;
-    
-    // Update URL with pinned lessons
-    updateURLWithCourses();
-    
-    // Redisplay to update pin icon appearance
-    displayCurrentSchedule();
 };
 
 // Filter available schedules to only show those containing all pinned lessons
@@ -196,7 +254,7 @@ function updateURLWithCourses() {
 }
 
 // Load courses from URL query parameters
-function loadCoursesFromURL() {
+async function loadCoursesFromURL() {
     const url = new URL(window.location);
     const coursesParam = url.searchParams.get('courses');
     
@@ -253,32 +311,56 @@ function loadCoursesFromURL() {
         }
     });
     
-    // Generate schedules for the loaded courses
-    const unavailableSlots = getUnavailableSlotsFromSelectedCells();
-    availableSchedules = CourseSchedule.generateAllAvailableSchedules(
-        selectedCourses.filter(c => c.course !== null).map(c => ({ course: c.course, instructor: c.instructor })),
-        unavailableSlots
-    );
+    // Cancel any ongoing generation and start a new one
+    currentGenerationId++;
+    const myGenerationId = currentGenerationId;
+    const cancellationToken = { cancelled: false };
     
-    // Filter by pinned lessons if any
-    if (pinnedLessons.size > 0) {
-        filterSchedulesByPinnedLessons();
-    }
+    // Show loading overlay
+    showLoadingOverlay();
     
-    // Load schedule index from URL if present
-    const scheduleIndexParam = url.searchParams.get('scheduleIndex');
-    if (scheduleIndexParam) {
-        const index = parseInt(scheduleIndexParam, 10);
-        if (!isNaN(index) && index >= 0 && index < availableSchedules.length) {
-            currentScheduleIndex = index;
+    try {
+        // Generate schedules for the loaded courses
+        const unavailableSlots = getUnavailableSlotsFromSelectedCells();
+        const schedules = await CourseSchedule.generateAllAvailableSchedules(
+            selectedCourses.filter(c => c.course !== null).map(c => ({ course: c.course, instructor: c.instructor })),
+            unavailableSlots,
+            cancellationToken
+        );
+        
+        // Check if this generation was superseded
+        if (myGenerationId !== currentGenerationId) {
+            console.log('Schedule generation was superseded, discarding results');
+            return;
+        }
+        
+        availableSchedules = schedules;
+        
+        // Filter by pinned lessons if any
+        if (pinnedLessons.size > 0) {
+            filterSchedulesByPinnedLessons();
+        }
+        
+        // Load schedule index from URL if present
+        const scheduleIndexParam = url.searchParams.get('scheduleIndex');
+        if (scheduleIndexParam) {
+            const index = parseInt(scheduleIndexParam, 10);
+            if (!isNaN(index) && index >= 0 && index < availableSchedules.length) {
+                currentScheduleIndex = index;
+            } else {
+                currentScheduleIndex = 0;
+            }
         } else {
             currentScheduleIndex = 0;
         }
-    } else {
-        currentScheduleIndex = 0;
+        
+        renderSelectedCourses();
+    } finally {
+        // Only hide overlay if this is still the current generation
+        if (myGenerationId === currentGenerationId) {
+            hideLoadingOverlay();
+        }
     }
-    
-    renderSelectedCourses();
 }
 
 // Helper function to check if value is valid
@@ -393,7 +475,7 @@ function onPrefixChange(rowId) {
 }
 
 // Handle course selection change
-function onCourseChange(rowId) {
+async function onCourseChange(rowId) {
     const prefixDropdown = document.querySelector(`#course-row-${rowId} .course-prefix-dropdown`);
     const courseDropdown = document.querySelector(`#course-row-${rowId} .course-code-dropdown`);
     const instructorDropdown = document.querySelector(`#course-row-${rowId} .instructor-dropdown`);
@@ -424,25 +506,49 @@ function onCourseChange(rowId) {
         selectedCourses.push({ rowId, course, instructor: null });
     }
 
-    // Generate all available schedules
-    const unavailableSlots = getUnavailableSlotsFromSelectedCells();
-    availableSchedules = CourseSchedule.generateAllAvailableSchedules(
-        selectedCourses.map(c => ({ course: c.course, instructor: c.instructor })),
-        unavailableSlots
-    );
+    // Cancel any ongoing generation and start a new one
+    currentGenerationId++;
+    const myGenerationId = currentGenerationId;
+    const cancellationToken = { cancelled: false };
     
-    // Filter by pinned lessons if any
-    if (pinnedLessons.size > 0) {
-        filterSchedulesByPinnedLessons();
-    }
+    // Show loading overlay
+    showLoadingOverlay();
     
-    currentScheduleIndex = 0;
-    
-    // Display the first schedule and update navigation
-    displayCurrentSchedule();
+    try {
+        // Generate all available schedules
+        const unavailableSlots = getUnavailableSlotsFromSelectedCells();
+        const schedules = await CourseSchedule.generateAllAvailableSchedules(
+            selectedCourses.map(c => ({ course: c.course, instructor: c.instructor })),
+            unavailableSlots,
+            cancellationToken
+        );
+        
+        // Check if this generation was superseded
+        if (myGenerationId !== currentGenerationId) {
+            console.log('Schedule generation was superseded, discarding results');
+            return;
+        }
+        
+        availableSchedules = schedules;
+        
+        // Filter by pinned lessons if any
+        if (pinnedLessons.size > 0) {
+            filterSchedulesByPinnedLessons();
+        }
+        
+        currentScheduleIndex = 0;
+        
+        // Display the first schedule and update navigation
+        displayCurrentSchedule();
 
-    // Update URL with new course selection
-    updateURLWithCourses();
+        // Update URL with new course selection
+        updateURLWithCourses();
+    } finally {
+        // Only hide overlay if this is still the current generation
+        if (myGenerationId === currentGenerationId) {
+            hideLoadingOverlay();
+        }
+    }
 }
 
 // Helper function to check if a lesson is valid for selected programmes
@@ -508,7 +614,7 @@ function populateInstructorDropdown(course, instructorDropdown) {
 }
 
 // Handle instructor selection change
-function onInstructorChange(rowId) {
+async function onInstructorChange(rowId) {
     const instructorDropdown = document.querySelector(`#course-row-${rowId} .instructor-dropdown`);
     const selectedInstructor = instructorDropdown.value || null;
     
@@ -522,25 +628,49 @@ function onInstructorChange(rowId) {
         selectedCourses[existingIndex].instructor = selectedInstructor;
     }
 
-    // Generate all available schedules with instructor filter
-    const unavailableSlots = getUnavailableSlotsFromSelectedCells();
-    availableSchedules = CourseSchedule.generateAllAvailableSchedules(
-        selectedCourses.map(c => ({ course: c.course, instructor: c.instructor })),
-        unavailableSlots
-    );
+    // Cancel any ongoing generation and start a new one
+    currentGenerationId++;
+    const myGenerationId = currentGenerationId;
+    const cancellationToken = { cancelled: false };
     
-    // Filter by pinned lessons if any
-    if (pinnedLessons.size > 0) {
-        filterSchedulesByPinnedLessons();
-    }
+    // Show loading overlay
+    showLoadingOverlay();
     
-    currentScheduleIndex = 0;
-    
-    // Display the first schedule and update navigation
-    displayCurrentSchedule();
+    try {
+        // Generate all available schedules with instructor filter
+        const unavailableSlots = getUnavailableSlotsFromSelectedCells();
+        const schedules = await CourseSchedule.generateAllAvailableSchedules(
+            selectedCourses.map(c => ({ course: c.course, instructor: c.instructor })),
+            unavailableSlots,
+            cancellationToken
+        );
+        
+        // Check if this generation was superseded
+        if (myGenerationId !== currentGenerationId) {
+            console.log('Schedule generation was superseded, discarding results');
+            return;
+        }
+        
+        availableSchedules = schedules;
+        
+        // Filter by pinned lessons if any
+        if (pinnedLessons.size > 0) {
+            filterSchedulesByPinnedLessons();
+        }
+        
+        currentScheduleIndex = 0;
+        
+        // Display the first schedule and update navigation
+        displayCurrentSchedule();
 
-    // Update URL with new selection
-    updateURLWithCourses();
+        // Update URL with new selection
+        updateURLWithCourses();
+    } finally {
+        // Only hide overlay if this is still the current generation
+        if (myGenerationId === currentGenerationId) {
+            hideLoadingOverlay();
+        }
+    }
 }
 
 // Display the current schedule and update navigation UI
@@ -1044,18 +1174,44 @@ function handleFirstProgrammeChange(event) {
         });
         
         const unavailableSlots = getUnavailableSlotsFromSelectedCells();
-        availableSchedules = CourseSchedule.generateAllAvailableSchedules(
-            validCourses.map(c => ({ course: c.course, instructor: c.instructor })),
-            unavailableSlots
-        );
         
-        // Filter by pinned lessons if any
-        if (pinnedLessons.size > 0) {
-            filterSchedulesByPinnedLessons();
-        }
+        // Cancel any ongoing generation and start a new one
+        currentGenerationId++;
+        const myGenerationId = currentGenerationId;
+        const cancellationToken = { cancelled: false };
         
-        currentScheduleIndex = 0;
-        displayCurrentSchedule();
+        // Use async IIFE to handle the promise
+        (async () => {
+            showLoadingOverlay();
+            try {
+                const schedules = await CourseSchedule.generateAllAvailableSchedules(
+                    validCourses.map(c => ({ course: c.course, instructor: c.instructor })),
+                    unavailableSlots,
+                    cancellationToken
+                );
+                
+                // Check if this generation was superseded
+                if (myGenerationId !== currentGenerationId) {
+                    console.log('Schedule generation was superseded, discarding results');
+                    return;
+                }
+                
+                availableSchedules = schedules;
+                
+                // Filter by pinned lessons if any
+                if (pinnedLessons.size > 0) {
+                    filterSchedulesByPinnedLessons();
+                }
+                
+                currentScheduleIndex = 0;
+                displayCurrentSchedule();
+            } finally {
+                // Only hide overlay if this is still the current generation
+                if (myGenerationId === currentGenerationId) {
+                    hideLoadingOverlay();
+                }
+            }
+        })();
     }
 }
 
@@ -1085,22 +1241,48 @@ function handleSecondProgrammeChange(event) {
         });
         
         const unavailableSlots = getUnavailableSlotsFromSelectedCells();
-        availableSchedules = CourseSchedule.generateAllAvailableSchedules(
-            validCourses.map(c => ({ course: c.course, instructor: c.instructor })),
-            unavailableSlots
-        );
         
-        // Filter by pinned lessons if any
-        if (pinnedLessons.size > 0) {
-            filterSchedulesByPinnedLessons();
-        }
+        // Cancel any ongoing generation and start a new one
+        currentGenerationId++;
+        const myGenerationId = currentGenerationId;
+        const cancellationToken = { cancelled: false };
         
-        currentScheduleIndex = 0;
-        displayCurrentSchedule();
+        // Use async IIFE to handle the promise
+        (async () => {
+            showLoadingOverlay();
+            try {
+                const schedules = await CourseSchedule.generateAllAvailableSchedules(
+                    validCourses.map(c => ({ course: c.course, instructor: c.instructor })),
+                    unavailableSlots,
+                    cancellationToken
+                );
+                
+                // Check if this generation was superseded
+                if (myGenerationId !== currentGenerationId) {
+                    console.log('Schedule generation was superseded, discarding results');
+                    return;
+                }
+                
+                availableSchedules = schedules;
+                
+                // Filter by pinned lessons if any
+                if (pinnedLessons.size > 0) {
+                    filterSchedulesByPinnedLessons();
+                }
+                
+                currentScheduleIndex = 0;
+                displayCurrentSchedule();
+            } finally {
+                // Only hide overlay if this is still the current generation
+                if (myGenerationId === currentGenerationId) {
+                    hideLoadingOverlay();
+                }
+            }
+        })();
     }
 }
 
-function initializeScheduleCreator() {
+async function initializeScheduleCreator() {
     console.log('ituHelper data loaded');
     
     const addRowButton = document.getElementById('add-course-row-btn');
@@ -1144,7 +1326,7 @@ function initializeScheduleCreator() {
     initializeProgrammeSelection();
     
     // Load courses from URL if present
-    loadCoursesFromURL();
+    await loadCoursesFromURL();
     
     renderSelectedCourses();
     
@@ -1380,7 +1562,7 @@ function initializeScheduleCellSelection() {
 }
 
 // Function to regenerate schedules when unavailable slots change
-function regenerateSchedulesWithUnavailableSlots() {
+async function regenerateSchedulesWithUnavailableSlots() {
     // Only regenerate if there are selected courses
     if (selectedCourses.length === 0 || selectedCourses.every(c => c.course === null)) {
         return;
@@ -1389,21 +1571,45 @@ function regenerateSchedulesWithUnavailableSlots() {
     const unavailableSlots = getUnavailableSlotsFromSelectedCells();
     const validCourses = selectedCourses.filter(c => c.course !== null);
     
-    availableSchedules = CourseSchedule.generateAllAvailableSchedules(
-        validCourses.map(c => ({ course: c.course, instructor: c.instructor })),
-        unavailableSlots
-    );
+    // Cancel any ongoing generation and start a new one
+    currentGenerationId++;
+    const myGenerationId = currentGenerationId;
+    const cancellationToken = { cancelled: false };
     
-    // Filter by pinned lessons if any
-    if (pinnedLessons.size > 0) {
-        filterSchedulesByPinnedLessons();
+    // Show loading overlay
+    showLoadingOverlay();
+    
+    try {
+        const schedules = await CourseSchedule.generateAllAvailableSchedules(
+            validCourses.map(c => ({ course: c.course, instructor: c.instructor })),
+            unavailableSlots,
+            cancellationToken
+        );
+        
+        // Check if this generation was superseded
+        if (myGenerationId !== currentGenerationId) {
+            console.log('Schedule generation was superseded, discarding results');
+            return;
+        }
+        
+        availableSchedules = schedules;
+        
+        // Filter by pinned lessons if any
+        if (pinnedLessons.size > 0) {
+            filterSchedulesByPinnedLessons();
+        }
+        
+        // Reset to first schedule
+        currentScheduleIndex = 0;
+        
+        // Display the updated schedule
+        displayCurrentSchedule();
+    } finally {
+        // Only hide overlay if this is still the current generation
+        if (myGenerationId === currentGenerationId) {
+            hideLoadingOverlay();
+        }
     }
-    
-    // Reset to first schedule
-    currentScheduleIndex = 0;
-    
-    // Display the updated schedule
-    displayCurrentSchedule();
 }
 
 // Function to unselect all cells
