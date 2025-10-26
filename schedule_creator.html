@@ -64,11 +64,11 @@
 
             <div class="right-section">
                 <div class="schedule-header">
-                    <h2>Ders Planı</h2>
-
-                    <div id="schedule-warning" class="schedule-warning" style="display: none;">
-                        <i class="fa-solid fa-triangle-exclamation"></i>
-                        <span id="schedule-warning-text"></span>
+                    <div class="schedule-title-container">
+                        <h2>Ders Planı</h2>
+                        <button id="export-schedule-btn" class="export-schedule-btn" title="Planı dışa aktar">
+                            <i class="fa-solid fa-file-export"></i>
+                        </button>
                     </div>
 
                     <div class="schedule-navigation">
@@ -84,12 +84,18 @@
                         </button>
                     </div>
                 </div>
+                
+                <div id="schedule-warning" class="schedule-warning" style="display: none;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span id="schedule-warning-text"></span>
+                </div>
+                
                 <div class="schedule-container">
                     <div class="schedule-grid">
                         <!-- Time column -->
                         <div class="time-column">
                             <div class="time-header">
-                                <button id="unselect-all-btn" class="unselect-all-btn" title="Tüm Seçimleri Kaldır">
+                                <button id="unselect-all-btn" class="unselect-all-btn" title="Tüm Slotları Aç">
                                     <i class="fa-solid fa-rotate"></i>
                                 </button>
                             </div>
@@ -272,6 +278,33 @@
 
         <!-- BG -->
         <div id="bg"></div>
+
+        <!-- Export Popup Modal -->
+        <div id="export-popup" class="export-popup-overlay" style="display: none;">
+            <div class="export-popup">
+                <div class="export-popup-header">
+                    <h3>Ders Planını Dışa Aktar</h3>
+                    <button class="export-popup-close" id="export-popup-close">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <div class="export-popup-content">
+                    <div class="export-crn-list" id="export-crn-list">
+                        <!-- CRNs will be added here dynamically -->
+                    </div>
+                    <div class="export-actions">
+                        <button class="export-action-btn" id="copy-crns-btn">
+                            <i class="fa-solid fa-copy"></i>
+                            <span>CRN'leri kopyala</span>
+                        </button>
+                        <button class="export-action-btn" id="copy-link-btn">
+                            <i class="fa-solid fa-link"></i>
+                            <span>Ders planı bağlantısı kopyala</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Scripts -->
         <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
