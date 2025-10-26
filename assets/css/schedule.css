@@ -631,6 +631,46 @@ body, html {
     pointer-events: auto; /* Block clicks from reaching cells behind */
 }
 
+/* Enhanced tooltip styling for schedule lessons */
+.schedule-lesson[title] {
+    position: relative;
+}
+
+.schedule-lesson[title]:hover::after {
+    content: attr(title);
+    position: absolute;
+    left: 50%;
+    top: -8px;
+    transform: translate(-50%, -100%);
+    background: rgba(0, 0, 0, 0.95);
+    color: white;
+    padding: 12px 16px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    min-width: 220px;
+    max-width: 350px;
+    z-index: 1000;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(201, 146, 8, 0.3);
+    pointer-events: none;
+    font-weight: normal;
+    text-align: left;
+    word-wrap: break-word;
+}
+
+.schedule-lesson[title]:hover::before {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: -8px;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(0, 0, 0, 0.95);
+    z-index: 1000;
+    pointer-events: none;
+}
+
 .schedule-lesson * {
     color: white !important;
 }

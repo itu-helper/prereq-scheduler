@@ -21,18 +21,14 @@ class ScheduleDisplayer {
             'Thu': 'thursday',
             'Fri': 'friday'
         };
-        this.colors = [
-            '#7c3636ff', '#266561ff', '#6d243bff', '#86533fff', '#1c7859ff',
-            '#64592dff', '#5b4664ff', '#37515eff', '#8f6c52ff', '#2f794eff'
-        ];
     }
 
     /**
      * Convert time string (HH:MM) to minutes from midnight
      */
     _timeToMinutes(timeStr) {
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        return hours * 60 + minutes;
+        // Delegate to TimeSlotManager utility
+        return TimeSlotManager.timeToMinutes(timeStr);
     }
 
     /**
@@ -40,37 +36,24 @@ class ScheduleDisplayer {
      * Schedule starts at 08:00 with 30-minute intervals
      */
     _getRowIndexForTime(timeStr) {
-        const minutes = this._timeToMinutes(timeStr);
-        const startMinutes = this._timeToMinutes('08:00');
-        const rowIndex = Math.floor((minutes - startMinutes) / 30);
-        return rowIndex;
+        // Delegate to TimeSlotManager utility
+        return TimeSlotManager.getRowIndexForTime(timeStr);
     }
 
     /**
      * Calculate how many 30-minute slots a lesson spans
      */
     _calculateSlotSpan(startTime, endTime) {
-        const startMinutes = this._timeToMinutes(startTime);
-        const endMinutes = this._timeToMinutes(endTime);
-        return Math.ceil((endMinutes - startMinutes) / 30);
+        // Delegate to TimeSlotManager utility
+        return TimeSlotManager.calculateSlotSpan(startTime, endTime);
     }
 
     /**
      * Get a color for a specific course code
      */
     _getColorForCourse(courseCode) {
-        // Handle undefined or null courseCode
-        if (!courseCode || typeof courseCode !== 'string') {
-            console.warn('Invalid courseCode provided to _getColorForCourse:', courseCode);
-            return this.colors[0]; // Return first color as fallback
-        }
-        
-        // Use a simple hash of the course code to consistently assign colors
-        let hash = 0;
-        for (let i = 2; i < courseCode.length; i++) {
-            hash = courseCode.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        return this.colors[Math.abs(hash) % this.colors.length];
+        // Delegate to ScheduleStyle utility
+        return ScheduleStyle.getColorForCourse(courseCode);
     }
 
     /**
@@ -136,24 +119,11 @@ class ScheduleDisplayer {
         // Calculate height: each slot is 30px + 1px gap
         const height = (span * 31) - 1; // 30px height + 1px gap between cells, minus 1 for the last gap
         
-        // Set styles
-        lessonDiv.style.backgroundColor = courseColor;
-        lessonDiv.style.height = `${height}px`;
-        lessonDiv.style.padding = '8px';
-        lessonDiv.style.borderRadius = '4px';
-        lessonDiv.style.fontSize = '0.85rem';
-        lessonDiv.style.lineHeight = '1.3';
-        lessonDiv.style.overflow = 'hidden';
-        lessonDiv.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
-        lessonDiv.style.cursor = 'default';
-        lessonDiv.style.transition = 'transform 0.2s, box-shadow 0.2s';
-        lessonDiv.style.position = 'relative';
-        lessonDiv.style.pointerEvents = 'auto'; // Block clicks from reaching cells
+        // Apply base lesson card styles using ScheduleStyle
+        ScheduleStyle.applyLessonCardStyles(lessonDiv, courseColor, height, ghostStyle);
         
-        // Apply ghost style if requested (for conflict situations)
+        // Add 'conflicted-lesson' class if ghost style is applied
         if (ghostStyle) {
-            lessonDiv.style.backgroundColor = '#272727';
-            lessonDiv.style.border = '2px dashed #959595';
             lessonDiv.classList.add('conflicted-lesson');
         }
         
@@ -164,13 +134,11 @@ class ScheduleDisplayer {
         
         // Add hover effect
         lessonDiv.addEventListener('mouseenter', () => {
-            lessonDiv.style.transform = 'scale(1.02)';
-            lessonDiv.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.3)';
+            ScheduleStyle.applyHoverEffect(lessonDiv);
         });
         
         lessonDiv.addEventListener('mouseleave', () => {
-            lessonDiv.style.transform = 'scale(1)';
-            lessonDiv.style.boxShadow = '0 2px 4px rgba(0, 0, 0, 0.2)';
+            ScheduleStyle.removeHoverEffect(lessonDiv);
         });
         
         // Create pin icon
@@ -179,15 +147,9 @@ class ScheduleDisplayer {
         const isPinned = window.pinnedLessons && window.pinnedLessons.has(lessonCRN);
         pinIcon.className = isPinned ? 'fa-solid fa-thumbtack lesson-pin-icon pinned' : 'fa-solid fa-thumbtack lesson-pin-icon';
         pinIcon.setAttribute('data-crn', lessonCRN);
-        pinIcon.style.position = 'absolute';
-        pinIcon.style.top = '4px';
-        pinIcon.style.right = '4px';
-        pinIcon.style.cursor = 'pointer';
-        pinIcon.style.fontSize = '0.9rem';
-        pinIcon.style.zIndex = '20';
-        pinIcon.style.transition = 'color 0.2s, transform 0.2s';
-        pinIcon.style.padding = '4px';
-        pinIcon.style.pointerEvents = 'auto'; // Enable clicks on pin icon
+        
+        // Apply pin icon styles using ScheduleStyle
+        ScheduleStyle.applyPinIconStyles(pinIcon, isPinned);
         
         pinIcon.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -213,23 +175,16 @@ class ScheduleDisplayer {
         courseCode.textContent = courseCodeTitle + ": " + courseNameTitle;
         
         const timeInfo = document.createElement('div');
-        timeInfo.style.fontSize = '0.7rem';
-        timeInfo.style.opacity = '0.9';
+        ScheduleStyle.applyInfoTextStyles(timeInfo, false);
         timeInfo.textContent = `${schedule.startTime} - ${schedule.endTime}`;
         
         const crn = document.createElement('div');
-        crn.style.fontSize = '0.7rem';
-        crn.style.opacity = '0.9';
-        crn.style.marginTop = '2px';
+        ScheduleStyle.applyInfoTextStyles(crn);
         crn.innerHTML = `CRN: ${schedule.lesson.crn || 'N/A'}`;
         
         const instructor = document.createElement('div');
-        instructor.style.fontSize = '0.7rem';
-        instructor.style.opacity = '0.9';
-        instructor.style.marginTop = '2px';
-        instructor.style.whiteSpace = 'nowrap';
-        instructor.style.overflow = 'hidden';
-        instructor.style.textOverflow = 'ellipsis';
+        ScheduleStyle.applyInfoTextStyles(instructor);
+        ScheduleStyle.applyTextEllipsis(instructor);
         instructor.textContent = schedule.lesson.instructor || 'TBA';
         
         lessonDiv.appendChild(pinIcon);
@@ -237,6 +192,17 @@ class ScheduleDisplayer {
         lessonDiv.appendChild(timeInfo);
         lessonDiv.appendChild(crn);
         lessonDiv.appendChild(instructor);
+        
+        // Add tooltip with full course information
+        const tooltipText = [
+            `${courseCodeTitle}: ${courseNameTitle}`,
+            `${schedule.startTime} - ${schedule.endTime}`,
+            `CRN: ${schedule.lesson.crn || 'N/A'}`,
+            `Öğretim Görevlisi: ${schedule.lesson.instructor || 'TBA'}`,
+            schedule.lesson.building ? `Bina: ${schedule.lesson.building}` : null
+        ].filter(Boolean).join('\n');
+        
+        lessonDiv.setAttribute('title', tooltipText);
         
         return lessonDiv;
     }

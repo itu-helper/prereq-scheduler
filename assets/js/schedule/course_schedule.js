@@ -7,9 +7,8 @@ class CourseSchedule {
     }
 
     _timeTextToFloat(timeText) {
-        // Take in HH:MM -> float(HH) + 0.MM
-
-        return parseFloat(timeText.split(":")[1]) * 0.01 + parseFloat(timeText.split(":")[0]);
+        // Delegate to TimeSlotManager utility
+        return TimeSlotManager.timeTextToFloat(timeText);
     }
 
     _doLessonsOverlap(l1, l2)
@@ -127,32 +126,12 @@ class CourseSchedule {
     }
 
     static _isValidLesson(lesson, unavailableSlots = []) {
-        // Check if lesson has valid day and time values
-        if (!lesson || !lesson.day || !lesson.time) {
-            return false;
-        }
-        
-        const day = lesson.day.trim();
-        const time = lesson.time.trim();
-        
-        // Check if day or time is just a dash or empty
-        if (day === '-' || day === '' || time === '-' || time === '') {
-            return false;
-        }
-
-        // Check if lesson has major restrictions
-        if (lesson.majors && lesson.majors.length > 0) {
-            // If no programmes are selected, skip this check
-            if (!selectedProgrammeCodes || selectedProgrammeCodes.length === 0) {
-                return true;
-            }
-            
-            if (!selectedProgrammeCodes.some(p => lesson.majors.map(m => m.code).includes(p))) {
-                return false;
-            }
-        }
-        
-        return true;
+        // Delegate to ScheduleValidator utility
+        // Note: selectedProgrammeCodes is a global variable from the app
+        return ScheduleValidator.isValidLesson(
+            lesson, 
+            typeof selectedProgrammeCodes !== 'undefined' ? selectedProgrammeCodes : []
+        );
     }
 
     static async generateAllAvailableSchedules(courses, unavailableSlots = [], cancellationToken = null) {

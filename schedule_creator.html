@@ -327,10 +327,30 @@
         <script src="assets/js/website_template/main.js"></script>
 
         <!-- Schedule Creator Scripts -->
-        <script src="assets/js/schedule/schedule_onload.js"></script>
-        <script src="assets/js/schedule/schedule_creator.js"></script>
+        <!-- Utilities (must be loaded first) -->
+        <script src="assets/js/schedule/utils/schedule_style.js"></script>
+        <script src="assets/js/schedule/utils/time_slot_manager.js"></script>
+        <script src="assets/js/schedule/utils/schedule_validator.js"></script>
+        
+        <!-- Core Classes -->
         <script src="assets/js/schedule/course_schedule.js"></script>
         <script src="assets/js/schedule/schedule_displayer.js"></script>
+        
+        <!-- Managers -->
+        <script src="assets/js/schedule/managers/course_selection_manager.js"></script>
+        <script src="assets/js/schedule/managers/schedule_state_manager.js"></script>
+        <script src="assets/js/schedule/managers/url_state_manager.js"></script>
+        <script src="assets/js/schedule/managers/programme_filter_manager.js"></script>
+        
+        <!-- UI Controllers -->
+        <script src="assets/js/schedule/ui/loading_overlay_manager.js"></script>
+        <script src="assets/js/schedule/ui/schedule_grid_controller.js"></script>
+        <script src="assets/js/schedule/ui/export_popup_manager.js"></script>
+        <script src="assets/js/schedule/ui/course_row_renderer.js"></script>
+        
+        <!-- Main App -->
+        <script src="assets/js/schedule/schedule_creator.js"></script>
+        <script src="assets/js/schedule/schedule_onload.js">
     </body>
 
 </html>
