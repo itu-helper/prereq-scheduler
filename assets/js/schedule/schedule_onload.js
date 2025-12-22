@@ -9,4 +9,14 @@ window.addEventListener('load', function () {
         await scheduleApp.initialize();
     };
     ituHelper.fetchData();
+
+    // Mobile toggle functionality
+    const mobileToggleBtn = document.getElementById('mobile-toggle-btn');
+    const leftSection = document.querySelector('.left-section');
+    
+    if (mobileToggleBtn && leftSection) {
+        mobileToggleBtn.addEventListener('click', function() {
+            leftSection.classList.toggle('collapsed');
+        });
+    }
 });

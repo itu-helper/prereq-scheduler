@@ -27,6 +27,10 @@ class ScheduleStateManager {
         // Cancel any ongoing generation
         this.cancelCurrentGeneration();
         
+        // Store current schedule's CRNs for later lookup
+        const previousScheduleCRNs = this.getCurrentScheduleCRNs();
+        const previousScheduleCount = this.availableSchedules.length;
+        
         // Start new generation
         this.currentGenerationId++;
         const myGenerationId = this.currentGenerationId;
@@ -52,8 +56,20 @@ class ScheduleStateManager {
                 this.filterByPinnedLessons();
             }
             
-            // Reset to first schedule
-            this.currentScheduleIndex = 0;
+            // Try to preserve the previous schedule if combinations increased
+            if (previousScheduleCRNs && this.availableSchedules.length >= previousScheduleCount) {
+                const matchingIndex = this.findScheduleIndexByCRNs(previousScheduleCRNs);
+                if (matchingIndex !== -1) {
+                    this.currentScheduleIndex = matchingIndex;
+                    console.log('Preserved previous schedule at index:', matchingIndex);
+                } else {
+                    // Previous schedule not available, reset to first
+                    this.currentScheduleIndex = 0;
+                }
+            } else {
+                // Reset to first schedule if combinations decreased or no previous schedule
+                this.currentScheduleIndex = 0;
+            }
             
             return this.availableSchedules;
         } catch (error) {
@@ -205,6 +221,56 @@ class ScheduleStateManager {
      */
     getCurrentIndex() {
         return this.currentScheduleIndex;
+    }
+
+    /**
+     * Get CRNs from the current schedule
+     * 
+     * @returns {Set|null} Set of CRNs from current schedule, or null if no schedule
+     */
+    getCurrentScheduleCRNs() {
+        const currentSchedule = this.getCurrentSchedule();
+        if (!currentSchedule || !currentSchedule.lessons) {
+            return null;
+        }
+        return new Set(currentSchedule.lessons.map(l => l.lesson.crn));
+    }
+
+    /**
+     * Find schedule index by matching CRNs
+     * 
+     * @param {Set} targetCRNs - Set of CRNs to match
+     * @returns {number} Index of matching schedule, or -1 if not found
+     */
+    findScheduleIndexByCRNs(targetCRNs) {
+        if (!targetCRNs || targetCRNs.size === 0) {
+            return -1;
+        }
+
+        for (let i = 0; i < this.availableSchedules.length; i++) {
+            const schedule = this.availableSchedules[i];
+            if (!schedule || !schedule.lessons) {
+                continue;
+            }
+
+            const scheduleCRNs = new Set(schedule.lessons.map(l => l.lesson.crn));
+            
+            // Check if CRN sets are equal
+            if (scheduleCRNs.size === targetCRNs.size) {
+                let isMatch = true;
+                for (const crn of targetCRNs) {
+                    if (!scheduleCRNs.has(crn)) {
+                        isMatch = false;
+                        break;
+                    }
+                }
+                if (isMatch) {
+                    return i;
+                }
+            }
+        }
+
+        return -1;
     }
 
     /**
