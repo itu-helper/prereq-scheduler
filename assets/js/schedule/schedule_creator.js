@@ -189,6 +189,9 @@ class ScheduleCreator {
             if (urlState.scheduleIndex > 0) {
                 this.scheduleStateManager.navigateToIndex(urlState.scheduleIndex);
             }
+            
+            // Display the loaded schedule
+            this._displayCurrentSchedule();
         }
     }
 
@@ -262,6 +265,7 @@ class ScheduleCreator {
      */
     async _handleGridSelectionChange() {
         await this._regenerateSchedules();
+        this._displayCurrentSchedule();
         this._updateURL();
     }
 
@@ -321,8 +325,8 @@ class ScheduleCreator {
         
         // Regenerate schedules with pinned lesson filter
         await this._regenerateSchedules();
-        this._updateURL();
         this._displayCurrentSchedule();
+        this._updateURL();
     }
 
     /**
