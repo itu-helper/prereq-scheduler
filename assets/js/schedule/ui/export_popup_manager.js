@@ -32,9 +32,7 @@ class ExportPopupManager {
         if (copyCrnsBtn) {
             copyCrnsBtn.addEventListener('click', () => {
                 const schedule = this._getCurrentSchedule();
-                if (schedule) {
-                    this.copyCRNsToClipboard(schedule);
-                }
+                this.copyCRNsToClipboard(schedule);
             });
         }
         
@@ -101,7 +99,17 @@ class ExportPopupManager {
      * @param {Object} schedule - Course schedule containing lessons
      */
     static copyCRNsToClipboard(schedule) {
+        // If no courses added, copy a special message
         if (!schedule || !schedule.lessons || schedule.lessons.length === 0) {
+            const noCourseMessage = "Daha ders eklemedin, CRN'leri nasıl alcan?";
+            
+            navigator.clipboard.writeText(noCourseMessage).then(() => {
+                const btn = document.getElementById('copy-crns-btn');
+                this._showCopySuccess(btn, 'Kopyalandı!');
+            }).catch(err => {
+                console.error('Failed to copy message:', err);
+                alert('Kopyalama başarısız oldu.');
+            });
             return;
         }
         

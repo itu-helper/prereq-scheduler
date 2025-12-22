@@ -208,6 +208,7 @@ class ScheduleCreator {
      */
     async _handleCourseChange(rowId) {
         await this._regenerateSchedules();
+        this._displayCurrentSchedule();
         this._updateURL();
     }
 
@@ -217,6 +218,7 @@ class ScheduleCreator {
      */
     async _handleInstructorChange(rowId) {
         await this._regenerateSchedules();
+        this._displayCurrentSchedule();
         this._updateURL();
     }
 
