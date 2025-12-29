@@ -47,7 +47,19 @@ class CourseRowRenderer {
      */
     addNewRow() {
         const rowId = this.courseSelectionManager.addCourse(null, null);
-        this.renderAll();
+        
+        // If container was showing empty state, clear it first
+        const courses = this.courseSelectionManager.getCourses();
+        if (courses.length === 1) {
+            this.container.innerHTML = '';
+        }
+        
+        // Create and append only the new row
+        const courseData = courses.find(c => c.rowId === rowId);
+        if (courseData) {
+            const row = this._renderRow(courseData);
+            this.container.appendChild(row);
+        }
         
         // Smooth scroll to the bottom
         setTimeout(() => {
@@ -73,12 +85,29 @@ class CourseRowRenderer {
      * @param {number} rowId - ID of the row to remove
      */
     removeRow(rowId) {
+        // Remove from data first
         this.courseSelectionManager.removeCourse(rowId);
-        this.renderAll();
         
-        // Trigger removal callback
+        // Trigger removal callback before DOM changes
+        // This allows schedule regeneration to happen before UI update
         if (this.onRemoveCourse) {
             this.onRemoveCourse(rowId);
+        }
+        
+        // Remove from DOM
+        const rowElement = document.getElementById(`course-row-${rowId}`);
+        if (rowElement) {
+            rowElement.remove();
+        }
+        
+        // Check if we need to show empty state
+        const courses = this.courseSelectionManager.getCourses();
+        if (courses.length === 0) {
+            const emptyMessage = document.createElement('p');
+            ScheduleStyle.applyEmptyStateStyles(emptyMessage);
+            emptyMessage.textContent = 'Henüz ders seçilmedi. "Ders Ekle" butonuna tıklayın.';
+            this.container.innerHTML = '';
+            this.container.appendChild(emptyMessage);
         }
     }
 
@@ -87,7 +116,7 @@ class CourseRowRenderer {
      * @private
      */
     _renderRow(courseData) {
-        const { rowId, course, instructor } = courseData;
+        const { rowId, course, instructor, fullName } = courseData;
         
         const courseRow = document.createElement('div');
         courseRow.className = 'course-row';
@@ -95,7 +124,7 @@ class CourseRowRenderer {
         
         // Create dropdowns
         const prefixDropdown = this._createPrefixDropdown(rowId, course);
-        const courseDropdown = this._createCourseDropdown(rowId, course);
+        const courseDropdown = this._createCourseDropdown(rowId, course, fullName);
         const instructorDropdown = this._createInstructorDropdown(rowId, course, instructor);
         
         // Create remove button
@@ -167,7 +196,7 @@ class CourseRowRenderer {
      * Create course dropdown
      * @private
      */
-    _createCourseDropdown(rowId, selectedCourse) {
+    _createCourseDropdown(rowId, selectedCourse, selectedCourseFullName = null) {
         const dropdown = document.createElement('select');
         dropdown.className = 'course-code-dropdown';
         dropdown.innerHTML = '<option value="">Ders Kodu Seç</option>';
@@ -192,8 +221,8 @@ class CourseRowRenderer {
                     dropdown.appendChild(option);
                 });
                 
-                // Set selected course
-                dropdown.value = selectedCourse.fullName || '';
+                // Set selected course using the fullName from courseData
+                dropdown.value = selectedCourseFullName || '';
                 
                 // Check validity and highlight if needed
                 const isCourseValid = ScheduleValidator.isCourseValidForProgrammes(selectedCourse, programmeCodes);

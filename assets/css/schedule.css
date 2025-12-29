@@ -660,6 +660,17 @@ body, html {
     pointer-events: auto; /* Block clicks from reaching cells behind */
 }
 
+/* Fade-out effect for overflowing content */
+.lesson-fade-overlay {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 35px;
+    pointer-events: none;
+    z-index: 15;
+}
+
 /* Enhanced tooltip styling for schedule lessons */
 .schedule-lesson[title] {
     position: relative;

@@ -122,6 +122,14 @@ class ScheduleCreator {
             exportButton.addEventListener('click', () => this._handleExport());
         }
         
+        // Schedule counter double-click for direct index input
+        const counterElement = document.getElementById('schedule-counter');
+        if (counterElement) {
+            counterElement.addEventListener('dblclick', () => this._handleCounterDoubleClick());
+            counterElement.style.cursor = 'pointer';
+            counterElement.title = 'Plan numarasını değiştirmek için çift tıklayın';
+        }
+        
         // Set up togglePinLesson as global function for backwards compatibility
         window.togglePinLesson = (crn) => this._handleTogglePin(crn);
     }
@@ -295,6 +303,41 @@ class ScheduleCreator {
      */
     _handleNavigateRandom() {
         if (this.scheduleStateManager.navigateToRandom()) {
+            this._displayCurrentSchedule();
+        }
+    }
+
+    /**
+     * Handle double-click on schedule counter for direct index input
+     * @private
+     */
+    _handleCounterDoubleClick() {
+        const count = this.scheduleStateManager.getScheduleCount();
+        if (count === 0) {
+            return;
+        }
+
+        const currentIndex = this.scheduleStateManager.getCurrentIndex();
+        const userInput = prompt(`Plan numarasını girin (1-${count}):`, (currentIndex + 1).toString());
+        
+        // User cancelled
+        if (userInput === null) {
+            return;
+        }
+        
+        // Parse input
+        const inputNumber = parseInt(userInput.trim(), 10);
+        
+        // Check if input is numeric
+        if (isNaN(inputNumber)) {
+            return;
+        }
+        
+        // Clamp to valid range (1-indexed for user, 0-indexed internally)
+        const clampedIndex = Math.max(1, Math.min(count, inputNumber)) - 1;
+        
+        // Navigate to the index
+        if (this.scheduleStateManager.navigateToIndex(clampedIndex)) {
             this._displayCurrentSchedule();
         }
     }

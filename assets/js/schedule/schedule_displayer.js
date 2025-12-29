@@ -176,30 +176,77 @@ class ScheduleDisplayer {
         
         const timeInfo = document.createElement('div');
         ScheduleStyle.applyInfoTextStyles(timeInfo, false);
-        timeInfo.textContent = `${schedule.startTime} - ${schedule.endTime}`;
+        timeInfo.innerHTML = `<i class="fa-solid fa-clock" style="display: inline-block; width: 20px; margin-right: 6px;"></i>${schedule.startTime} - ${schedule.endTime}`;
         
         const crn = document.createElement('div');
         ScheduleStyle.applyInfoTextStyles(crn);
-        crn.innerHTML = `CRN: ${schedule.lesson.crn || 'N/A'}`;
+        crn.innerHTML = `<i class="fa-solid fa-hashtag" style="display: inline-block; width: 20px; margin-right: 6px;"></i>${schedule.lesson.crn || 'N/A'}`;
         
         const instructor = document.createElement('div');
         ScheduleStyle.applyInfoTextStyles(instructor);
         ScheduleStyle.applyTextEllipsis(instructor);
-        instructor.textContent = schedule.lesson.instructor || 'TBA';
+        instructor.innerHTML = `<i class="fa-solid fa-user" style="display: inline-block; width: 20px; margin-right: 6px;"></i>${schedule.lesson.instructor || 'TBA'}`;
+        
+        // Create building element
+        const building = document.createElement('div');
+        ScheduleStyle.applyInfoTextStyles(building);
+        ScheduleStyle.applyTextEllipsis(building);
+        if (schedule.lesson.building) {
+            if (schedule.lesson.building.code || schedule.lesson.building.name) {
+                const bina = [schedule.lesson.building.code, schedule.lesson.building.name]
+                    .filter(Boolean)
+                    .join(' (') + (schedule.lesson.building.name ? ')' : '');
+                building.innerHTML = `<i class="fa-solid fa-house" style="display: inline-block; width: 20px; margin-right: 6px;"></i>${bina}`;
+            }
+        }
+        
+        // Create campus element
+        const campus = document.createElement('div');
+        ScheduleStyle.applyInfoTextStyles(campus);
+        ScheduleStyle.applyTextEllipsis(campus);
+        if (schedule.lesson.building && schedule.lesson.building.campus_name) {
+            campus.innerHTML = `<i class="fa-solid fa-building-columns" style="display: inline-block; width: 20px; margin-right: 6px;"></i>${schedule.lesson.building.campus_name}`;
+        }
         
         lessonDiv.appendChild(pinIcon);
         lessonDiv.appendChild(courseCode);
         lessonDiv.appendChild(timeInfo);
         lessonDiv.appendChild(crn);
         lessonDiv.appendChild(instructor);
+        if (building.textContent) {
+            lessonDiv.appendChild(building);
+        }
+        if (campus.textContent) {
+            lessonDiv.appendChild(campus);
+        }
+        
+        // Add fade-out overlay
+        const fadeOverlay = document.createElement('div');
+        fadeOverlay.className = 'lesson-fade-overlay';
+        const bgColor = courseColor || '#000';
+        fadeOverlay.style.background = `linear-gradient(to bottom, transparent 0%, ${bgColor} 100%)`;
+        lessonDiv.appendChild(fadeOverlay);
         
         // Add tooltip with full course information
+        const buildingInfo = [];
+        if (schedule.lesson.building) {
+            if (schedule.lesson.building.code || schedule.lesson.building.name) {
+                const bina = [schedule.lesson.building.code, schedule.lesson.building.name]
+                    .filter(Boolean)
+                    .join(' (') + (schedule.lesson.building.name ? ')' : '');
+                buildingInfo.push(`Bina: ${bina}`);
+            }
+            if (schedule.lesson.building.campus_name) {
+                buildingInfo.push(`Kampüs: ${schedule.lesson.building.campus_name}`);
+            }
+        }
+        
         const tooltipText = [
             `${courseCodeTitle}: ${courseNameTitle}`,
             `${schedule.startTime} - ${schedule.endTime}`,
             `CRN: ${schedule.lesson.crn || 'N/A'}`,
             `Öğretim Görevlisi: ${schedule.lesson.instructor || 'TBA'}`,
-            schedule.lesson.building ? `Bina: ${schedule.lesson.building}` : null
+            ...buildingInfo
         ].filter(Boolean).join('\n');
         
         lessonDiv.setAttribute('title', tooltipText);
