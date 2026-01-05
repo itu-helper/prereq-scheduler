@@ -504,11 +504,20 @@ body, html {
 
 .schedule-grid {
     display: grid;
-    grid-template-columns: 80px repeat(5, 1fr);
+    grid-template-columns: 80px repeat(5, minmax(0, 1fr));
     gap: 1px;
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(255, 255, 255, 0.2);
     min-width: 800px;
+    table-layout: fixed;
+}
+
+/* On mobile, ensure grid fills the container */
+@media (max-width: 1399px) {
+    .schedule-grid {
+        min-width: 100%;
+        width: max-content;
+    }
 }
 
 .time-column,
@@ -516,6 +525,8 @@ body, html {
     display: flex;
     flex-direction: column;
     gap: 1px;
+    min-width: 0; /* Prevents content from expanding the column */
+    overflow: hidden;
 }
 
 .time-header,

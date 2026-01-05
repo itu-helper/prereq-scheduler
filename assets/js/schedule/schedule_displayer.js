@@ -81,6 +81,8 @@ class ScheduleDisplayer {
         
         const days = lesson.day.split(' ').filter(d => d.trim() && d.trim() !== '-');
         const times = lesson.time.split(' ').filter(t => t.trim() && t.trim() !== '-');
+        const rooms = lesson.room ? lesson.room.split(' ').filter(r => r.trim()) : [];
+        const buildings = lesson.buildings || [];
         
         const schedules = [];
         for (let i = 0; i < days.length; i++) {
@@ -93,13 +95,19 @@ class ScheduleDisplayer {
             const startTime = timeRange[0].trim();
             const endTime = timeRange[1].trim();
             
+            // Get the room and building for this specific day (use index, fallback to first or null)
+            const roomForDay = rooms[i] || rooms[0] || null;
+            const buildingForDay = buildings[i] || buildings[0] || null;
+            
             schedules.push({
                 day: dayKey,
                 startTime: startTime,
                 endTime: endTime,
                 dayDisplay: days[i],
                 lesson: lesson,
-                lessonWithCourse: lessonWithCourse
+                lessonWithCourse: lessonWithCourse,
+                room: roomForDay,
+                building: buildingForDay
             });
         }
         
@@ -191,11 +199,11 @@ class ScheduleDisplayer {
         const building = document.createElement('div');
         ScheduleStyle.applyInfoTextStyles(building);
         ScheduleStyle.applyTextEllipsis(building);
-        if (schedule.lesson.building) {
-            if (schedule.lesson.building.code || schedule.lesson.building.name) {
-                const bina = [schedule.lesson.building.code, schedule.lesson.building.name]
+        if (schedule.building) {
+            if (schedule.building.code || schedule.building.name) {
+                const bina = [schedule.building.code, schedule.building.name]
                     .filter(Boolean)
-                    .join(' (') + (schedule.lesson.building.name ? ')' : '');
+                    .join(' (') + (schedule.building.name ? ')' : '');
                 building.innerHTML = `<i class="fa-solid fa-house" style="display: inline-block; width: 20px; margin-right: 6px;"></i>${bina}`;
             }
         }
@@ -204,8 +212,16 @@ class ScheduleDisplayer {
         const campus = document.createElement('div');
         ScheduleStyle.applyInfoTextStyles(campus);
         ScheduleStyle.applyTextEllipsis(campus);
-        if (schedule.lesson.building && schedule.lesson.building.campus_name) {
-            campus.innerHTML = `<i class="fa-solid fa-building-columns" style="display: inline-block; width: 20px; margin-right: 6px;"></i>${schedule.lesson.building.campus_name}`;
+        if (schedule.building && schedule.building.campus_name) {
+            campus.innerHTML = `<i class="fa-solid fa-building-columns" style="display: inline-block; width: 20px; margin-right: 6px;"></i>${schedule.building.campus_name}`;
+        }
+        
+        // Create room element
+        const room = document.createElement('div');
+        ScheduleStyle.applyInfoTextStyles(room);
+        ScheduleStyle.applyTextEllipsis(room);
+        if (schedule.room) {
+            room.innerHTML = `<i class="fa-solid fa-door-closed" style="display: inline-block; width: 20px; margin-right: 6px;"></i>${schedule.room}`;
         }
         
         lessonDiv.appendChild(pinIcon);
@@ -219,6 +235,9 @@ class ScheduleDisplayer {
         if (campus.textContent) {
             lessonDiv.appendChild(campus);
         }
+        if (room.textContent) {
+            lessonDiv.appendChild(room);
+        }
         
         // Add fade-out overlay
         const fadeOverlay = document.createElement('div');
@@ -229,16 +248,19 @@ class ScheduleDisplayer {
         
         // Add tooltip with full course information
         const buildingInfo = [];
-        if (schedule.lesson.building) {
-            if (schedule.lesson.building.code || schedule.lesson.building.name) {
-                const bina = [schedule.lesson.building.code, schedule.lesson.building.name]
+        if (schedule.building) {
+            if (schedule.building.code || schedule.building.name) {
+                const bina = [schedule.building.code, schedule.building.name]
                     .filter(Boolean)
-                    .join(' (') + (schedule.lesson.building.name ? ')' : '');
+                    .join(' (') + (schedule.building.name ? ')' : '');
                 buildingInfo.push(`Bina: ${bina}`);
             }
-            if (schedule.lesson.building.campus_name) {
-                buildingInfo.push(`Kampüs: ${schedule.lesson.building.campus_name}`);
+            if (schedule.building.campus_name) {
+                buildingInfo.push(`Kampüs: ${schedule.building.campus_name}`);
             }
+        }
+        if (schedule.room) {
+            buildingInfo.push(`Sınıf: ${schedule.room}`);
         }
         
         const tooltipText = [
