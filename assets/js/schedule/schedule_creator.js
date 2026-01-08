@@ -28,6 +28,7 @@ class ScheduleCreator {
         this.programmeFilterManager = new ProgrammeFilterManager(ituHelper.programmes);
         this.gridController = new ScheduleGridController();
         this.scheduleDisplayer = new ScheduleDisplayer(null);
+        this.dayWarningManager = new DayWarningManager();
         
         // Initialize UI controllers
         this.courseRowRenderer = null; // Will be initialized after DOM is ready
@@ -66,6 +67,9 @@ class ScheduleCreator {
         // Initialize export popup
         ExportPopupManager.initialize();
         ExportPopupManager.setScheduleGetter(() => this.scheduleStateManager.getCurrentSchedule());
+        
+        // Initialize day warning manager
+        this.dayWarningManager.initialize();
         
         // Set up event listeners
         this._setupEventListeners();
@@ -414,12 +418,17 @@ class ScheduleCreator {
             } else {
                 this.scheduleDisplayer.clear();
             }
+            // Update warnings (will clear them if no schedule)
+            this.dayWarningManager.updateWarnings(null);
             return;
         }
         
         // Display the schedule
         this.scheduleDisplayer.update(currentSchedule);
         this.scheduleDisplayer.display();
+        
+        // Update day warnings
+        this.dayWarningManager.updateWarnings(currentSchedule);
         
         // Update URL with current schedule index
         this._updateURL();
@@ -436,12 +445,16 @@ class ScheduleCreator {
         
         if (pinnedLessonObjects.length === 0) {
             this.scheduleDisplayer.clear();
+            this.dayWarningManager.updateWarnings(null);
             return;
         }
         
         const dummySchedule = { lessons: pinnedLessonObjects };
         this.scheduleDisplayer.update(dummySchedule);
         this.scheduleDisplayer.display(true); // true = ghost style
+        
+        // Update warnings for pinned lessons
+        this.dayWarningManager.updateWarnings(dummySchedule);
     }
 
     /**

@@ -37,10 +37,16 @@ class ScheduleStateManager {
         this.cancellationToken = { cancelled: false };
         
         try {
+            // Set up stop button callback
+            LoadingOverlayManager.setStopCallback(() => {
+                this.cancelCurrentGeneration();
+            });
+            
             const schedules = await CourseSchedule.generateAllAvailableSchedules(
                 courses,
                 unavailableSlots,
-                this.cancellationToken
+                this.cancellationToken,
+                (count, validCount) => LoadingOverlayManager.updateCounter(count, validCount)
             );
             
             // Check if this generation was superseded

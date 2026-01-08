@@ -1011,6 +1011,46 @@ body, html {
     opacity: 0.7;
 }
 
+.schedule-loading-counter {
+    font-size: 0.85rem;
+    opacity: 0.6;
+    margin-top: 12px;
+    font-variant-numeric: tabular-nums;
+}
+
+.schedule-loading-valid-count {
+    font-size: 0.85rem;
+    opacity: 0.7;
+    margin-top: 4px;
+    font-variant-numeric: tabular-nums;
+    color: #4ade80;
+}
+
+.schedule-loading-stop-btn {
+    margin-top: 16px;
+    padding: 6px 12px;
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.5);
+    color: #fca5a5;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    line-height: 1;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.schedule-loading-stop-btn:hover {
+    background: rgba(239, 68, 68, 0.3);
+    border-color: rgba(239, 68, 68, 0.7);
+}
+
+.schedule-loading-stop-btn i {
+    margin-right: 6px;
+}
+
 /* Mobile/Tablet Support - Switch to 2-row layout below 1400px */
 @media (max-width: 1399px) {
     .container {
@@ -1124,5 +1164,224 @@ body, html {
 
     .schedule-navigation {
         justify-content: center;
+    }
+}
+
+/* Day Warning Badge Styles */
+.day-warning-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    background: rgba(220, 53, 69, 0.9);
+    color: white;
+    border-radius: 12px;
+    padding: 2px 6px;
+    font-size: 0.7rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    z-index: 10;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.day-warning-badge:hover {
+    background: rgba(220, 53, 69, 1);
+    transform: scale(1.05);
+}
+
+.day-warning-badge i {
+    font-size: 0.65rem;
+}
+
+.day-warning-count {
+    font-weight: 600;
+    min-width: 12px;
+    text-align: center;
+}
+
+/* Day Warning Popup Overlay */
+.day-warning-popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Day Warning Popup */
+.day-warning-popup {
+    background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
+    border: 1px solid rgba(201, 146, 8, 0.3);
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
+.day-warning-popup-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: rgba(220, 53, 69, 0.15);
+    border-bottom: 1px solid rgba(220, 53, 69, 0.3);
+}
+
+.day-warning-popup-header h3 {
+    margin: 0;
+    color: #fff;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.day-warning-popup-close {
+    background: transparent;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 4px;
+    transition: all 0.2s;
+    font-size: 1.1rem;
+}
+
+.day-warning-popup-close:hover {
+    color: white;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.day-warning-popup-content {
+    padding: 16px;
+    max-height: calc(80vh - 70px);
+    overflow-y: auto;
+}
+
+/* Day Warning Item */
+.day-warning-item {
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(220, 53, 69, 0.2);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 12px;
+}
+
+.day-warning-item:last-child {
+    margin-bottom: 0;
+}
+
+.day-warning-item-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 8px;
+}
+
+.day-warning-item-header i {
+    color: #dc3545;
+    font-size: 1rem;
+}
+
+.day-warning-item-title {
+    color: #fff;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.day-warning-item-description {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.85rem;
+    margin-bottom: 12px;
+    line-height: 1.4;
+}
+
+.day-warning-item-courses {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.day-warning-course {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: rgba(255, 255, 255, 0.05);
+    padding: 8px 12px;
+    border-radius: 6px;
+    flex-wrap: wrap;
+}
+
+.day-warning-course-code {
+    color: #c99208;
+    font-weight: 600;
+    font-size: 0.85rem;
+    min-width: 80px;
+}
+
+.day-warning-course-time {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.8rem;
+    font-family: monospace;
+}
+
+.day-warning-course-campus {
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.75rem;
+    background: rgba(201, 146, 8, 0.2);
+    padding: 2px 8px;
+    border-radius: 4px;
+    margin-left: auto;
+}
+
+.day-warning-course-campus.assumed {
+    background: rgba(255, 193, 7, 0.25);
+    border: 1px dashed rgba(255, 193, 7, 0.5);
+    font-style: italic;
+}
+
+/* Scrollbar styling for warning popup */
+.day-warning-popup-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+.day-warning-popup-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.day-warning-popup-content::-webkit-scrollbar-thumb {
+    background: rgba(220, 53, 69, 0.4);
+    border-radius: 4px;
+}
+
+.day-warning-popup-content::-webkit-scrollbar-thumb:hover {
+    background: rgba(220, 53, 69, 0.6);
+}
+
+/* Responsive adjustments for warning popup */
+@media (max-width: 480px) {
+    .day-warning-popup {
+        width: 95%;
+        max-height: 90vh;
+    }
+    
+    .day-warning-course {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 4px;
+    }
+    
+    .day-warning-course-campus {
+        margin-left: 0;
     }
 }

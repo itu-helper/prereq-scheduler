@@ -100,6 +100,11 @@
                             <div class="schedule-loading-spinner"></div>
                             <div class="schedule-loading-text">Olası Planlar hesaplanıyor...</div>
                             <div class="schedule-loading-subtext">Lütfen bekleyin</div>
+                            <div id="schedule-loading-counter" class="schedule-loading-counter"></div>
+                            <div id="schedule-loading-valid-count" class="schedule-loading-valid-count"></div>
+                            <button id="schedule-loading-stop-btn" class="schedule-loading-stop-btn" style="display: none;">
+                                <i class="fa-solid fa-ban"></i> Yeni plan aramayı bırak
+                            </button>
                         </div>
                     </div>
                     
@@ -350,6 +355,7 @@
         <script src="assets/js/schedule/ui/schedule_grid_controller.js"></script>
         <script src="assets/js/schedule/ui/export_popup_manager.js"></script>
         <script src="assets/js/schedule/ui/course_row_renderer.js"></script>
+        <script src="assets/js/schedule/ui/day_warning_manager.js"></script>
         
         <!-- Main App -->
         <script src="assets/js/schedule/schedule_creator.js"></script>

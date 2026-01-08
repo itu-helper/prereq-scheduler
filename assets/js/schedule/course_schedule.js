@@ -134,7 +134,7 @@ class CourseSchedule {
         );
     }
 
-    static async generateAllAvailableSchedules(courses, unavailableSlots = [], cancellationToken = null) {
+    static async generateAllAvailableSchedules(courses, unavailableSlots = [], cancellationToken = null, progressCallback = null) {
         const allSchedules = [];
         
         // Filter out courses that don't have lessons or have empty lessons array
@@ -151,6 +151,7 @@ class CourseSchedule {
         // Track iterations to periodically yield control to browser
         let iterationCount = 0;
         const YIELD_INTERVAL = 500; // Yield every 500 iterations
+        const PROGRESS_INTERVAL = 100; // Report progress every 100 iterations
         
         // Async recursive function to generate all combinations
         async function generateCombinations(courseIndex, currentSchedule) {
@@ -201,6 +202,11 @@ class CourseSchedule {
                 iterationCount++;
                 if (iterationCount % YIELD_INTERVAL === 0) {
                     await new Promise(resolve => setTimeout(resolve, 0));
+                }
+                
+                // Report progress via callback
+                if (progressCallback && iterationCount % PROGRESS_INTERVAL === 0) {
+                    progressCallback(iterationCount, allSchedules.length);
                 }
                 
                 if (allSchedules.length >= MAX_SCHEDULE_COMBINATIONS) {
