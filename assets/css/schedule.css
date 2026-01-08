@@ -626,6 +626,17 @@ body, html {
 .schedule-cell.selected {
     background: rgb(19, 19, 19);
     /* border-color: rgba(201, 146, 8, 0.6); */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.schedule-cell.selected::before {
+    font-family: 'Font Awesome 6 Free';
+    font-weight: 900;
+    content: '\f023'; /* fa-lock unicode */
+    color: rgba(255, 255, 255, 0.15);
+    font-size: 12px;
 }
 
 .schedule-cell.selected:hover {

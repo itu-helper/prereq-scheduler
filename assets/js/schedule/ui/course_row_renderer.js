@@ -156,17 +156,32 @@ class CourseRowRenderer {
         const prefixes = this.courseSelectionManager.getAllPrefixes();
         const programmeCodes = this.programmeFilterManager.getSelectedProgrammes();
         
+        // Separate prefixes into available and unavailable groups
+        const availablePrefixes = [];
+        const unavailablePrefixes = [];
+        
         prefixes.forEach(prefix => {
+            const hasValidCourses = this.courseSelectionManager.prefixHasValidCourses(prefix, programmeCodes);
+            if (hasValidCourses) {
+                availablePrefixes.push(prefix);
+            } else {
+                unavailablePrefixes.push(prefix);
+            }
+        });
+        
+        // Add available prefixes first, then unavailable ones
+        availablePrefixes.forEach(prefix => {
             const option = document.createElement('option');
             option.value = prefix;
             option.textContent = prefix;
-            
-            // Disable prefix if it has no valid courses for selected programmes
-            const hasValidCourses = this.courseSelectionManager.prefixHasValidCourses(prefix, programmeCodes);
-            if (!hasValidCourses) {
-                option.disabled = true;
-            }
-            
+            dropdown.appendChild(option);
+        });
+        
+        unavailablePrefixes.forEach(prefix => {
+            const option = document.createElement('option');
+            option.value = prefix;
+            option.textContent = prefix;
+            option.disabled = true;
             dropdown.appendChild(option);
         });
         
@@ -213,11 +228,22 @@ class CourseRowRenderer {
                 dropdown.disabled = false;
                 dropdown.innerHTML = '<option value="">Ders Seç...</option>';
                 
-                courses.forEach(course => {
+                // Sort courses: valid ones first, then invalid ones
+                const validCourses = courses.filter(c => c.isValid);
+                const invalidCourses = courses.filter(c => !c.isValid);
+                
+                validCourses.forEach(course => {
                     const option = document.createElement('option');
                     option.value = course.fullName;
                     option.textContent = this._getCourseDisplayText(course.course);
-                    option.disabled = !course.isValid;
+                    dropdown.appendChild(option);
+                });
+                
+                invalidCourses.forEach(course => {
+                    const option = document.createElement('option');
+                    option.value = course.fullName;
+                    option.textContent = this._getCourseDisplayText(course.course);
+                    option.disabled = true;
                     dropdown.appendChild(option);
                 });
                 
@@ -313,11 +339,22 @@ class CourseRowRenderer {
         const programmeCodes = this.programmeFilterManager.getSelectedProgrammes();
         const courses = this.courseSelectionManager.getCoursesForPrefix(selectedPrefix, programmeCodes, rowId);
         
-        courses.forEach(courseInfo => {
+        // Sort courses: valid ones first, then invalid ones
+        const validCourses = courses.filter(c => c.isValid);
+        const invalidCourses = courses.filter(c => !c.isValid);
+        
+        validCourses.forEach(courseInfo => {
             const option = document.createElement('option');
             option.value = courseInfo.fullName;
             option.textContent = this._getCourseDisplayText(courseInfo.course);
-            option.disabled = !courseInfo.isValid;
+            courseDropdown.appendChild(option);
+        });
+        
+        invalidCourses.forEach(courseInfo => {
+            const option = document.createElement('option');
+            option.value = courseInfo.fullName;
+            option.textContent = this._getCourseDisplayText(courseInfo.course);
+            option.disabled = true;
             courseDropdown.appendChild(option);
         });
     }

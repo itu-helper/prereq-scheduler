@@ -12,6 +12,14 @@ class ScheduleGridController {
         this.cellStates = new Map();
         this.toggleMode = null; // 'select' or 'deselect'
         this.onSelectionChange = null; // Callback for when selection changes
+        
+        // Row/Column drag selection state
+        this.isRowDragging = false;
+        this.isColumnDragging = false;
+        this.startRowIndex = null;
+        this.startColumnIndex = null;
+        this.rowToggleMode = null;
+        this.columnToggleMode = null;
     }
 
     /**
@@ -81,16 +89,35 @@ class ScheduleGridController {
      * @private
      */
     _handleMouseUp() {
+        let selectionChanged = false;
+        
         if (this.isMouseDown) {
             this.isMouseDown = false;
             this.startCell = null;
             this.cellStates.clear();
             this.toggleMode = null;
-            
-            // Trigger selection change callback
-            if (this.onSelectionChange) {
-                this.onSelectionChange();
-            }
+            selectionChanged = true;
+        }
+        
+        if (this.isRowDragging) {
+            this.isRowDragging = false;
+            this.startRowIndex = null;
+            this.cellStates.clear();
+            this.rowToggleMode = null;
+            selectionChanged = true;
+        }
+        
+        if (this.isColumnDragging) {
+            this.isColumnDragging = false;
+            this.startColumnIndex = null;
+            this.cellStates.clear();
+            this.columnToggleMode = null;
+            selectionChanged = true;
+        }
+        
+        // Trigger selection change callback
+        if (selectionChanged && this.onSelectionChange) {
+            this.onSelectionChange();
         }
     }
 
@@ -180,32 +207,32 @@ class ScheduleGridController {
         const dayColumns = document.querySelectorAll('.day-column');
         
         timeSlots.forEach((timeSlot, rowIndex) => {
-            timeSlot.addEventListener('click', () => {
-                const cellsInRow = [];
+            // Mouse down - start row drag selection
+            timeSlot.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                this.isRowDragging = true;
+                this.startRowIndex = rowIndex;
                 
-                // Collect all cells in this row across all days
-                dayColumns.forEach(column => {
-                    const cellsInColumn = column.querySelectorAll('.schedule-cell');
-                    if (cellsInColumn[rowIndex]) {
-                        cellsInRow.push(cellsInColumn[rowIndex]);
-                    }
+                // Store the original state of all cells
+                this.cellStates.clear();
+                const allCells = document.querySelectorAll('.schedule-cell');
+                allCells.forEach(c => {
+                    this.cellStates.set(c, c.classList.contains('selected'));
                 });
                 
-                // Check if all cells in row are selected
+                // Determine toggle mode based on starting row's state
+                const cellsInRow = this._getCellsInRow(rowIndex);
                 const allSelected = cellsInRow.every(cell => cell.classList.contains('selected'));
+                this.rowToggleMode = allSelected ? 'deselect' : 'select';
                 
-                // Toggle all cells in the row
-                cellsInRow.forEach(cell => {
-                    if (allSelected) {
-                        cell.classList.remove('selected');
-                    } else {
-                        cell.classList.add('selected');
-                    }
-                });
-                
-                // Trigger selection change callback
-                if (this.onSelectionChange) {
-                    this.onSelectionChange();
+                // Apply initial selection to starting row
+                this._updateRowSelectionPreview(rowIndex);
+            });
+            
+            // Mouse enter - continue row selection while dragging
+            timeSlot.addEventListener('mouseenter', () => {
+                if (this.isRowDragging && this.startRowIndex !== null) {
+                    this._updateRowSelectionPreview(rowIndex);
                 }
             });
             
@@ -215,40 +242,135 @@ class ScheduleGridController {
     }
 
     /**
+     * Get all cells in a specific row
+     * @private
+     */
+    _getCellsInRow(rowIndex) {
+        const dayColumns = document.querySelectorAll('.day-column');
+        const cellsInRow = [];
+        
+        dayColumns.forEach(column => {
+            const cellsInColumn = column.querySelectorAll('.schedule-cell');
+            if (cellsInColumn[rowIndex]) {
+                cellsInRow.push(cellsInColumn[rowIndex]);
+            }
+        });
+        
+        return cellsInRow;
+    }
+
+    /**
+     * Update row selection preview during drag
+     * @private
+     */
+    _updateRowSelectionPreview(endRowIndex) {
+        // First, restore all cells to their original state
+        this.cellStates.forEach((wasSelected, cell) => {
+            if (wasSelected) {
+                cell.classList.add('selected');
+            } else {
+                cell.classList.remove('selected');
+            }
+        });
+        
+        // Then apply the new selection to all rows in range
+        const minRow = Math.min(this.startRowIndex, endRowIndex);
+        const maxRow = Math.max(this.startRowIndex, endRowIndex);
+        
+        for (let row = minRow; row <= maxRow; row++) {
+            const cellsInRow = this._getCellsInRow(row);
+            cellsInRow.forEach(cell => {
+                if (this.rowToggleMode === 'select') {
+                    cell.classList.add('selected');
+                } else {
+                    cell.classList.remove('selected');
+                }
+            });
+        }
+    }
+
+    /**
      * Initialize click handlers for day headers (column selection)
      * @private
      */
     _initializeColumnClickHandlers() {
         const dayHeaders = document.querySelectorAll('.day-header');
+        const dayColumns = document.querySelectorAll('.day-column');
         
-        dayHeaders.forEach((dayHeader) => {
-            dayHeader.addEventListener('click', () => {
-                const dayColumn = dayHeader.parentElement;
-                const cellsInColumn = dayColumn.querySelectorAll('.schedule-cell');
+        dayHeaders.forEach((dayHeader, colIndex) => {
+            // Mouse down - start column drag selection
+            dayHeader.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                this.isColumnDragging = true;
+                this.startColumnIndex = colIndex;
                 
-                // Check if all cells in column are selected
-                const allSelected = Array.from(cellsInColumn).every(cell => 
-                    cell.classList.contains('selected')
-                );
-                
-                // Toggle all cells in the column
-                cellsInColumn.forEach(cell => {
-                    if (allSelected) {
-                        cell.classList.remove('selected');
-                    } else {
-                        cell.classList.add('selected');
-                    }
+                // Store the original state of all cells
+                this.cellStates.clear();
+                const allCells = document.querySelectorAll('.schedule-cell');
+                allCells.forEach(c => {
+                    this.cellStates.set(c, c.classList.contains('selected'));
                 });
                 
-                // Trigger selection change callback
-                if (this.onSelectionChange) {
-                    this.onSelectionChange();
+                // Determine toggle mode based on starting column's state
+                const cellsInColumn = this._getCellsInColumn(colIndex);
+                const allSelected = cellsInColumn.every(cell => cell.classList.contains('selected'));
+                this.columnToggleMode = allSelected ? 'deselect' : 'select';
+                
+                // Apply initial selection to starting column
+                this._updateColumnSelectionPreview(colIndex);
+            });
+            
+            // Mouse enter - continue column selection while dragging
+            dayHeader.addEventListener('mouseenter', () => {
+                if (this.isColumnDragging && this.startColumnIndex !== null) {
+                    this._updateColumnSelectionPreview(colIndex);
                 }
             });
             
             // Add hover effect
             ScheduleStyle.applyPointerCursor(dayHeader);
         });
+    }
+
+    /**
+     * Get all cells in a specific column
+     * @private
+     */
+    _getCellsInColumn(colIndex) {
+        const dayColumns = document.querySelectorAll('.day-column');
+        const column = dayColumns[colIndex];
+        if (!column) return [];
+        return Array.from(column.querySelectorAll('.schedule-cell'));
+    }
+
+    /**
+     * Update column selection preview during drag
+     * @private
+     */
+    _updateColumnSelectionPreview(endColIndex) {
+        // First, restore all cells to their original state
+        this.cellStates.forEach((wasSelected, cell) => {
+            if (wasSelected) {
+                cell.classList.add('selected');
+            } else {
+                cell.classList.remove('selected');
+            }
+        });
+        
+        // Then apply the new selection to all columns in range
+        const minCol = Math.min(this.startColumnIndex, endColIndex);
+        const maxCol = Math.max(this.startColumnIndex, endColIndex);
+        
+        for (let col = minCol; col <= maxCol; col++) {
+            const cellsInColumn = this._getCellsInColumn(col);
+            cellsInColumn.forEach(cell => {
+                if (this.columnToggleMode === 'select') {
+                    cell.classList.add('selected');
+                } else {
+                    cell.classList.remove('selected');
+                }
+            });
+        }
     }
 
     /**
