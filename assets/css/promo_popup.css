@@ -39,3 +39,16 @@
     margin-right: auto;
     border: 2px solid white;
 }
+
+.popup-features {
+    text-align: left;
+    margin: 15px auto;
+    padding-left: 25px;
+    max-width: 50%;
+    list-style-type: disc;
+}
+
+.popup-features li {
+    margin-bottom: 8px;
+    line-height: 1.4;
+}

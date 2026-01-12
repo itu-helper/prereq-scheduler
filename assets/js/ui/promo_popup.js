@@ -1,4 +1,4 @@
-const promotion_identifier = "chrome_extension_release";
+const promotion_identifier = "schedule_creator_release";
 
 document.addEventListener('DOMContentLoaded', function() {
     id = "promo_" + promotion_identifier
