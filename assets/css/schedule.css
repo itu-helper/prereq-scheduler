@@ -542,6 +542,8 @@ body, html {
     overflow: auto;
     margin-top: 20px;
     position: relative; /* For loading overlay positioning */
+    -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
+    touch-action: pan-x pan-y; /* Allow free panning in both directions on mobile */
 }
 
 .schedule-grid {
@@ -552,6 +554,7 @@ body, html {
     border: 1px solid rgba(255, 255, 255, 0.2);
     min-width: 800px;
     table-layout: fixed;
+    touch-action: pan-x pan-y; /* Allow free panning in both directions on mobile */
 }
 
 /* On mobile, ensure grid fills the container */
@@ -658,6 +661,7 @@ body, html {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
+    touch-action: pan-x pan-y; /* Allow scrolling the grid on mobile */
 }
 
 .schedule-cell:hover {
