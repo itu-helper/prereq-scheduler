@@ -49,8 +49,7 @@ class CourseSchedule {
                 const t3 = d2.time[0];
                 const t4 = d2.time[1];
 
-                //  (t1 < t3 < t2        or t1 < t4 < t2       )        or (t3 < t1 < t2 < t4)
-                if ((t1 <= t3 && t3 <= t2) || (t1 <= t4 && t4 <= t2) || (t3 <= t1 && t1 <= t4 && t4 <= t2)) {
+                if (t1 < t4 && t3 < t2) {
                     return true;
                 }
             }
