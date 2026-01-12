@@ -147,6 +147,48 @@ body, html {
     transform: translateY(0);
 }
 
+/* Schedule Action Buttons (Save/Load) */
+.schedule-action-btn {
+    background: rgba(201, 146, 8, 0.2);
+    border: 1px solid rgba(201, 146, 8, 0.4);
+    color: #c99208;
+    width: 36px;
+    height: 36px;
+    border-radius: 4px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 0.9rem;
+}
+
+.schedule-action-btn:hover {
+    background: rgba(201, 146, 8, 0.3);
+    border-color: rgba(201, 146, 8, 0.6);
+    color: #d9a209;
+    transform: translateY(-1px);
+}
+
+.schedule-action-btn:active {
+    transform: translateY(0);
+}
+
+.schedule-action-btn:disabled {
+    background: rgba(100, 100, 100, 0.2);
+    border: 1px solid rgba(100, 100, 100, 0.3);
+    color: rgba(150, 150, 150, 0.5);
+    cursor: not-allowed;
+    transform: none;
+}
+
+.schedule-action-btn:disabled:hover {
+    background: rgba(100, 100, 100, 0.2);
+    border: 1px solid rgba(100, 100, 100, 0.3);
+    color: rgba(150, 150, 150, 0.5);
+    transform: none;
+}
+
 .schedule-navigation {
     display: flex;
     align-items: center;
@@ -1333,6 +1375,53 @@ body, html {
     color: rgba(255, 255, 255, 0.8);
     font-size: 0.8rem;
     font-family: monospace;
+}
+
+/* Save/Load Toast Notifications */
+.save-load-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: rgba(40, 40, 40, 0.95);
+    border-radius: 8px;
+    padding: 14px 20px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    color: white;
+    font-size: 0.95rem;
+    z-index: 10000;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+    transform: translateX(120%);
+    transition: transform 0.3s ease;
+}
+
+.save-load-toast.show {
+    transform: translateX(0);
+}
+
+.save-load-toast-success {
+    border-left: 4px solid #4caf50;
+}
+
+.save-load-toast-success i {
+    color: #4caf50;
+}
+
+.save-load-toast-warning {
+    border-left: 4px solid #ff9800;
+}
+
+.save-load-toast-warning i {
+    color: #ff9800;
+}
+
+.save-load-toast-error {
+    border-left: 4px solid #f44336;
+}
+
+.save-load-toast-error i {
+    color: #f44336;
 }
 
 .day-warning-course-campus {

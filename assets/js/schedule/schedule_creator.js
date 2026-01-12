@@ -68,6 +68,9 @@ class ScheduleCreator {
         ExportPopupManager.initialize();
         ExportPopupManager.setScheduleGetter(() => this.scheduleStateManager.getCurrentSchedule());
         
+        // Initialize save/load manager
+        SaveLoadManager.initialize();
+        
         // Initialize day warning manager
         this.dayWarningManager.initialize();
         

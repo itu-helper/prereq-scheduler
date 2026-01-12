@@ -30,6 +30,12 @@ class DayWarningManager {
                 name: 'Öğle Yemeği Çakışması',
                 icon: 'fa-solid fa-utensils',
                 check: (dayLessons) => this._checkLunchTimeConflict(dayLessons)
+            },
+            {
+                id: 'dinner-conflict',
+                name: 'Akşam Yemeği Çakışması',
+                icon: 'fa-solid fa-bowl-food',
+                check: (dayLessons) => this._checkDinnerTimeConflict(dayLessons)
             }
         ];
     }
@@ -372,6 +378,72 @@ class DayWarningManager {
                 message: 'Öğle yemeği saati tamamen dolu',
                 description: '11:30 - 14:00 arasında hiç boş zaman yok.',
                 courses: lunchLessons.map(lesson => ({
+                    code: lesson.courseCode,
+                    time: `${lesson.startTime} - ${lesson.endTime}`,
+                    campus: lesson.campus
+                }))
+            });
+        }
+        
+        return warnings;
+    }
+
+    /**
+     * Check for dinner time conflict (17:00-19:30 completely full)
+     * @private
+     */
+    _checkDinnerTimeConflict(dayLessons) {
+        const warnings = [];
+        const DINNER_START = this._timeToMinutes('17:00');
+        const DINNER_END = this._timeToMinutes('19:30');
+        
+        if (dayLessons.length === 0) return warnings;
+        
+        // Find all lessons that overlap with dinner period
+        const dinnerLessons = dayLessons.filter(lesson => {
+            return lesson.startMinutes < DINNER_END && lesson.endMinutes > DINNER_START;
+        });
+        
+        if (dinnerLessons.length === 0) return warnings;
+        
+        // Check if there's any gap during dinner time
+        let coveredRanges = [];
+        dinnerLessons.forEach(lesson => {
+            const start = Math.max(lesson.startMinutes, DINNER_START);
+            // 1 ekliyoz çünkü XX:29 ile bitip XX:30 başlayan ders arasında boşluk kalmaması lazım
+            const end = Math.min(lesson.endMinutes + 1, DINNER_END);
+            coveredRanges.push({ start, end, lesson });
+        });
+        
+        // Sort by start time
+        coveredRanges.sort((a, b) => a.start - b.start);
+        
+        // Merge overlapping ranges and check coverage
+        let mergedRanges = [];
+        coveredRanges.forEach(range => {
+            if (mergedRanges.length === 0) {
+                mergedRanges.push({ start: range.start, end: range.end });
+            } else {
+                const last = mergedRanges[mergedRanges.length - 1];
+                if (range.start <= last.end) {
+                    last.end = Math.max(last.end, range.end);
+                } else {
+                    mergedRanges.push({ start: range.start, end: range.end });
+                }
+            }
+        });
+        
+        // Check if dinner period is fully covered
+        const isFullyCovered = mergedRanges.length === 1 && 
+            mergedRanges[0].start <= DINNER_START && 
+            mergedRanges[0].end >= DINNER_END;
+        
+        if (isFullyCovered) {
+            warnings.push({
+                type: 'dinner-conflict',
+                message: 'Akşam yemeği saati tamamen dolu',
+                description: '17:00 - 19:30 arasında hiç boş zaman yok.',
+                courses: dinnerLessons.map(lesson => ({
                     code: lesson.courseCode,
                     time: `${lesson.startTime} - ${lesson.endTime}`,
                     campus: lesson.campus
