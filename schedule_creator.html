@@ -1,0 +1,399 @@
+<!DOCTYPE HTML>
+<html lang="tr">
+
+    <head>
+
+        <title>ITU Helper | Ders Programı Oluşturucu</title>
+
+        <meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no" />
+        <meta name="google-site-verification" content="yqErOJ5_XnqUKuK2YMuN8eW55AbV4kH_SWN9D1O7uuQ" />
+
+        <link rel="icon" href="https://raw.githubusercontent.com/itu-helper/home/main/images/favicon.png"
+            type="image/png" />
+        <link rel="shortcut icon" href="https://raw.githubusercontent.com/itu-helper/home/main/images/favicon.png"
+            type="image/png" />
+        <link rel="stylesheet" href="assets/css/main.css" />
+        <link rel="stylesheet" href="assets/css/schedule.css" />
+
+        <noscript>
+            <link rel="stylesheet" href="assets/css/noscript.css" />
+        </noscript>
+
+    </head>
+
+    <body>
+
+        <div class="container">
+            <div class="left-section">
+                <div class="left-section-header">
+                    <a href="https://itu-helper.github.io/home/" style="border-bottom: 0em"><img src="https://raw.githubusercontent.com/itu-helper/home/main/images/favicon.png"
+                        alt="ITU Helper Logo"></a>
+                    <h2>ITU Helper</h2>
+                    <button id="mobile-toggle-btn" class="mobile-toggle-btn" title="Ders Seçimini Aç/Kapat">
+                        <i class="fa-solid fa-chevron-up"></i>
+                    </button>
+                </div>
+
+                <div class="programme-selection">
+                    <h3>Bölüm Seçimi</h3>
+
+                    <div class="dropdown-group">
+                        <!-- <label for="first-programme-select">Bölüm</label> -->
+                        <select id="first-programme-select" class="programme-dropdown">
+                            <option value="">Bölüm seçiniz...</option>
+                        </select>
+                    </div>
+
+                    <div class="dropdown-group" style="display: none;">
+                        <label for="second-programme-select">ÇAP Bölüm</label>
+                        <select id="second-programme-select" class="programme-dropdown" disabled>
+                            <option value="">Önce bölüm seçiniz...</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="course-selection">
+                    <h3>Seçili Dersler</h3>
+                    <div id="selected-courses-list" class="selected-courses-list">
+                        <!-- Selected courses will be added here dynamically -->
+                    </div>
+
+                    <button id="add-course-row-btn" class="add-course-row-btn">
+                        <i class="fa-solid fa-plus"></i> Ders Ekle
+                    </button>
+                </div>
+            </div>
+
+            <div class="right-section">
+                <div class="schedule-header">
+                    <div class="schedule-title-container">
+                        <h2>Ders Planı</h2>
+                        <button id="export-schedule-btn" class="export-schedule-btn" title="Planı dışa aktar">
+                            <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                        </button>
+                        <button id="save-schedule-btn" class="schedule-action-btn save-btn" title="Kaydet">
+                            <i class="fa-solid fa-floppy-disk"></i>
+                        </button>
+                        <button id="load-schedule-btn" class="schedule-action-btn load-btn" title="Kaydedilen Planı Yükle">
+                            <i class="fa-solid fa-clock-rotate-left"></i>
+                        </button>
+                    </div>
+
+                    <div class="schedule-navigation">
+                        <button id="random-schedule-btn" class="schedule-nav-btn" title="Rastgele Plan">
+                            <i class="fa-solid fa-dice"></i>
+                        </button>
+                        <span id="schedule-counter" class="schedule-counter">Plan 1 / 1</span>
+                        <button id="prev-schedule-btn" class="schedule-nav-btn" title="Önceki Plan">
+                            <i class="fa-solid fa-chevron-left"></i>
+                        </button>
+                        <button id="next-schedule-btn" class="schedule-nav-btn" title="Sonraki Plan">
+                            <i class="fa-solid fa-chevron-right"></i>
+                        </button>
+                    </div>
+                </div>
+                
+                <div id="schedule-warning" class="schedule-warning" style="display: none;">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                    <span id="schedule-warning-text"></span>
+                </div>
+                
+                <div class="schedule-container">
+                    <!-- Loading Overlay -->
+                    <div id="schedule-loading-overlay" class="schedule-loading-overlay">
+                        <div class="schedule-loading-content">
+                            <div class="schedule-loading-spinner"></div>
+                            <div class="schedule-loading-text">Olası Planlar hesaplanıyor...</div>
+                            <div class="schedule-loading-subtext">Lütfen bekleyin</div>
+                            <div id="schedule-loading-counter" class="schedule-loading-counter"></div>
+                            <div id="schedule-loading-valid-count" class="schedule-loading-valid-count"></div>
+                            <button id="schedule-loading-stop-btn" class="schedule-loading-stop-btn" style="display: none;">
+                                <i class="fa-solid fa-ban"></i> Yeni plan aramayı bırak
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="schedule-grid">
+                        <!-- Time column -->
+                        <div class="time-column">
+                            <div class="time-header">
+                                <button id="unselect-all-btn" class="unselect-all-btn" title="Tüm Slotları Aç">
+                                    <i class="fa-solid fa-rotate"></i>
+                                </button>
+                            </div>
+                            <div class="time-slot">08:00</div>
+                            <div class="time-slot">08:30</div>
+                            <div class="time-slot">09:00</div>
+                            <div class="time-slot">09:30</div>
+                            <div class="time-slot">10:00</div>
+                            <div class="time-slot">10:30</div>
+                            <div class="time-slot">11:00</div>
+                            <div class="time-slot">11:30</div>
+                            <div class="time-slot">12:00</div>
+                            <div class="time-slot">12:30</div>
+                            <div class="time-slot">13:00</div>
+                            <div class="time-slot">13:30</div>
+                            <div class="time-slot">14:00</div>
+                            <div class="time-slot">14:30</div>
+                            <div class="time-slot">15:00</div>
+                            <div class="time-slot">15:30</div>
+                            <div class="time-slot">16:00</div>
+                            <div class="time-slot">16:30</div>
+                            <div class="time-slot">17:00</div>
+                            <div class="time-slot">17:30</div>
+                            <div class="time-slot">18:00</div>
+                            <div class="time-slot">18:30</div>
+                            <div class="time-slot">19:00</div>
+                            <div class="time-slot">19:30</div>
+                        </div>
+
+                        <!-- Monday -->
+                        <div class="day-column">
+                            <div class="day-header">Pazartesi</div>
+                            <div class="schedule-cell" data-day="monday" data-time="08:00"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="08:30"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="09:00"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="09:30"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="10:00"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="10:30"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="11:00"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="11:30"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="12:00"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="12:30"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="13:00"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="13:30"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="14:00"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="14:30"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="15:00"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="15:30"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="16:00"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="16:30"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="17:00"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="17:30"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="18:00"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="18:30"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="19:00"></div>
+                            <div class="schedule-cell" data-day="monday" data-time="19:30"></div>
+                        </div>
+
+                        <!-- Tuesday -->
+                        <div class="day-column">
+                            <div class="day-header">Salı</div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="08:00"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="08:30"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="09:00"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="09:30"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="10:00"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="10:30"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="11:00"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="11:30"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="12:00"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="12:30"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="13:00"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="13:30"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="14:00"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="14:30"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="15:00"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="15:30"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="16:00"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="16:30"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="17:00"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="17:30"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="18:00"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="18:30"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="19:00"></div>
+                            <div class="schedule-cell" data-day="tuesday" data-time="19:30"></div>
+                        </div>
+
+                        <!-- Wednesday -->
+                        <div class="day-column">
+                            <div class="day-header">Çarşamba</div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="08:00"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="08:30"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="09:00"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="09:30"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="10:00"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="10:30"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="11:00"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="11:30"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="12:00"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="12:30"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="13:00"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="13:30"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="14:00"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="14:30"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="15:00"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="15:30"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="16:00"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="16:30"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="17:00"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="17:30"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="18:00"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="18:30"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="19:00"></div>
+                            <div class="schedule-cell" data-day="wednesday" data-time="19:30"></div>
+                        </div>
+
+                        <!-- Thursday -->
+                        <div class="day-column">
+                            <div class="day-header">Perşembe</div>
+                            <div class="schedule-cell" data-day="thursday" data-time="08:00"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="08:30"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="09:00"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="09:30"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="10:00"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="10:30"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="11:00"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="11:30"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="12:00"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="12:30"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="13:00"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="13:30"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="14:00"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="14:30"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="15:00"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="15:30"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="16:00"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="16:30"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="17:00"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="17:30"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="18:00"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="18:30"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="19:00"></div>
+                            <div class="schedule-cell" data-day="thursday" data-time="19:30"></div>
+                        </div>
+
+                        <!-- Friday -->
+                        <div class="day-column">
+                            <div class="day-header">Cuma</div>
+                            <div class="schedule-cell" data-day="friday" data-time="08:00"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="08:30"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="09:00"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="09:30"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="10:00"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="10:30"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="11:00"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="11:30"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="12:00"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="12:30"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="13:00"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="13:30"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="14:00"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="14:30"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="15:00"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="15:30"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="16:00"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="16:30"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="17:00"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="17:30"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="18:00"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="18:30"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="19:00"></div>
+                            <div class="schedule-cell" data-day="friday" data-time="19:30"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <p class="calendar-note">Takvim üzerinden slotları seçerek, boş kalmalarını sağlayabilirsiniz.</p>
+                <footer id="footer">
+                    <div style="display: flex">
+                        <div style="flex: 25%; align-self: flex-end">
+                            <p class="copyright">
+                                &copy; Copyright. Design:
+                                <a href="https://github.com/itu-helper">ITU Helper</a>
+                            </p>
+                        </div>
+                        <div style="flex: 50%; align-self: center">
+                            <div>
+                                <p class="copyright">-İTÜ'lüler için İTÜ'lülerden-</p>
+                            </div>
+                            <div>
+                                <p class="copyright"><a href="https://www.instagram.com/atatrkgl/">Ata Türkoğlu</a></p>
+                            </div>
+                        </div>
+                        <div style="flex: 25%; align-self: flex-end">
+                            <p class="copyright">
+                                <i class="fab fa-github"></i><a href="https://github.com/itu-helper/prereq-scheduler"> Github</a>
+                            </p>
+                        </div>
+                    </div>
+                </footer>
+            </div>
+        </div>
+
+        <!-- BG -->
+        <div id="bg"></div>
+
+        <!-- Export Popup Modal -->
+        <div id="export-popup" class="export-popup-overlay" style="display: none;">
+            <div class="export-popup">
+                <div class="export-popup-header">
+                    <h3>Ders Planını Dışa Aktar</h3>
+                    <button class="export-popup-close" id="export-popup-close">
+                        <i class="fa-solid fa-times"></i>
+                    </button>
+                </div>
+                <div class="export-popup-content">
+                    <div class="export-crn-list" id="export-crn-list">
+                        <!-- CRNs will be added here dynamically -->
+                    </div>
+                    <div class="export-actions">
+                        <button class="export-action-btn" id="copy-crns-btn">
+                            <i class="fa-solid fa-copy"></i>
+                            <span>CRN'leri kopyala</span>
+                        </button>
+                        <button class="export-action-btn" id="copy-link-btn">
+                            <i class="fa-solid fa-link"></i>
+                            <span>Ders planı bağlantısı kopyala</span>
+                        </button>
+                        <button class="export-action-btn" id="download-image-btn">
+                            <i class="fa-solid fa-image"></i>
+                            <span>Takvim resmini indir</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Scripts -->
+        <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/itu-helper/sdk@main/js/dist/bundle.min.js"></script>
+        <script src="https://kit.fontawesome.com/f1677e7b85.js" crossorigin="anonymous"></script>
+
+        <script src="assets/js/website_template/breakpoints.min.js"></script>
+        <script src="assets/js/website_template/browser.min.js"></script>
+        <script src="assets/js/website_template/jquery.min.js"></script>
+        <script src="assets/js/website_template/jquery_utilities.js"></script>
+        <script src="assets/js/website_template/main.js"></script>
+
+        <!-- Schedule Creator Scripts -->
+        <!-- Utilities (must be loaded first) -->
+        <script src="assets/js/schedule/utils/schedule_style.js"></script>
+        <script src="assets/js/schedule/utils/time_slot_manager.js"></script>
+        <script src="assets/js/schedule/utils/schedule_validator.js"></script>
+        
+        <!-- Core Classes -->
+        <script src="assets/js/schedule/course_schedule.js"></script>
+        <script src="assets/js/schedule/schedule_displayer.js"></script>
+        
+        <!-- Managers -->
+        <script src="assets/js/schedule/managers/course_selection_manager.js"></script>
+        <script src="assets/js/schedule/managers/schedule_state_manager.js"></script>
+        <script src="assets/js/schedule/managers/url_state_manager.js"></script>
+        <script src="assets/js/schedule/managers/programme_filter_manager.js"></script>
+        <script src="assets/js/schedule/managers/save_load_manager.js"></script>
+        
+        <!-- UI Controllers -->
+        <script src="assets/js/schedule/ui/loading_overlay_manager.js"></script>
+        <script src="assets/js/schedule/ui/schedule_grid_controller.js"></script>
+        <script src="assets/js/schedule/ui/export_popup_manager.js"></script>
+        <script src="assets/js/schedule/ui/course_row_renderer.js"></script>
+        <script src="assets/js/schedule/ui/day_warning_manager.js"></script>
+        
+        <!-- Main App -->
+        <script src="assets/js/schedule/schedule_creator.js"></script>
+        <script src="assets/js/schedule/schedule_onload.js">
+    </body>
+
+</html>
