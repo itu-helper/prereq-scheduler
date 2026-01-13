@@ -203,6 +203,9 @@ class DayWarningManager {
                 const timeRange = times[index] ? times[index].split('/') : null;
                 if (!timeRange || timeRange.length !== 2) return;
                 
+                const teachingMethod = (lesson.teachingMethod || '').toLowerCase();
+                const isOnline = teachingMethod.includes('online');
+                
                 lessonsByDay[dayKey].push({
                     courseCode: lessonWithCourse.courseCode || lesson.courseCode || 'Unknown',
                     courseTitle: lessonWithCourse.courseTitle || lesson.courseTitle || '',
@@ -213,7 +216,8 @@ class DayWarningManager {
                     startMinutes: this._timeToMinutes(timeRange[0].trim()),
                     endMinutes: this._timeToMinutes(timeRange[1].trim()),
                     building: buildings[index] || buildings[0] || null,
-                    campus: (buildings[index] || buildings[0])?.campus_name || null
+                    campus: (buildings[index] || buildings[0])?.campus_name || null,
+                    isOnline: isOnline
                 });
             });
         });
@@ -269,6 +273,9 @@ class DayWarningManager {
         for (let i = 0; i < dayLessons.length - 1; i++) {
             const current = dayLessons[i];
             const next = dayLessons[i + 1];
+            
+            // Skip online courses - they don't have physical campus constraints
+            if (current.isOnline || next.isOnline) continue;
             
             // Get campus info, defaulting to Ayazağa if unknown
             const currentCampus = current.campus || DEFAULT_CAMPUS;

@@ -195,11 +195,22 @@ class ScheduleDisplayer {
         ScheduleStyle.applyTextEllipsis(instructor);
         instructor.innerHTML = `<i class="fa-solid fa-user" style="display: inline-block; width: 20px; margin-right: 6px;"></i>${schedule.lesson.instructor || 'TBA'}`;
         
+        // Check if lesson is online
+        const teachingMethod = (schedule.lesson.teachingMethod || '').toLowerCase();
+        const isOnline = teachingMethod.includes('online');
+        
+        // Create online element (shown instead of building/campus/room for online lessons)
+        const onlineElement = document.createElement('div');
+        ScheduleStyle.applyInfoTextStyles(onlineElement);
+        if (isOnline) {
+            onlineElement.innerHTML = `<i class="fa-solid fa-globe" style="display: inline-block; width: 20px; margin-right: 6px;"></i>Online`;
+        }
+        
         // Create building element
         const building = document.createElement('div');
         ScheduleStyle.applyInfoTextStyles(building);
         ScheduleStyle.applyTextEllipsis(building);
-        if (schedule.building) {
+        if (!isOnline && schedule.building) {
             if (schedule.building.code || schedule.building.name) {
                 const bina = [schedule.building.code, schedule.building.name]
                     .filter(Boolean)
@@ -212,7 +223,7 @@ class ScheduleDisplayer {
         const campus = document.createElement('div');
         ScheduleStyle.applyInfoTextStyles(campus);
         ScheduleStyle.applyTextEllipsis(campus);
-        if (schedule.building && schedule.building.campus_name) {
+        if (!isOnline && schedule.building && schedule.building.campus_name) {
             campus.innerHTML = `<i class="fa-solid fa-building-columns" style="display: inline-block; width: 20px; margin-right: 6px;"></i>${schedule.building.campus_name}`;
         }
         
@@ -220,7 +231,7 @@ class ScheduleDisplayer {
         const room = document.createElement('div');
         ScheduleStyle.applyInfoTextStyles(room);
         ScheduleStyle.applyTextEllipsis(room);
-        if (schedule.room) {
+        if (!isOnline && schedule.room) {
             room.innerHTML = `<i class="fa-solid fa-door-closed" style="display: inline-block; width: 20px; margin-right: 6px;"></i>${schedule.room}`;
         }
         
@@ -229,6 +240,9 @@ class ScheduleDisplayer {
         lessonDiv.appendChild(timeInfo);
         lessonDiv.appendChild(crn);
         lessonDiv.appendChild(instructor);
+        if (isOnline) {
+            lessonDiv.appendChild(onlineElement);
+        }
         if (building.textContent) {
             lessonDiv.appendChild(building);
         }
@@ -248,19 +262,23 @@ class ScheduleDisplayer {
         
         // Add tooltip with full course information
         const buildingInfo = [];
-        if (schedule.building) {
-            if (schedule.building.code || schedule.building.name) {
-                const bina = [schedule.building.code, schedule.building.name]
-                    .filter(Boolean)
-                    .join(' (') + (schedule.building.name ? ')' : '');
-                buildingInfo.push(`Bina: ${bina}`);
+        if (isOnline) {
+            buildingInfo.push('Online');
+        } else {
+            if (schedule.building) {
+                if (schedule.building.code || schedule.building.name) {
+                    const bina = [schedule.building.code, schedule.building.name]
+                        .filter(Boolean)
+                        .join(' (') + (schedule.building.name ? ')' : '');
+                    buildingInfo.push(`Bina: ${bina}`);
+                }
+                if (schedule.building.campus_name) {
+                    buildingInfo.push(`Kampüs: ${schedule.building.campus_name}`);
+                }
             }
-            if (schedule.building.campus_name) {
-                buildingInfo.push(`Kampüs: ${schedule.building.campus_name}`);
+            if (schedule.room) {
+                buildingInfo.push(`Sınıf: ${schedule.room}`);
             }
-        }
-        if (schedule.room) {
-            buildingInfo.push(`Sınıf: ${schedule.room}`);
         }
         
         const tooltipText = [
