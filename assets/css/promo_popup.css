@@ -16,6 +16,10 @@
     padding: 20px;
     border-radius: 5px;
     text-align: center;
+    max-height: 80vh;
+    max-width: 75vw;
+    overflow-y: auto;
+    font-size: 0.9em;
 }
 
 .popup-footer {
@@ -42,13 +46,17 @@
 
 .popup-features {
     text-align: left;
-    margin: 15px auto;
+    margin: 10px auto;
     padding-left: 25px;
-    max-width: 50%;
+    max-width: 80%;
     list-style-type: disc;
 }
 
 .popup-features li {
-    margin-bottom: 8px;
-    line-height: 1.4;
+    margin-bottom: 4px;
+    line-height: 1.2;
+}
+
+.popup-content p {
+    margin: 5px 0;
 }
