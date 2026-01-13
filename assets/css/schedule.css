@@ -351,6 +351,7 @@ body, html {
     border-radius: 5px;
     border-left: 3px solid #c99208;
     transition: background 0.2s;
+    max-height: 52px;
 }
 
 .course-row:hover {
@@ -543,7 +544,7 @@ body, html {
     margin-top: 20px;
     position: relative; /* For loading overlay positioning */
     -webkit-overflow-scrolling: touch; /* Smooth scrolling on iOS */
-    touch-action: pan-x pan-y; /* Allow free panning in both directions on mobile */
+    touch-action: manipulation; /* Allow free panning in both directions on mobile */
 }
 
 .schedule-grid {
@@ -554,14 +555,25 @@ body, html {
     border: 1px solid rgba(255, 255, 255, 0.2);
     min-width: 800px;
     table-layout: fixed;
-    touch-action: pan-x pan-y; /* Allow free panning in both directions on mobile */
+    touch-action: manipulation; /* Allow free panning in both directions on mobile */
 }
 
 /* On mobile, ensure grid fills the container */
 @media (max-width: 1399px) {
+    .schedule-container {
+        overflow: auto;
+        -webkit-overflow-scrolling: touch;
+        touch-action: manipulation;
+        overscroll-behavior: contain;
+        height: calc(100% - 80px);
+        max-height: calc(50vh - 80px);
+    }
+
     .schedule-grid {
-        min-width: 100%;
-        width: max-content;
+        min-width: 800px;
+        width: 100%;
+        height: max-content;
+        touch-action: manipulation;
     }
 }
 
@@ -661,7 +673,7 @@ body, html {
     -webkit-user-select: none;
     -moz-user-select: none;
     -ms-user-select: none;
-    touch-action: pan-x pan-y; /* Allow scrolling the grid on mobile */
+    touch-action: manipulation; /* Allow scrolling the grid on mobile */
 }
 
 .schedule-cell:hover {
@@ -1101,7 +1113,7 @@ body, html {
 @media (max-width: 1399px) {
     .container {
         flex-direction: column;
-        overflow-y: auto;
+        overflow: auto;
     }
 
     .left-section {
@@ -1142,6 +1154,7 @@ body, html {
         height: 50vh;
         min-height: 50vh;
         flex: 1;
+        overflow: hidden;
     }
 
     .left-section.collapsed ~ .right-section {
@@ -1160,6 +1173,7 @@ body, html {
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
         max-height: none;
+        min-height: 110px;
     }
 
     .course-row {
@@ -1476,5 +1490,52 @@ body, html {
     
     .day-warning-course-campus {
         margin-left: 0;
+    }
+}
+
+/* Mobile Floating Action Button for Adding Courses */
+.mobile-add-course-fab {
+    display: none;
+    position: fixed;
+    bottom: 24px;
+    right: 24px;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #c99208 0%, #a87806 100%);
+    border: none;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(201, 146, 8, 0.4), 0 2px 4px rgba(0, 0, 0, 0.2);
+    z-index: 100;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    align-items: center;
+    justify-content: center;
+}
+
+.mobile-add-course-fab:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 16px rgba(201, 146, 8, 0.5), 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.mobile-add-course-fab:active {
+    transform: scale(0.95);
+}
+
+.mobile-add-course-fab i {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Show FAB and hide regular button on mobile only */
+@media (max-width: 750px) {
+    .mobile-add-course-fab {
+        display: flex;
+    }
+    
+    .add-course-row-btn {
+        display: none;
     }
 }

@@ -48,6 +48,12 @@ class CourseRowRenderer {
     addNewRow() {
         const rowId = this.courseSelectionManager.addCourse(null, null);
         
+        // If the left section is collapsed (on mobile), expand it
+        const leftSection = document.querySelector('.left-section');
+        if (leftSection && leftSection.classList.contains('collapsed')) {
+            leftSection.classList.remove('collapsed');
+        }
+        
         // If container was showing empty state, clear it first
         const courses = this.courseSelectionManager.getCourses();
         if (courses.length === 1) {
@@ -61,16 +67,14 @@ class CourseRowRenderer {
             this.container.appendChild(row);
         }
         
-        // Smooth scroll to the bottom
+        // Smooth scroll to the newly added course row
         setTimeout(() => {
-            this.container.scrollTo({
-                top: this.container.scrollHeight,
-                behavior: 'smooth'
-            });
-            
-            // Add blinking animation
             const newRow = document.getElementById(`course-row-${rowId}`);
             if (newRow) {
+                // Scroll the container to show the new row
+                newRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                
+                // Add blinking animation
                 newRow.classList.add('newly-added');
                 setTimeout(() => {
                     newRow.classList.remove('newly-added');
