@@ -585,6 +585,7 @@ body, html {
     position: sticky;
     left: 0;
     z-index: 20;
+    background: rgb(40, 40, 40); /* Solid background matching time-slot to cover gaps */
 }
 
 .day-column {
@@ -748,7 +749,7 @@ body, html {
     left: 0;
     right: 0;
     top: 0;
-    z-index: 10;
+    z-index: 5;
     color: white !important;
     border-left: 3px solid rgba(255, 255, 255, 0.3);
     pointer-events: auto; /* Block clicks from reaching cells behind */
@@ -762,7 +763,7 @@ body, html {
     right: 0;
     height: 35px;
     pointer-events: none;
-    z-index: 15;
+    z-index: 6;
 }
 
 /* Enhanced tooltip styling for schedule lessons */
