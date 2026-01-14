@@ -577,18 +577,26 @@ body, html {
     }
 }
 
-.time-column,
+.time-column {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+    min-width: 0; /* Prevents content from expanding the column */
+    position: sticky;
+    left: 0;
+    z-index: 20;
+}
+
 .day-column {
     display: flex;
     flex-direction: column;
     gap: 1px;
     min-width: 0; /* Prevents content from expanding the column */
-    overflow: hidden;
 }
 
 .time-header,
 .day-header {
-    background: rgba(201, 146, 8, 0.3);
+    background: rgb(201, 146, 8);
     color: #fff;
     padding: 12px 8px;
     text-align: center;
@@ -601,7 +609,13 @@ body, html {
     justify-content: center;
     cursor: pointer;
     transition: background 0.2s;
-    position: relative;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.time-header {
+    z-index: 30; /* Higher than day headers and time column to appear on top at intersection */
 }
 
 .unselect-all-btn {
@@ -639,11 +653,11 @@ body, html {
 }
 
 .day-header:hover {
-    background: rgba(201, 146, 8, 0.45);
+    background: rgb(221, 166, 28);
 }
 
 .time-slot {
-    background: rgba(0, 0, 0, 0.3);
+    background: rgb(40, 40, 40);
     color: rgba(255, 255, 255, 0.7);
     padding: 8px;
     text-align: right;
@@ -658,7 +672,7 @@ body, html {
 }
 
 .time-slot:hover {
-    background: rgba(0, 0, 0, 0.5);
+    background: rgb(50, 50, 50);
     color: rgba(255, 255, 255, 0.9);
 }
 
@@ -1537,5 +1551,14 @@ body, html {
     
     .add-course-row-btn {
         display: none;
+    }
+    
+    #footer {
+        display: none;
+        height: 0px;
+    }
+    
+    .schedule-container {
+        max-height: calc(50vh - 30px);
     }
 }
