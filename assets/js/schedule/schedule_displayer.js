@@ -307,9 +307,32 @@ class ScheduleDisplayer {
     }
 
     /**
+     * Show the "no valid plans" message overlay
+     */
+    showNoPlansMessage() {
+        const overlay = document.getElementById('no-plans-overlay');
+        if (overlay) {
+            overlay.style.display = 'flex';
+        }
+    }
+
+    /**
+     * Hide the "no valid plans" message overlay
+     */
+    hideNoPlansMessage() {
+        const overlay = document.getElementById('no-plans-overlay');
+        if (overlay) {
+            overlay.style.display = 'none';
+        }
+    }
+
+    /**
      * Display the course schedule on the grid
      */
     display(useGhostStyle = false) {
+        // Hide the no plans message when displaying a schedule
+        this.hideNoPlansMessage();
+        
         // Clear existing lessons
         this.clear();
         

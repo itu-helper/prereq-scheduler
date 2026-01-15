@@ -426,6 +426,13 @@ class ScheduleCreator {
                 this._displayPinnedLessonsOnly();
             } else {
                 this.scheduleDisplayer.clear();
+                // Show "no valid plans" message if there are selected courses
+                const validCourses = this.courseSelectionManager.getValidCourses();
+                if (validCourses && validCourses.length > 0) {
+                    this.scheduleDisplayer.showNoPlansMessage();
+                } else {
+                    this.scheduleDisplayer.hideNoPlansMessage();
+                }
             }
             // Update warnings (will clear them if no schedule)
             this.dayWarningManager.updateWarnings(null);

@@ -565,8 +565,11 @@ body, html {
         -webkit-overflow-scrolling: touch;
         touch-action: manipulation;
         overscroll-behavior: contain;
-        height: calc(100% - 80px);
-        max-height: calc(50vh - 80px);
+        flex: 1;
+        height: auto;
+        max-height: none;
+        display: flex;
+        flex-direction: column;
     }
 
     .schedule-grid {
@@ -1059,6 +1062,41 @@ body, html {
     color: white;
 }
 
+/* No Plans Overlay Styles */
+.no-plans-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 499;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    backdrop-filter: blur(3px);
+}
+
+.no-plans-content {
+    text-align: center;
+    color: #fff;
+    padding: 40px;
+    max-width: 500px;
+}
+
+.no-plans-content i {
+    font-size: 4rem;
+    color: rgba(201, 146, 8, 0.9);
+    margin-bottom: 20px;
+    display: block;
+}
+
+.no-plans-text {
+    font-size: 1.2rem;
+    line-height: 1.6;
+    color: rgba(255, 255, 255, 0.9);
+}
+
 .schedule-loading-spinner {
     width: 48px;
     height: 48px;
@@ -1126,9 +1164,20 @@ body, html {
 
 /* Mobile/Tablet Support - Switch to 2-row layout below 1400px */
 @media (max-width: 1399px) {
+    #footer {
+        margin-top: 10px !important;
+        margin-bottom: 0 !important;
+    }
+
+    .calendar-note {
+        margin-top: 8px;
+        margin-bottom: 0;
+    }
+
     .container {
         flex-direction: column;
         overflow: auto;
+        height: 100vh;
     }
 
     .left-section {
@@ -1138,11 +1187,14 @@ body, html {
         max-height: 50vh;
         overflow-y: auto;
         transition: all 0.3s ease;
+        flex-shrink: 0;
     }
 
     .left-section.collapsed {
         max-height: none;
         overflow: hidden;
+        height: auto;
+        flex-shrink: 0;
     }
 
     .left-section.collapsed .left-section-header {
@@ -1164,17 +1216,30 @@ body, html {
         display: flex;
     }
 
+    .mobile-toggle-btn {
+        display: flex;
+    }
+
     .right-section {
         width: 100%;
         height: 50vh;
         min-height: 50vh;
         flex: 1;
-        overflow: hidden;
+        overflow-y: auto;
+        padding: 15px;
+        display: flex;
+        flex-direction: column;
     }
 
     .left-section.collapsed ~ .right-section {
         height: auto;
-        min-height: calc(100vh - 100px);
+        flex: 1;
+        min-height: 0;
+    }
+
+    .left-section.collapsed ~ .right-section .schedule-container {
+        flex: 1;
+        min-height: 0;
     }
 
     /* Adjust course selection to not take too much space */
@@ -1209,14 +1274,16 @@ body, html {
         margin-top: 10px;
     }
 
+    .add-course-row-btn {
+        position: sticky;
+        bottom: 0;
+        z-index: 10;
+        box-shadow: inset 0 0 0 1px #ffffff, 0 -2px 8px rgba(0, 0, 0, 0.3);
+        margin-top: auto;
+    }
+
     .dropdown-group {
         margin-bottom: 0px;
-    }
-}
-
-@media (max-width: 850px) {
-    .mobile-toggle-btn {
-        display: flex;
     }
 }
 
@@ -1552,14 +1619,5 @@ body, html {
     
     .add-course-row-btn {
         display: none;
-    }
-    
-    #footer {
-        display: none;
-        height: 0px;
-    }
-    
-    .schedule-container {
-        max-height: calc(50vh - 30px);
     }
 }
