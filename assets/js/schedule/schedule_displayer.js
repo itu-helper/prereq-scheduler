@@ -307,22 +307,28 @@ class ScheduleDisplayer {
     }
 
     /**
-     * Show the "no valid plans" message overlay
+     * Show the "no valid plans" message popup
      */
     showNoPlansMessage() {
-        const overlay = document.getElementById('no-plans-overlay');
-        if (overlay) {
-            overlay.style.display = 'flex';
+        const popup = document.getElementById('no-plans-popup');
+        if (popup) {
+            popup.style.display = 'block';
+            
+            // Add event listener to close button
+            const closeBtn = document.getElementById('no-plans-close-btn');
+            if (closeBtn) {
+                closeBtn.onclick = () => this.hideNoPlansMessage();
+            }
         }
     }
 
     /**
-     * Hide the "no valid plans" message overlay
+     * Hide the "no valid plans" message popup
      */
     hideNoPlansMessage() {
-        const overlay = document.getElementById('no-plans-overlay');
-        if (overlay) {
-            overlay.style.display = 'none';
+        const popup = document.getElementById('no-plans-popup');
+        if (popup) {
+            popup.style.display = 'none';
         }
     }
 

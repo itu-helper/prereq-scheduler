@@ -1063,38 +1063,70 @@ body, html {
 }
 
 /* No Plans Overlay Styles */
-.no-plans-overlay {
+.no-plans-popup {
     position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.85);
-    z-index: 499;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 500;
     display: none;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(3px);
 }
 
 .no-plans-content {
+    background: linear-gradient(135deg, rgba(25, 25, 25, 0.98), rgba(15, 15, 15, 0.98));
+    border: 2px solid rgba(201, 146, 8, 0.3);
+    border-radius: 15px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
     text-align: center;
     color: #fff;
     padding: 40px;
     max-width: 500px;
+    min-width: 400px;
 }
 
 .no-plans-content i {
     font-size: 4rem;
     color: rgba(201, 146, 8, 0.9);
-    margin-bottom: 20px;
-    display: block;
+    margin: 0 auto 20px auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: fit-content;
 }
 
 .no-plans-text {
     font-size: 1.2rem;
     line-height: 1.6;
     color: rgba(255, 255, 255, 0.9);
+    margin-bottom: 25px;
+}
+
+.no-plans-close-btn {
+    background: rgba(201, 146, 8, 0.9);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 30px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(201, 146, 8, 0.3);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    line-height: 1;
+}
+
+.no-plans-close-btn:hover {
+    background: rgba(201, 146, 8, 1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(201, 146, 8, 0.4);
+}
+
+.no-plans-close-btn:active {
+    transform: translateY(0);
 }
 
 .schedule-loading-spinner {
@@ -1280,6 +1312,8 @@ body, html {
         z-index: 10;
         box-shadow: inset 0 0 0 1px #ffffff, 0 -2px 8px rgba(0, 0, 0, 0.3);
         margin-top: auto;
+        background: #58471d;
+        opacity: 1;
     }
 
     .dropdown-group {
