@@ -160,9 +160,10 @@ class CourseSchedule {
             }
             
             // Base case: if we've processed all courses, add the current schedule
+            // Note: Schedule is already validated during construction (early overlap detection)
             if (courseIndex === validCourses.length) {
                 const sch = new CourseSchedule([...currentSchedule], unavailableSlots);
-                if (sch.isValid()) allSchedules.push(sch);
+                allSchedules.push(sch);
                 return;
             }
 
@@ -213,6 +214,26 @@ class CourseSchedule {
                 }
                 
                 const lesson = validLessons[i];
+                
+                // Early overlap detection: Check if this lesson overlaps with any lesson already in currentSchedule
+                let hasOverlap = false;
+                for (let j = 0; j < currentSchedule.length; j++) {
+                    if (CourseSchedule.prototype._doLessonsOverlap(lesson, currentSchedule[j])) {
+                        hasOverlap = true;
+                        break;
+                    }
+                }
+                
+                // Skip this lesson if it overlaps with existing schedule
+                if (hasOverlap) {
+                    continue;
+                }
+                
+                // Early unavailable slot check: Check if this lesson overlaps with unavailable slots
+                if (CourseSchedule.prototype._doesLessonOverlapWithUnavailableSlots(lesson)) {
+                    continue;
+                }
+                
                 // Wrap lesson with course information
                 const lessonWithCourse = {
                     lesson: lesson,
