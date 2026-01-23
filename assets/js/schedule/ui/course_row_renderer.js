@@ -288,7 +288,7 @@ class CourseRowRenderer {
             instructors.forEach(instructor => {
                 const option = document.createElement('option');
                 option.value = instructor;
-                option.textContent = instructor;
+                option.textContent = instructor === '-' ? 'Bilinmiyor (-)' : instructor;
                 dropdown.appendChild(option);
             });
             
@@ -397,7 +397,7 @@ class CourseRowRenderer {
             instructors.forEach(instructor => {
                 const option = document.createElement('option');
                 option.value = instructor;
-                option.textContent = instructor;
+                option.textContent = instructor === '-' ? 'Bilinmiyor (-)' : instructor;
                 instructorDropdown.appendChild(option);
             });
         }

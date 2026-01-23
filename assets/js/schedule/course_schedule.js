@@ -1,4 +1,4 @@
-MAX_SCHEDULE_COMBINATIONS = 500;
+MAX_SCHEDULE_COMBINATIONS = 1000;
 
 class CourseSchedule {
     constructor(lessons, unavailableSlots = []) {

@@ -193,7 +193,8 @@ class ScheduleDisplayer {
         const instructor = document.createElement('div');
         ScheduleStyle.applyInfoTextStyles(instructor);
         ScheduleStyle.applyTextEllipsis(instructor);
-        instructor.innerHTML = `<i class="fa-solid fa-user" style="display: inline-block; width: 20px; margin-right: 6px;"></i>${schedule.lesson.instructor || 'TBA'}`;
+        const instructorName = schedule.lesson.instructor === '-' ? 'Bilinmiyor (-)' : (schedule.lesson.instructor || 'TBA');
+        instructor.innerHTML = `<i class="fa-solid fa-user" style="display: inline-block; width: 20px; margin-right: 6px;"></i>${instructorName}`;
         
         // Check if lesson is online
         const teachingMethod = (schedule.lesson.teachingMethod || '').toLowerCase();
@@ -285,7 +286,7 @@ class ScheduleDisplayer {
             `${courseCodeTitle}: ${courseNameTitle}`,
             `${schedule.startTime} - ${schedule.endTime}`,
             `CRN: ${schedule.lesson.crn || 'N/A'}`,
-            `Öğretim Görevlisi: ${schedule.lesson.instructor || 'TBA'}`,
+            `Öğretim Görevlisi: ${instructorName}`,
             ...buildingInfo
         ].filter(Boolean).join('\n');
         

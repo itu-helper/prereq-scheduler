@@ -222,8 +222,7 @@ class CourseSelectionManager {
         course.lessons.forEach(lesson => {
             if (ScheduleValidator.isValidLesson(lesson, selectedProgrammeCodes) && 
                 lesson.instructor && 
-                lesson.instructor.trim() !== '' && 
-                lesson.instructor !== '-') {
+                lesson.instructor.trim() !== '') {
                 instructors.add(lesson.instructor);
             }
         });
