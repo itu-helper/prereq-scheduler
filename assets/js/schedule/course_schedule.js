@@ -230,8 +230,11 @@ class CourseSchedule {
                 }
                 
                 // Early unavailable slot check: Check if this lesson overlaps with unavailable slots
-                if (CourseSchedule.prototype._doesLessonOverlapWithUnavailableSlots(lesson)) {
-                    continue;
+                if (unavailableSlots.length > 0) {
+                    const tempSchedule = new CourseSchedule([], unavailableSlots);
+                    if (tempSchedule._doesLessonOverlapWithUnavailableSlots(lesson)) {
+                        continue;
+                    }
                 }
                 
                 // Wrap lesson with course information
