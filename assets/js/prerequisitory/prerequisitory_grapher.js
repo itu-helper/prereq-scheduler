@@ -374,6 +374,22 @@ class PrerequisitoryGrapher {
         const startScrollTop = document.documentElement.scrollTop;
 
         location.href = this.SELECTIVE_COURSE_SELECTION_LOC;
+        // Set close button to restore scroll
+        setTimeout(() => {
+            let closeButtons = document.querySelectorAll('#SelectiveCourseSelection .close');
+            closeButtons.forEach(button => {
+                button.onclick = () => {
+                    location.href = "#";
+                    setTimeout(() => {
+                        window.scrollTo({
+                            top: startScrollTop,
+                            left: 0,
+                            behavior: 'instant'
+                        });
+                    }, 300);
+                };
+            });
+        }, 100);
         document.getElementById("selCourseTitle").innerHTML = courseGroup.title;
         let dropdown = document.getElementById("selCourseDropdown");
 
@@ -412,6 +428,7 @@ class PrerequisitoryGrapher {
             window.scrollTo({
                 top: startScrollTop,
                 left: 0,
+                behavior: 'instant'
             });
         };
 
@@ -430,6 +447,7 @@ class PrerequisitoryGrapher {
                     window.scrollTo({
                         top: startScrollTop,
                         left: 0,
+                        behavior: 'instant'
                     });
                 }
                 if (iter_counter > 1)
