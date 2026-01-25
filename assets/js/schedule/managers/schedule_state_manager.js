@@ -46,6 +46,7 @@ class ScheduleStateManager {
                 courses,
                 unavailableSlots,
                 this.cancellationToken,
+                this.pinnedLessons,
                 (count, validCount) => LoadingOverlayManager.updateCounter(count, validCount)
             );
             
