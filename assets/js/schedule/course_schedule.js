@@ -133,7 +133,7 @@ class CourseSchedule {
         );
     }
 
-    static async generateAllAvailableSchedules(courses, unavailableSlots = [], cancellationToken = null, progressCallback = null) {
+    static async generateAllAvailableSchedules(courses, unavailableSlots = [], pinnedCRNs = new Set(), cancellationToken = null, progressCallback = null) {
         const allSchedules = [];
         
         // Filter out courses that don't have lessons or have empty lessons array
@@ -180,6 +180,12 @@ class CourseSchedule {
             // Filter out lessons without valid day/time
             let validLessons = lessons.filter(lesson => CourseSchedule._isValidLesson(lesson, unavailableSlots));
             
+            // Possible Bug fix ig
+            const pinnedLessonInCourse = validLessons.find(lesson => pinnedCRNs.has(lesson.crn));
+            if (pinnedLessonInCourse) {
+                validLessons = [pinnedLessonInCourse];
+            }
+
             // Filter by instructor if specified
             if (selectedInstructor) {
                 validLessons = validLessons.filter(lesson => lesson.instructor === selectedInstructor);
