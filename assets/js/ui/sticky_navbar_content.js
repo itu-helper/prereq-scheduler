@@ -7,11 +7,11 @@ window.onload = (_) => {
 function nextStep() {
     if (prereqGrapher == undefined) {
         return;
-    } else if (prereqGrapher.graphMode == 0) {
-        prereqGrapher.switchGraphMode(1);
+    } else if (prereqGrapher.graphMode == GraphMode.TAKEN_COURSES) {
+        prereqGrapher.switchGraphMode(GraphMode.COURSES_TO_TAKE);
         document.getElementById("previousStep").disabled = false;
         updateStepText(1);
-    } else if (prereqGrapher.graphMode == 1) {
+    } else if (prereqGrapher.graphMode == GraphMode.COURSES_TO_TAKE) {
         location.href = "#CoursePlanCreator";
     }
 }
@@ -19,8 +19,8 @@ function nextStep() {
 function previousStep() {
     if (prereqGrapher == undefined) {
         return;
-    } else if (prereqGrapher.graphMode == 1) {
-        prereqGrapher.switchGraphMode(0);
+    } else if (prereqGrapher.graphMode == GraphMode.COURSES_TO_TAKE) {
+        prereqGrapher.switchGraphMode(GraphMode.TAKEN_COURSES);
         document.getElementById("previousStep").disabled = true;
         updateStepText(0);
     }

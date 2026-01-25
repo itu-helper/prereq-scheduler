@@ -5,7 +5,7 @@ function getFormValues(name) {
     return getValue;
 }
 
-function graphPrerequistoryGraph(startMode = 0) {
+function graphPrerequistoryGraph(startMode = GraphMode.TAKEN_COURSES) {
     $("#prerequisitoryChains").show();
 
     if (prereqGrapher != undefined) {

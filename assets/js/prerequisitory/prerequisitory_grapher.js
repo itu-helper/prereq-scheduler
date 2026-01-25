@@ -1,3 +1,9 @@
+var GraphMode = {
+    VISUALIZE: -1,
+    TAKEN_COURSES: 0,
+    COURSES_TO_TAKE: 1,
+};
+
 class PrerequisitoryGrapher {
     INVERSE_ASPECT_RATIO = .15;
     HORIZONTAL_NODE_RATIO = .8;
@@ -19,7 +25,7 @@ class PrerequisitoryGrapher {
         // -1: Only Visualize.
         // 0: Choose Taken Courses.
         // 1: Choose Courses to Take.
-        this.graphMode = 0;
+        this.graphMode = GraphMode.TAKEN_COURSES;
 
         this.courses = [];
         this.maxCourseCountInSemesters = 9;
@@ -35,16 +41,14 @@ class PrerequisitoryGrapher {
 
     switchGraphMode(desiredMode) {
         this.futureCourseNodes = [];
-        if (desiredMode == 0) {
-            this.graphMode = 0;
+        this.graphMode = desiredMode;
+        if (desiredMode == GraphMode.TAKEN_COURSES) {
             this.takeableCourses = [];
             this.coursesToTake = [];
-        } else if (desiredMode == 1) {
-            this.graphMode = 1;
+        } else if (desiredMode == GraphMode.COURSES_TO_TAKE) {
             this.updateTakeableCourses();
         }
-        else if (desiredMode == -1) {
-            this.graphMode = -1;
+        else if (desiredMode == GraphMode.VISUALIZE) {
             this.takeableCourses = [];
             this.coursesToTake = [];
         }
@@ -461,7 +465,7 @@ class PrerequisitoryGrapher {
         let selectedCourse = node.selectedCourse;
 
         // Choose Taken Course.
-        if (this.graphMode == 0) {
+        if (this.graphMode == GraphMode.TAKEN_COURSES) {
             if (this.takenCourseNodes.includes(node)) {
                 this.removeCourseFromTakenCourses(node);
             } else {
@@ -469,7 +473,7 @@ class PrerequisitoryGrapher {
             }
         }
         // Choose Courses to Take.
-        else if (this.graphMode == 1) {
+        else if (this.graphMode == GraphMode.COURSES_TO_TAKE) {
             if (selectedCourse != undefined) {
                 if (this.coursesToTake.includes(selectedCourse)) {
                     this.coursesToTake.splice(this.coursesToTake.indexOf(selectedCourse), 1);
@@ -484,16 +488,16 @@ class PrerequisitoryGrapher {
     onNodeClick(node) {
         // Selective Course Node
         if (this.isSelectiveNode(node)) {
-            if (this.graphMode == 0) {
+            if (this.graphMode == GraphMode.TAKEN_COURSES) {
                 this.selectSelectiveCourse(node);
             }
-            else if (this.graphMode == 1) {
+            else if (this.graphMode == GraphMode.COURSES_TO_TAKE) {
                 if (node.selectedCourse == undefined)
                     this.selectSelectiveCourse(node);
                 else
                     this.onSelectiveNodeClick(node);
             }
-            else if (this.graphMode == -1) {
+            else if (this.graphMode == GraphMode.VISUALIZE) {
                 this.selectSelectiveCourse(node);
             }
         }
@@ -502,7 +506,7 @@ class PrerequisitoryGrapher {
             const nodesOnInfoNode = this.getNodesOnInfoNode(node);
 
             // Choose Taken Course.
-            if (this.graphMode == 0) {
+            if (this.graphMode == GraphMode.TAKEN_COURSES) {
                 let rowContainsTakenCourse = false;
                 for (let i = 0; i < nodesOnInfoNode.length; i++) {
                     if (this.takenCourseNodes.includes(nodesOnInfoNode[i])) {
@@ -519,7 +523,7 @@ class PrerequisitoryGrapher {
 
             }
             // Choose Courses to Take.
-            else if (this.graphMode == 1) {
+            else if (this.graphMode == GraphMode.COURSES_TO_TAKE) {
 
             }
 
@@ -527,7 +531,7 @@ class PrerequisitoryGrapher {
         // Course Node
         else {
             // Choose Taken Course.
-            if (this.graphMode == 0) {
+            if (this.graphMode == GraphMode.TAKEN_COURSES) {
                 if (this.takenCourseNodes.includes(node)) {
                     this.removeCourseFromTakenCourses(node);
                 } else {
@@ -535,7 +539,7 @@ class PrerequisitoryGrapher {
                 }
             }
             // Choose Courses to Take.
-            else if (this.graphMode == 1) {
+            else if (this.graphMode == GraphMode.COURSES_TO_TAKE) {
                 const course = node.course;
                 if (this.coursesToTake.includes(course)) {
                     this.coursesToTake.splice(this.coursesToTake.indexOf(course), 1);
@@ -545,7 +549,7 @@ class PrerequisitoryGrapher {
                 }
             }
             // Visualize prereqs of the selected course.
-            else if (this.graphMode == -1) {
+            else if (this.graphMode == GraphMode.VISUALIZE) {
                 var wasCourseSelected = this.takenCourseNodes.includes(node)
 
                 this.takenCourses = [];
