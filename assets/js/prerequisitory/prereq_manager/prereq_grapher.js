@@ -74,7 +74,7 @@ class PrerequisitoryGrapher {
                     node.label = this.getNodeLabel(node.selectedCourse);
                 else {
                     node.label = this.getNodeLabel(node.courseGroup);
-                    node.style = NODE_STYLES.SELECTIVE_UNSELECTED;
+                    node.style = NODE_STYLES.SELECTIVE_DEFAULT;
                 }
             }
         }
@@ -330,7 +330,7 @@ class PrerequisitoryGrapher {
                     this.manager.takenCourses = [];
                     this.manager.futureCourses = [];
 
-                    if (!wasCourseSelected) {
+                    if (!wasCourseSelected || (this.prereqCenterNode && this.prereqCenterNode !== node)) {
                         this.manager.addCourseToTaken(node.selectedCourse);
                         this.manager.addCourseToFuture(node.selectedCourse);
                         this.prereqCenterNode = node;
@@ -388,7 +388,7 @@ class PrerequisitoryGrapher {
                 this.manager.takenCourses = [];
                 this.manager.futureCourses = [];
 
-                if (!wasCourseSelected) {
+                if (!wasCourseSelected || (this.prereqCenterNode && this.prereqCenterNode !== node)) {
                     this.manager.addCourseToTaken(course);
                     this.manager.addCourseToFuture(course);
                     this.prereqCenterNode = node;
@@ -614,7 +614,7 @@ class PrerequisitoryGrapher {
             selectedCourse: undefined,
             size: [50, 50],
             type: "rect",
-            style: NODE_STYLES.SELECTIVE_UNSELECTED,
+            style: NODE_STYLES.SELECTIVE_DEFAULT,
             labelCfg: {
                 position: 'center',
                 style: {

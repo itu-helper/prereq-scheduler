@@ -8,8 +8,8 @@ const NODE_STYLES = {
         radius: [10],
     },
     TAKEN: {
-        fill: '#FFFFFF',
-        fillOpacity: .2,
+        fill: '#5a5856',
+        fillOpacity: 1,
         stroke: 'white',
         strokeOpacity: 1,
         lineWidth: 4,
@@ -32,15 +32,15 @@ const NODE_STYLES = {
         radius: [10],
     },
     SELECTIVE_TAKEN: {
-        fill: '#FFFFFF',
-        fillOpacity: .2,
+        fill: '#5a5856',
+        fillOpacity: 1,
         stroke: 'white',
         strokeOpacity: 1,
         lineWidth: 4,
         radius: [10],
         lineDash: [2],
     },
-    SELECTIVE_UNSELECTED: {
+    SELECTIVE_DEFAULT: {
         fill: '#41505b',
         fillOpacity: 0,
         stroke: 'white',
