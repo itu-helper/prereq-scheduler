@@ -1,6 +1,5 @@
-NODE_STYLES = [
-    // Default
-    {
+const NODE_STYLES = {
+    DEFAULT: {
         fill: '#41505b',
         fillOpacity: 0,
         stroke: 'white',
@@ -8,8 +7,7 @@ NODE_STYLES = [
         lineWidth: 1,
         radius: [10],
     },
-    // A Taken Lesson
-    {
+    TAKEN: {
         fill: '#FFFFFF',
         fillOpacity: .2,
         stroke: 'white',
@@ -17,8 +15,7 @@ NODE_STYLES = [
         lineWidth: 4,
         radius: [10],
     },
-    // A Takeable Lesson
-    {
+    TAKEABLE: {
         fill: '#41505b',
         fillOpacity: 1,
         stroke: 'white',
@@ -26,8 +23,7 @@ NODE_STYLES = [
         lineWidth: 1,
         radius: [10],
     },
-    // A Lesson to Take
-    {
+    TO_TAKE: {
         fill: '#7895B2',
         fillOpacity: 1,
         stroke: 'white',
@@ -35,8 +31,7 @@ NODE_STYLES = [
         lineWidth: 4,
         radius: [10],
     },
-    // Un Selected Selective Course
-    {
+    SELECTIVE_UNSELECTED: {
         fill: '#41505b',
         fillOpacity: 0,
         stroke: 'white',
@@ -45,8 +40,7 @@ NODE_STYLES = [
         radius: [10],
         lineDash: [2],
     },
-    // A Future Course
-    {
+    FUTURE: {
         fill: '#ba9359',
         fillOpacity: 1,
         stroke: 'white',
@@ -54,8 +48,7 @@ NODE_STYLES = [
         lineWidth: 4,
         radius: [10],
     },
-    // Prereq Center
-    {
+    PREREQ_CENTER: {
         fill: '#41505b',
         fillOpacity: 1,
         stroke: 'white',
@@ -63,41 +56,37 @@ NODE_STYLES = [
         lineWidth: 4,
         radius: [10],
     },
-];
-EDGE_STYLES = [
-    // Default
-    {
+};
+
+const EDGE_STYLES = {
+    DEFAULT: {
         endArrow: false,
         lineWidth: 1,
         stroke: 'grey',
         lineDash: [0]
     },
-    // A Taken Lesson
-    {
+    TAKEN: {
         endArrow: false,
         lineWidth: 4,
         stroke: 'white',
         lineDash: [0]
     },
-    // A Takeable Lesson
-    {
+    TAKEABLE: {
         endArrow: false,
         lineWidth: 1,
         stroke: '#41505b',
         lineDash: [2]
     },
-    // A Lesson to Take
-    {
+    TO_TAKE: {
         endArrow: false,
         lineWidth: 4,
         stroke: '#7895B2',
         lineDash: [0]
     },
-    // Future Course
-    {
+    FUTURE: {
         endArrow: false,
         lineWidth: 4,
         stroke: '#ba9359',
         lineDash: [0]
-    },
-];
+    }
+};

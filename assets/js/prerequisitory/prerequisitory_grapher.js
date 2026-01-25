@@ -146,24 +146,24 @@ class PrerequisitoryGrapher {
             if (this.isSelectiveNode(node)) course = node.selectedCourse;
 
             if (this.prereqCenter == node)
-                node.style = NODE_STYLES[6];
+                node.style = NODE_STYLES.PREREQ_CENTER;
             else if (this.futureCourseNodes.includes(node))
-                node.style = NODE_STYLES[5];
+                node.style = NODE_STYLES.FUTURE;
             else if (this.coursesToTake.includes(course))
-                node.style = NODE_STYLES[3];
+                node.style = NODE_STYLES.TO_TAKE;
             else if (this.takenCourseNodes.includes(node))
-                node.style = NODE_STYLES[1];
+                node.style = NODE_STYLES.TAKEN;
             else if (this.takeableCourses.includes(course))
-                node.style = NODE_STYLES[2];
+                node.style = NODE_STYLES.TAKEABLE;
             else
-                node.style = NODE_STYLES[0];
+                node.style = NODE_STYLES.DEFAULT;
 
             if (this.isSelectiveNode(node)) {
                 if (node.selectedCourse != undefined)
                     node.label = this.getNodeLabel(node.selectedCourse);
                 else {
                     node.label = this.getNodeLabel(node.courseGroup);
-                    node.style = NODE_STYLES[4];
+                    node.style = NODE_STYLES.SELECTIVE_UNSELECTED;
                 }
             }
         }
@@ -173,7 +173,7 @@ class PrerequisitoryGrapher {
         for (let i = 0; i < this.edges.length; i++) {
             let target = this.edges[i].target;
             let source = this.edges[i].source;
-            let styleToUse = 0;
+            let styleToUse = EDGE_STYLES.DEFAULT;
 
             // Future Course
             for (let j = 0; j < this.futureCourseNodes.length; j++) {
@@ -188,7 +188,7 @@ class PrerequisitoryGrapher {
                 }
 
                 if (foundSource && target == this.futureCourseNodes[j].id) {
-                    styleToUse = 4;
+                    styleToUse = EDGE_STYLES.FUTURE;
                     break;
                 }
             }
@@ -198,32 +198,32 @@ class PrerequisitoryGrapher {
                 const courseToTakeNode = this.courseToNode(this.coursesToTake[j]);
                 if (courseToTakeNode == null) continue;
                 if (target == courseToTakeNode.id) {
-                    styleToUse = 3;
+                    styleToUse = EDGE_STYLES.TO_TAKE;
                     break;
                 }
             }
             // Taken Course
-            if (styleToUse < 1) {
+            if (styleToUse === EDGE_STYLES.DEFAULT) {
                 for (let j = 0; j < this.takenCourseNodes.length; j++) {
                     const takenCourseNode = this.takenCourseNodes[j];
                     if (target == takenCourseNode.id) {
-                        styleToUse = 1;
+                        styleToUse = EDGE_STYLES.TAKEN;
                         break;
                     }
                 }
             }
             // Takeable Course
-            if (styleToUse == 0) {
+            if (styleToUse === EDGE_STYLES.DEFAULT) {
                 for (let j = 0; j < this.takeableCourses.length; j++) {
                     const takeableCourseNode = this.courseToNode(this.takeableCourses[j]);;
                     if (target == takeableCourseNode.id) {
-                        styleToUse = 2;
+                        styleToUse = EDGE_STYLES.TAKEABLE;
                         break;
                     }
                 }
             }
 
-            this.edges[i].style = EDGE_STYLES[styleToUse];
+            this.edges[i].style = styleToUse;
         }
     }
 
@@ -802,7 +802,7 @@ class PrerequisitoryGrapher {
             selectedCourse: undefined,
             size: [50, 50],
             type: "rect",
-            style: NODE_STYLES[4],
+            style: NODE_STYLES.SELECTIVE_UNSELECTED,
             labelCfg: {
                 position: 'center',
                 style: {
@@ -833,7 +833,7 @@ class PrerequisitoryGrapher {
             course: course,
             size: [50, 50],
             type: "rect",
-            style: NODE_STYLES[0],
+            style: NODE_STYLES.DEFAULT,
             labelCfg: {
                 position: 'center',
                 wrap: "break-word",
@@ -860,7 +860,7 @@ class PrerequisitoryGrapher {
             source: s,
             target: t,
             type: 'cubic-vertical',
-            style: EDGE_STYLES[0],
+            style: EDGE_STYLES.DEFAULT,
         }
     }
 
