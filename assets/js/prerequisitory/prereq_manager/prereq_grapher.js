@@ -230,9 +230,12 @@ class PrerequisitoryGrapher {
         }
 
         // Collect all selected courses in other selective course dropdowns
-        const allSelections = Object.values(this.manager.selections);
-        // Exclude the current node's selection (if any)
-        const otherSelections = allSelections.filter(sel => sel && sel !== selectiveCourseNode.selectedCourse);
+        const otherSelections = [];
+        for (const [id, selection] of Object.entries(this.manager.selections)) {
+            if (id !== selectiveCourseNode.id && selection) {
+                otherSelections.push(selection);
+            }
+        }
 
         let anyDisabled = false;
         for (let i = 0; i < courseGroup.courses.length; i++) {
