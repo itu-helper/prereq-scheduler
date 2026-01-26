@@ -124,16 +124,12 @@ class CourseSchedule {
         return false;
     }
 
-    static _isValidLesson(lesson, unavailableSlots = []) {
+    static _isValidLesson(lesson, unavailableSlots = [], selectedProgrammeCodes = []) {
         // Delegate to ScheduleValidator utility
-        // Note: selectedProgrammeCodes is a global variable from the app
-        return ScheduleValidator.isValidLesson(
-            lesson, 
-            typeof selectedProgrammeCodes !== 'undefined' ? selectedProgrammeCodes : []
-        );
+        return ScheduleValidator.isValidLesson(lesson, selectedProgrammeCodes);
     }
 
-    static async generateAllAvailableSchedules(courses, unavailableSlots = [], pinnedCRNs = new Set(), cancellationToken = null, progressCallback = null) {
+    static async generateAllAvailableSchedules(courses, unavailableSlots = [], pinnedCRNs = new Set(), cancellationToken = null, progressCallback = null, selectedProgrammeCodes = []) {
         const allSchedules = [];
         
         // Filter out courses that don't have lessons or have empty lessons array
@@ -177,9 +173,9 @@ class CourseSchedule {
             const selectedInstructor = courseInfo.instructor || null;
             const lessons = currentCourse.lessons;
             
-            // Filter out lessons without valid day/time
-            let validLessons = lessons.filter(lesson => CourseSchedule._isValidLesson(lesson, unavailableSlots));
-            
+            // Filter out lessons without valid day/time and valid for selected programme
+            let validLessons = lessons.filter(lesson => CourseSchedule._isValidLesson(lesson, unavailableSlots, selectedProgrammeCodes));
+
             // Filter out non-pinned lessons if any pinned lessons exist for this course
             const pinnedLessonInCourse = validLessons.find(lesson => pinnedCRNs.has(lesson.crn));
             if (pinnedLessonInCourse) {

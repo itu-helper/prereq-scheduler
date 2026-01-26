@@ -21,9 +21,10 @@ class ScheduleStateManager {
      * 
      * @param {Array} courses - Array of course objects with instructor info
      * @param {Array} unavailableSlots - Array of unavailable time slots
+     * @param {Array} selectedProgrammeCodes - Array of selected programme codes
      * @returns {Promise<Array>} Promise resolving to array of schedules
      */
-    async generateSchedules(courses, unavailableSlots = []) {
+    async generateSchedules(courses, unavailableSlots = [], selectedProgrammeCodes = []) {
         // Cancel any ongoing generation
         this.cancelCurrentGeneration();
         
@@ -47,7 +48,8 @@ class ScheduleStateManager {
                 unavailableSlots,
                 this.pinnedLessons,
                 this.cancellationToken,
-                (count, validCount) => LoadingOverlayManager.updateCounter(count, validCount)
+                (count, validCount) => LoadingOverlayManager.updateCounter(count, validCount),
+                selectedProgrammeCodes
             );
             
             // Check if this generation was superseded

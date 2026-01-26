@@ -404,8 +404,9 @@ class ScheduleCreator {
         try {
             const unavailableSlots = this.gridController.getUnavailableSlots();
             const courses = validCourses.map(c => ({ course: c.course, instructor: c.instructor }));
+            const selectedProgrammes = this.programmeFilterManager.getSelectedProgrammes();
             
-            await this.scheduleStateManager.generateSchedules(courses, unavailableSlots);
+            await this.scheduleStateManager.generateSchedules(courses, unavailableSlots, selectedProgrammes);
         } finally {
             LoadingOverlayManager.hide();
         }
