@@ -180,7 +180,7 @@ class CourseSchedule {
             // Filter out lessons without valid day/time
             let validLessons = lessons.filter(lesson => CourseSchedule._isValidLesson(lesson, unavailableSlots));
             
-            // Possible Bug fix ig
+            // Filter out non-pinned lessons if any pinned lessons exist for this course
             const pinnedLessonInCourse = validLessons.find(lesson => pinnedCRNs.has(lesson.crn));
             if (pinnedLessonInCourse) {
                 validLessons = [pinnedLessonInCourse];

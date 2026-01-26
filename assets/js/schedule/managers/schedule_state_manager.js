@@ -45,8 +45,8 @@ class ScheduleStateManager {
             const schedules = await CourseSchedule.generateAllAvailableSchedules(
                 courses,
                 unavailableSlots,
-                this.cancellationToken,
                 this.pinnedLessons,
+                this.cancellationToken,
                 (count, validCount) => LoadingOverlayManager.updateCounter(count, validCount)
             );
             
