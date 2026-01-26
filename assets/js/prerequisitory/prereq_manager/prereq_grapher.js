@@ -448,12 +448,14 @@ class PrerequisitoryGrapher {
         for (let i = 0; i < this.nodes.length; i++) {
             let node = this.nodes[i];
             if (node.nodeType === NodeType.RESTRICTION) {
-                let parent = node.parentNode;
-                node.x = parent.x;
-                node.y = parent.y + parent.size[1] * 0.65;
-                node.size = [parent.size[0], parent.size[1] * 0.4];
-                node.style.radius = [node.size[1] * .2];
-                node.labelCfg.style.fontSize = parent.labelCfg.style.fontSize * 0.7;
+                let parent = this.nodes.find(n => n.id === node.parentNodeId);
+                if (parent) {
+                    node.x = parent.x;
+                    node.y = parent.y + parent.size[1] * 0.65;
+                    node.size = [parent.size[0], parent.size[1] * 0.4];
+                    node.style.radius = [node.size[1] * .2];
+                    node.labelCfg.style.fontSize = parent.labelCfg.style.fontSize * 0.7;
+                }
             }
         }
 
@@ -519,12 +521,17 @@ class PrerequisitoryGrapher {
                 } else {
                     const newRestrNode = this.getRestrictionNode(node, selectedCourse.classRestrictions);
                     this.nodes.push(newRestrNode);
-                    this.graph.addItem('node', newRestrNode);
+                    if (!this.graph.findById(newRestrNode.id)) {
+                        this.graph.addItem('node', newRestrNode);
+                    }
                 }
             } else {
                 if (existingRestrNode) {
                     this.nodes.splice(existingRestrNodeIndex, 1);
-                    this.graph.removeItem(restrNodeId);
+                    const item = this.graph.findById(restrNodeId);
+                    if (item) {
+                        this.graph.removeItem(item);
+                    }
                 }
             }
         });
@@ -663,7 +670,7 @@ class PrerequisitoryGrapher {
     getRestrictionNode(parentNode, restrictions) {
         return {
             id: parentNode.id + "_restr",
-            parentNode: parentNode,
+            parentNodeId: parentNode.id,
             nodeType: NodeType.RESTRICTION,
             label: `Min ${restrictions} kredi`,
             size: [50, 10],
