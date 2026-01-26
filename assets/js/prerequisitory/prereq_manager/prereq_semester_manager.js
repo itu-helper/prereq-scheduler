@@ -77,6 +77,7 @@ class PrerequisitorySemesterManager {
 
     addCourseToTaken(course) {
         if (!course) return;
+        if (!this.getAllCourses().includes(course)) return;
         if (this.takenCourses.includes(course)) return;
 
         this.takenCourses.push(course);
