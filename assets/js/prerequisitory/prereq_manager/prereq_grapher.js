@@ -1,3 +1,10 @@
+const NodeType = {
+    REGULAR: 'regular',
+    SELECTIVE: 'selective',
+    RESTRICTION: 'restriction',
+    INFO: 'info'
+};
+
 class PrerequisitoryGrapher {
     INVERSE_ASPECT_RATIO = .15;
     HORIZONTAL_NODE_RATIO = .8;
@@ -50,10 +57,10 @@ class PrerequisitoryGrapher {
         for (let i = 0; i < this.nodes.length; i++) {
             let node = this.nodes[i];
 
-            if (this.isInfoNode(node) || node.isRestriction) continue;
+            if (node.nodeType === NodeType.INFO || node.nodeType === NodeType.RESTRICTION) continue;
 
             var course = node.course;
-            const isSelective = this.isSelectiveNode(node);
+            const isSelective = node.nodeType === NodeType.SELECTIVE;
             if (isSelective) course = node.selectedCourse;
 
             if (this.prereqCenterNode == node)
@@ -178,14 +185,14 @@ class PrerequisitoryGrapher {
         for (let i = 0; i < Object.keys(this.coordToNode).length; i++) {
             const key = Object.keys(this.coordToNode)[i];
             if (!key.includes(":")) continue;
-            if (key.split(":")[1] == y && !this.isInfoNode(this.coordToNode[key]))
+            if (key.split(":")[1] == y && this.coordToNode[key].nodeType !== NodeType.INFO)
                 nodesOnInfoNode.push(this.coordToNode[key]);
         }
         return nodesOnInfoNode;
     }
 
     selectSelectiveCourse(selectiveCourseNode) {
-        if (!this.isSelectiveNode(selectiveCourseNode)) return;
+        if (selectiveCourseNode.nodeType !== NodeType.SELECTIVE) return;
 
         const courseGroup = selectiveCourseNode.courseGroup;
 
@@ -312,7 +319,7 @@ class PrerequisitoryGrapher {
     }
 
     onNodeClick(node) {
-        if (this.isSelectiveNode(node)) {
+        if (node.nodeType === NodeType.SELECTIVE) {
             if (this.manager.graphMode == GraphMode.TAKEN_COURSES) {
                 if (node.selectedCourse == undefined)
                     this.selectSelectiveCourse(node);
@@ -345,7 +352,7 @@ class PrerequisitoryGrapher {
                 }
             }
         }
-        else if (this.isInfoNode(node)) {
+        else if (node.nodeType === NodeType.INFO) {
             const nodesOnInfoNode = this.getNodesOnInfoNode(node);
 
             if (this.manager.graphMode == GraphMode.TAKEN_COURSES) {
@@ -407,7 +414,7 @@ class PrerequisitoryGrapher {
     }
 
     onNodeDoubleClick(node) {
-        if (this.isSelectiveNode(node)) {
+        if (node.nodeType === NodeType.SELECTIVE) {
             this.selectSelectiveCourse(node);
         }
     }
@@ -423,7 +430,7 @@ class PrerequisitoryGrapher {
 
             let nodePos;
             let nodeSize;
-            if (this.isInfoNode(node)) {
+            if (node.nodeType === NodeType.INFO) {
                 nodePos = this.getInfoNodePos(parseInt(coords[1].trim()), w);
                 nodeSize = this.getInfoNodeSize(w);
             } else {
@@ -435,12 +442,12 @@ class PrerequisitoryGrapher {
             node.y = nodePos[1];
             node.size = nodeSize;
             node.style.radius = [nodeSize[1] * .2];
-            node.labelCfg.style.fontSize = this.getNodeSize(w)[1] * .15 * (this.isInfoNode(node) ? 1.5 : 1);
+            node.labelCfg.style.fontSize = this.getNodeSize(w)[1] * .15 * (node.nodeType === NodeType.INFO ? 1.5 : 1);
         }
 
         for (let i = 0; i < this.nodes.length; i++) {
             let node = this.nodes[i];
-            if (node.isRestriction) {
+            if (node.nodeType === NodeType.RESTRICTION) {
                 let parent = node.parentNode;
                 node.x = parent.x;
                 node.y = parent.y + parent.size[1] * 0.65;
@@ -491,7 +498,7 @@ class PrerequisitoryGrapher {
     }
 
     updateRestrictionNodes() {
-        const selectiveNodes = this.nodes.filter(n => this.isSelectiveNode(n));
+        const selectiveNodes = this.nodes.filter(n => n.nodeType === NodeType.SELECTIVE);
         
         selectiveNodes.forEach(node => {
             const restrNodeId = node.id + "_restr";
@@ -537,7 +544,7 @@ class PrerequisitoryGrapher {
         if (this.manager.graphMode == GraphMode.VISUALIZE && this.prereqCenterNode) {
             this.manager.futureCourses = [];
             let course = this.prereqCenterNode.course;
-            if (this.isSelectiveNode(this.prereqCenterNode)) {
+            if (this.prereqCenterNode.nodeType === NodeType.SELECTIVE) {
                 course = this.prereqCenterNode.selectedCourse;
             }
             this.manager.addCourseToFuture(course);
@@ -621,13 +628,10 @@ class PrerequisitoryGrapher {
         return course.courseCode.toLowerCase().replace(" ", "");
     }
 
-    isInfoNode(node) {
-        return node.id.includes("info_node");
-    }
-
     getInfoNode(x, y, label, courses) {
         return {
             id: "info_node " + y.toString(),
+            nodeType: NodeType.INFO,
             x: x,
             y: y * 10,
             label: label,
@@ -648,10 +652,6 @@ class PrerequisitoryGrapher {
         }
     }
 
-    isSelectiveNode(node) {
-        return node.id.includes("sel_");
-    }
-
     getNodeLabel(labelObj) {
         if (labelObj.constructor.name == "CourseGroup") {
             return wrap(fixPunctuation(labelObj.title), 15)
@@ -664,7 +664,7 @@ class PrerequisitoryGrapher {
         return {
             id: parentNode.id + "_restr",
             parentNode: parentNode,
-            isRestriction: true,
+            nodeType: NodeType.RESTRICTION,
             label: `Min ${restrictions} kredi`,
             size: [50, 10],
             type: "rect",
@@ -682,6 +682,7 @@ class PrerequisitoryGrapher {
     getSelectiveNode(courseGroup, x, y) {
         return {
             id: "sel_" + courseGroup.title + y.toString() + x.toString(),
+            nodeType: NodeType.SELECTIVE,
             x: x,
             y: y,
             label: this.getNodeLabel(courseGroup),
@@ -707,6 +708,7 @@ class PrerequisitoryGrapher {
     getNode(course, x, y) {
         return {
             id: this.courseToNodeId(course),
+            nodeType: NodeType.REGULAR,
             x: x,
             y: y,
             label: this.getNodeLabel(course),
