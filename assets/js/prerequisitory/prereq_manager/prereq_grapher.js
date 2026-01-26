@@ -206,6 +206,7 @@ class PrerequisitoryGrapher {
                 };
             });
         }, 100);
+
         document.getElementById("selCourseTitle").innerHTML = courseGroup.title;
         let dropdown = document.getElementById("selCourseDropdown");
 
@@ -220,13 +221,30 @@ class PrerequisitoryGrapher {
                 maxCourseCodeLength = currentLength;
         }
 
+        // Collect all selected courses in other selective course dropdowns
+        const allSelections = Object.values(this.manager.selections);
+        // Exclude the current node's selection (if any)
+        const otherSelections = allSelections.filter(sel => sel && sel !== selectiveCourseNode.selectedCourse);
+
+        let anyDisabled = false;
         for (let i = 0; i < courseGroup.courses.length; i++) {
             const course = courseGroup.courses[i];
             const paddedCourseCode = course.courseCode.padEnd(maxCourseCodeLength).replaceAll(" ", " \xa0");
-
-            dropdown.options[i + 1] = new Option(paddedCourseCode + " [" + fixPunctuation(course.courseTitle) + "]");
+            let option = new Option(paddedCourseCode + " [" + fixPunctuation(course.courseTitle) + "]");
+            // Disable the option if it is selected in another selective dropdown
+            if (otherSelections.includes(course)) {
+                option.disabled = true;
+                anyDisabled = true;
+            }
+            dropdown.options[i + 1] = option;
             if (course == selectiveCourseNode.selectedCourse)
                 dropdown.selectedIndex = i + 1;
+        }
+
+        // Show or hide the info <p> under the dropdown
+        const infoP = document.querySelector('#SelectiveCourseSelection p');
+        if (infoP) {
+            infoP.style.display = anyDisabled ? '' : 'none';
         }
 
         dropdown.onchange = async (_) => {

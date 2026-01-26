@@ -96,6 +96,12 @@ video {
     vertical-align: baseline;
 }
 
+p.selectiveCourseWarning {
+    color: rgb(255, 63, 63);
+    margin-top: 0.5rem;
+    font-weight: bold;
+}
+
 article,
 aside,
 details,
