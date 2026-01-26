@@ -188,24 +188,32 @@ class PrerequisitoryGrapher {
         if (!this.isSelectiveNode(selectiveCourseNode)) return;
 
         const courseGroup = selectiveCourseNode.courseGroup;
-        const startScrollTop = document.documentElement.scrollTop;
 
-        location.href = this.SELECTIVE_COURSE_SELECTION_LOC;
-        setTimeout(() => {
-            let closeButtons = document.querySelectorAll('#SelectiveCourseSelection .close');
-            closeButtons.forEach(button => {
-                button.onclick = () => {
-                    location.href = "#";
-                    setTimeout(() => {
-                        window.scrollTo({
-                            top: startScrollTop,
-                            left: 0,
-                            behavior: 'instant'
-                        });
-                    }, 300);
-                };
-            });
-        }, 100);
+        const popup = document.querySelector(this.SELECTIVE_COURSE_SELECTION_LOC);
+        if (!popup) {
+            console.error('Selective course popup not found');
+            return;
+        }
+
+        popup.style.display = 'flex';
+        document.body.style.overflow = 'hidden';
+
+        const closePopup = () => {
+            popup.style.display = 'none';
+            document.body.style.overflow = '';
+        };
+
+        const closeButtons = popup.querySelectorAll('.close, .close-popup-button');
+        closeButtons.forEach(button => {
+            button.onclick = closePopup;
+        });
+
+        // Close on click outside
+        popup.onclick = (e) => {
+            if (e.target === popup) {
+                closePopup();
+            }
+        };
 
         document.getElementById("selCourseTitle").innerHTML = courseGroup.title;
         let dropdown = document.getElementById("selCourseDropdown");
@@ -259,32 +267,8 @@ class PrerequisitoryGrapher {
             this.onSelectiveNodeClick(selectiveCourseNode);
             this.recalculatePrereqs();
 
-            location.href = "#";
-            await new Promise(r => setTimeout(r, 300));
-            window.scrollTo({
-                top: startScrollTop,
-                left: 0,
-                behavior: 'instant'
-            });
+            closePopup();
         };
-
-        window.onclick = async (_) => {
-            await new Promise(r => setTimeout(r, 100));
-            var iter_counter = 0;
-            while (document.activeElement.classList.contains("is-article-visible")) {
-                iter_counter += 1;
-                await new Promise(r => setTimeout(r, 100));
-                if (!document.activeElement.classList.contains("is-article-visible")) {
-                    window.scrollTo({
-                        top: startScrollTop,
-                        left: 0,
-                        behavior: 'instant'
-                    });
-                }
-                if (iter_counter > 1)
-                    break
-            }
-        }
     }
 
     onSelectiveNodeClick(node) {

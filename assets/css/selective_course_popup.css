@@ -1,0 +1,71 @@
+#SelectiveCourseSelection.popup-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.7);
+    z-index: 10000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+#SelectiveCourseSelection .popup-content {
+    background-color: #212426; /* Dark background matching the theme */
+    padding: 40px;
+    border-radius: 8px;
+    text-align: center;
+    max-height: 80vh;
+    width: 90%;
+    max-width: 800px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    position: relative;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+}
+
+#SelectiveCourseSelection .close-popup-button {
+    margin-top: 20px;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    padding: 10px 20px;
+    display: inline-block;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+    user-select: none;
+}
+
+#SelectiveCourseSelection .close-popup-button:hover {
+    background-color: rgba(255, 255, 255, 0.1);
+}
+
+#SelectiveCourseSelection select {
+    width: 100%;
+    background-color: rgba(255, 255, 255, 0.05);
+    color: #ffffff;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    margin-bottom: 10px;
+}
+
+#SelectiveCourseSelection option {
+    background-color: #212426;
+    color: #ffffff;
+}
+
+#SelectiveCourseSelection h3 {
+    margin-bottom: 20px;
+    font-size: 1.5em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+    display: block;
+}
+
+#SelectiveCourseSelection .selectiveCourseWarning {
+    color: #ffaaaa;
+    font-size: 0.9em;
+    margin-top: 10px;
+}
