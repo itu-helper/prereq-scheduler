@@ -7,6 +7,12 @@ const NODE_STYLES = {
         lineWidth: 1,
         radius: [10],
     },
+    RESTRICTION: {
+        fillOpacity: 0,
+        strokeOpacity: 0,
+        lineWidth: 1,
+        radius: [5],
+    },
     TAKEN: {
         fill: '#5a5856',
         fillOpacity: 1,

@@ -50,7 +50,7 @@ class PrerequisitoryGrapher {
         for (let i = 0; i < this.nodes.length; i++) {
             let node = this.nodes[i];
 
-            if (this.isInfoNode(node)) continue;
+            if (this.isInfoNode(node) || node.isRestriction) continue;
 
             var course = node.course;
             const isSelective = this.isSelectiveNode(node);
@@ -438,6 +438,18 @@ class PrerequisitoryGrapher {
             node.labelCfg.style.fontSize = this.getNodeSize(w)[1] * .15 * (this.isInfoNode(node) ? 1.5 : 1);
         }
 
+        for (let i = 0; i < this.nodes.length; i++) {
+            let node = this.nodes[i];
+            if (node.isRestriction) {
+                let parent = node.parentNode;
+                node.x = parent.x;
+                node.y = parent.y + parent.size[1] * 0.65;
+                node.size = [parent.size[0], parent.size[1] * 0.4];
+                node.style.radius = [node.size[1] * .2];
+                node.labelCfg.style.fontSize = parent.labelCfg.style.fontSize * 0.7;
+            }
+        }
+
         this.graph.refresh();
     }
 
@@ -478,6 +490,39 @@ class PrerequisitoryGrapher {
         return w * this.INVERSE_ASPECT_RATIO;
     }
 
+    updateRestrictionNodes() {
+        const selectiveNodes = this.nodes.filter(n => this.isSelectiveNode(n));
+        
+        selectiveNodes.forEach(node => {
+            const restrNodeId = node.id + "_restr";
+            const existingRestrNodeIndex = this.nodes.findIndex(n => n.id === restrNodeId);
+            const existingRestrNode = existingRestrNodeIndex !== -1 ? this.nodes[existingRestrNodeIndex] : null;
+
+            const selectedCourse = node.selectedCourse;
+            const hasRestriction = selectedCourse && selectedCourse.classRestrictions;
+
+            if (hasRestriction) {
+                const labelText = "Min Kredi: " + selectedCourse.classRestrictions;
+                
+                if (existingRestrNode) {
+                    if (existingRestrNode.label !== labelText) {
+                        existingRestrNode.label = labelText;
+                        this.graph.updateItem(existingRestrNode.id, { label: labelText });
+                    }
+                } else {
+                    const newRestrNode = this.getRestrictionNode(node, selectedCourse.classRestrictions);
+                    this.nodes.push(newRestrNode);
+                    this.graph.addItem('node', newRestrNode);
+                }
+            } else {
+                if (existingRestrNode) {
+                    this.nodes.splice(existingRestrNodeIndex, 1);
+                    this.graph.removeItem(restrNodeId);
+                }
+            }
+        });
+    }
+
     recalculatePrereqs() {
         const edgesToRemove = [...this.graph.getEdges()];
         edgesToRemove.forEach(edge => {
@@ -498,6 +543,7 @@ class PrerequisitoryGrapher {
             this.manager.addCourseToFuture(course);
         }
 
+        this.updateRestrictionNodes();
         this.refreshGraph();
     }
 
@@ -560,6 +606,11 @@ class PrerequisitoryGrapher {
                 let node = this.getNode(course, j, i);
                 this.coordToNode[j.toString() + ":" + i.toString()] = node;
                 nodes.push(node);
+
+                if (course.classRestrictions) {
+                    let rNode = this.getRestrictionNode(node, course.classRestrictions);
+                    nodes.push(rNode);
+                }
             }
         }
         let edges = this.calculateEdges();
@@ -606,6 +657,25 @@ class PrerequisitoryGrapher {
             return wrap(fixPunctuation(labelObj.title), 15)
         } else if (labelObj.constructor.name == "Course") {
             return wrap(labelObj.courseCode + "\n\n" + fixPunctuation(labelObj.courseTitle), 15);
+        }
+    }
+
+    getRestrictionNode(parentNode, restrictions) {
+        return {
+            id: parentNode.id + "_restr",
+            parentNode: parentNode,
+            isRestriction: true,
+            label: `Min ${restrictions} kredi`,
+            size: [50, 10],
+            type: "rect",
+            style: NODE_STYLES.RESTRICTION,
+            labelCfg: {
+                position: 'center',
+                style: {
+                    fill: "#ffffff",
+                    fontSize: 14
+                },
+            },
         }
     }
 
