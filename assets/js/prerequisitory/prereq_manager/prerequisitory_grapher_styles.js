@@ -1,4 +1,4 @@
-const NODE_STYLES = {
+const BASE_NODE_STYLES = {
     DEFAULT: {
         fill: '#41505b',
         fillOpacity: 0,
@@ -82,7 +82,7 @@ const NODE_STYLES = {
     },
 };
 
-const EDGE_STYLES = {
+const BASE_EDGE_STYLES = {
     DEFAULT: {
         endArrow: false,
         lineWidth: 1,
@@ -114,3 +114,30 @@ const EDGE_STYLES = {
         lineDash: [40, 5]
     }
 };
+
+function deepCopy(obj) {
+    return JSON.parse(JSON.stringify(obj));
+}
+
+const NODE_STYLES = deepCopy(BASE_NODE_STYLES);
+const EDGE_STYLES = deepCopy(BASE_EDGE_STYLES);
+
+function updateGraphStyles(width) {
+    const scale = Math.max(0.5, Math.min(width / 1500, 1.5));
+    
+    for (const key in BASE_NODE_STYLES) {
+        if (Object.hasOwnProperty.call(BASE_NODE_STYLES, key)) {
+            const base = BASE_NODE_STYLES[key];
+            const target = NODE_STYLES[key];
+            if (base.lineWidth) target.lineWidth = base.lineWidth * scale;
+        }
+    }
+
+    for (const key in BASE_EDGE_STYLES) {
+        if (Object.hasOwnProperty.call(BASE_EDGE_STYLES, key)) {
+            const base = BASE_EDGE_STYLES[key];
+            const target = EDGE_STYLES[key];
+            if (base.lineWidth) target.lineWidth = base.lineWidth * scale;
+        }
+    }
+}

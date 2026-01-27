@@ -271,7 +271,7 @@ class PrerequisitoryGrapher {
                 model.type = 'cubic-vertical';
             }
         }
-        if (this.firstDraw) this.firstDraw = false;
+        if (this.firstDraw && edges.length > 0) this.firstDraw = false;
     }
 
     courseGroupToNode(courseGroup) {
@@ -430,6 +430,12 @@ class PrerequisitoryGrapher {
     }
 
     updateGraphSize(w, h) {
+        if (typeof updateGraphStyles === 'function') {
+            updateGraphStyles(w);
+        }
+        this.updateNodeStyles();
+        this.updateEdgeStyles();
+        
         this.graph.changeSize(w, h);
 
         for (let i = 0; i < Object.keys(this.coordToNode).length; i++) {
