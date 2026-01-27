@@ -97,8 +97,8 @@ class ScheduleStyle {
         
         // Transform scales
         scale: {
-            default: 'scale(1)',
-            hover: 'scale(1.02)'
+            default: 'translateY(0)',
+            hover: 'translateY(-5px)'
         },
         
         // Opacity values
