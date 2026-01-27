@@ -93,7 +93,7 @@ const EDGE_STYLES = {
         endArrow: false,
         lineWidth: 4,
         stroke: 'white',
-        lineDash: [0]
+        lineDash: [40, 5]
     },
     TAKEABLE: {
         endArrow: false,
@@ -111,6 +111,6 @@ const EDGE_STYLES = {
         endArrow: false,
         lineWidth: 4,
         stroke: '#ba9359',
-        lineDash: [0]
+        lineDash: [40, 5]
     }
 };
