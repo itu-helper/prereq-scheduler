@@ -19,6 +19,16 @@ class PrerequisitoryGrapher {
         this.prereqCenterNode = undefined;
         this.lastClickTime = 0;
         this.lastClickNodeId = null;
+        this.onNodeClickCallback = null;
+        this.onNodeSelectionCallback = null;
+    }
+
+    setNodeClickListener(callback) {
+        this.onNodeClickCallback = callback;
+    }
+
+    setNodeSelectionListener(callback) {
+        this.onNodeSelectionCallback = callback;
     }
 
     createGraph(calculateSize) {
@@ -191,7 +201,7 @@ class PrerequisitoryGrapher {
         return nodesOnInfoNode;
     }
 
-    selectSelectiveCourse(selectiveCourseNode) {
+    openSelectiveCourseSelection(selectiveCourseNode) {
         if (selectiveCourseNode.nodeType !== NodeType.SELECTIVE) return;
 
         const courseGroup = selectiveCourseNode.courseGroup;
@@ -274,33 +284,11 @@ class PrerequisitoryGrapher {
                 delete this.manager.selections[selectiveCourseNode.id];
             }
 
-            this.onSelectiveNodeClick(selectiveCourseNode);
-            this.recalculatePrereqs();
+            if (this.onNodeSelectionCallback)
+                this.onNodeSelectionCallback(selectiveCourseNode);
 
             closePopup();
         };
-    }
-
-    onSelectiveNodeClick(node) {
-        let selectedCourse = node.selectedCourse;
-
-        if (this.manager.graphMode == GraphMode.TAKEN_COURSES) {
-            if (selectedCourse && this.manager.takenCourses.includes(selectedCourse)) {
-                this.manager.removeCourseFromTaken(selectedCourse);
-            } else {
-                this.manager.addCourseToTaken(selectedCourse);
-            }
-        }
-        else if (this.manager.graphMode == GraphMode.COURSES_TO_TAKE) {
-            if (selectedCourse != undefined) {
-                if (this.manager.coursesToTake.includes(selectedCourse)) {
-                    this.manager.coursesToTake.splice(this.manager.coursesToTake.indexOf(selectedCourse), 1);
-                }
-                else {
-                    this.manager.coursesToTake.push(selectedCourse);
-                }
-            }
-        }
     }
 
     handleNodeClick(node) {
@@ -312,110 +300,17 @@ class PrerequisitoryGrapher {
             this.lastClickTime = 0;
             this.lastClickNodeId = null;
         } else {
-            this.onNodeClick(node);
+            if (this.onNodeClickCallback)
+                this.onNodeClickCallback(node);
+            
             this.lastClickTime = currentTime;
             this.lastClickNodeId = node.id;
         }
     }
 
-    onNodeClick(node) {
-        if (node.nodeType === NodeType.SELECTIVE) {
-            if (this.manager.graphMode == GraphMode.TAKEN_COURSES) {
-                if (node.selectedCourse == undefined)
-                    this.selectSelectiveCourse(node);
-                else
-                    this.onSelectiveNodeClick(node);
-            }
-            else if (this.manager.graphMode == GraphMode.COURSES_TO_TAKE) {
-                if (node.selectedCourse == undefined)
-                    this.selectSelectiveCourse(node);
-                else
-                    this.onSelectiveNodeClick(node);
-            }
-            else if (this.manager.graphMode == GraphMode.VISUALIZE) {
-                if (node.selectedCourse == undefined)
-                    this.selectSelectiveCourse(node);
-                else {
-                    // Logic from existing Visualize mode for normal courses
-                    var wasCourseSelected = this.manager.takenCourses.includes(node.selectedCourse);
-
-                    this.manager.takenCourses = [];
-                    this.manager.futureCourses = [];
-
-                    if (!wasCourseSelected || (this.prereqCenterNode && this.prereqCenterNode !== node)) {
-                        this.manager.addCourseToTaken(node.selectedCourse);
-                        this.manager.addCourseToFuture(node.selectedCourse);
-                        this.prereqCenterNode = node;
-                    } else {
-                        this.prereqCenterNode = undefined;
-                    }
-                }
-            }
-        }
-        else if (node.nodeType === NodeType.INFO) {
-            const nodesOnInfoNode = this.getNodesOnInfoNode(node);
-
-            if (this.manager.graphMode == GraphMode.TAKEN_COURSES) {
-                let rowContainsTakenCourse = false;
-                for (let i = 0; i < nodesOnInfoNode.length; i++) {
-                    const n = nodesOnInfoNode[i];
-                    let c = n.course || n.selectedCourse;
-                    if (c && this.manager.takenCourses.includes(c)) {
-                        rowContainsTakenCourse = true;
-                        break;
-                    }
-                }
-                for (let i = 0; i < nodesOnInfoNode.length; i++) {
-                    const n = nodesOnInfoNode[i];
-                    let c = n.course || n.selectedCourse;
-                    if (c) {
-                        if (rowContainsTakenCourse)
-                            this.manager.removeCourseFromTaken(c);
-                        else
-                            this.manager.addCourseToTaken(c);
-                    }
-                }
-            }
-        }
-        else {
-            const course = node.course;
-            if (this.manager.graphMode == GraphMode.TAKEN_COURSES) {
-                if (this.manager.takenCourses.includes(course)) {
-                    this.manager.removeCourseFromTaken(course);
-                } else {
-                    this.manager.addCourseToTaken(course);
-                }
-            }
-            else if (this.manager.graphMode == GraphMode.COURSES_TO_TAKE) {
-                if (this.manager.coursesToTake.includes(course)) {
-                    this.manager.coursesToTake.splice(this.manager.coursesToTake.indexOf(course), 1);
-                }
-                else if (this.manager.takeableCourses.includes(course) && !this.manager.coursesToTake.includes(course)) {
-                    this.manager.coursesToTake.push(course);
-                }
-            }
-            else if (this.manager.graphMode == GraphMode.VISUALIZE) {
-                var wasCourseSelected = this.manager.takenCourses.includes(course);
-
-                this.manager.takenCourses = [];
-                this.manager.futureCourses = [];
-
-                if (!wasCourseSelected || (this.prereqCenterNode && this.prereqCenterNode !== node)) {
-                    this.manager.addCourseToTaken(course);
-                    this.manager.addCourseToFuture(course);
-                    this.prereqCenterNode = node;
-                } else {
-                    this.prereqCenterNode = undefined;
-                }
-            }
-        }
-
-        this.refreshGraph();
-    }
-
     onNodeDoubleClick(node) {
         if (node.nodeType === NodeType.SELECTIVE) {
-            this.selectSelectiveCourse(node);
+            this.openSelectiveCourseSelection(node);
         }
     }
 

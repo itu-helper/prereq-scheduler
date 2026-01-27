@@ -147,4 +147,52 @@ class PrerequisitorySemesterManager {
             }
         }
     }
+
+    toggleTakenCourse(course) {
+        if (this.takenCourses.includes(course)) {
+            this.removeCourseFromTaken(course);
+        } else {
+            this.addCourseToTaken(course);
+        }
+    }
+
+    toggleCourseToTake(course) {
+        if (this.coursesToTake.includes(course)) {
+            this.coursesToTake.splice(this.coursesToTake.indexOf(course), 1);
+        } else if (this.takeableCourses.includes(course) && !this.coursesToTake.includes(course)) {
+            this.coursesToTake.push(course);
+        }
+    }
+
+    processInfoNodeClick(courses) {
+        if (this.graphMode == GraphMode.TAKEN_COURSES) {
+            let rowContainsTakenCourse = false;
+            for (let i = 0; i < courses.length; i++) {
+                const c = courses[i];
+                if (c && this.takenCourses.includes(c)) {
+                    rowContainsTakenCourse = true;
+                    break;
+                }
+            }
+            for (let i = 0; i < courses.length; i++) {
+                const c = courses[i];
+                if (c) {
+                    if (rowContainsTakenCourse)
+                        this.removeCourseFromTaken(c);
+                    else
+                        this.addCourseToTaken(c);
+                }
+            }
+        }
+    }
+
+    resetPrereqChain() {
+        this.takenCourses = [];
+        this.futureCourses = [];
+    }
+
+    setupPrereqChain(course) {
+        this.addCourseToTaken(course);
+        this.addCourseToFuture(course);
+    }
 }
