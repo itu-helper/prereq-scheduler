@@ -16,16 +16,32 @@ function graphPrerequistoryGraph(startMode = GraphMode.TAKEN_COURSES) {
     prereqOrchestrator = new PrerequisitoryOrchestrator(semesters);
 
     prereqOrchestrator.createGraph(() => {
-        let parent = document.getElementById("mountNode");
-        let width = parent.clientWidth * 0.9;
-        let size = [width, prereqOrchestrator.calculateSemesterHeight(width) * 8];
+        let container = document.getElementById("prerequisitoryChains");
+        let mountNode = document.getElementById("mountNode");
 
-        parent.clientHeight = size[1];
+        if (window.innerWidth <= 768) {
+            container.style.overflow = "auto";
+            container.style.maxHeight = "80vh";
+            mountNode.style.width = "100%";
+            // prereqOrchestrator.setAnimations(false);
+        } else {
+            container.style.overflow = "visible";
+            container.style.overflowX = "auto";
+            container.style.maxHeight = "";
+            mountNode.style.width = "";
+            // prereqOrchestrator.setAnimations(true);
+        }
+
+        let width = Math.max(mountNode.clientWidth, 700);
+        let size = [width, prereqOrchestrator.calculateSemesterHeight(width) * 8];
 
         return size;
     });
     prereqOrchestrator.graph.render();
-    document.getElementById("mountNode").scrollIntoView({ behavior: "smooth" });
+
+    let container = document.getElementById("prerequisitoryChains");
+    container.scrollLeft = (container.scrollWidth - container.clientWidth) / 2;
+    container.scrollIntoView({ behavior: "smooth" });
 
     prereqOrchestrator.switchGraphMode(startMode);
 }

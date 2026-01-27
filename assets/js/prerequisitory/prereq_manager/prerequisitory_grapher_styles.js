@@ -122,8 +122,10 @@ function deepCopy(obj) {
 const NODE_STYLES = deepCopy(BASE_NODE_STYLES);
 const EDGE_STYLES = deepCopy(BASE_EDGE_STYLES);
 
+const MIN_SCALE = .8;
+
 function updateGraphStyles(width) {
-    const scale = Math.max(0.5, Math.min(width / 1500, 1.5));
+    const scale = Math.max(MIN_SCALE, Math.min(width / 1500, 1.5));
     
     for (const key in BASE_NODE_STYLES) {
         if (Object.hasOwnProperty.call(BASE_NODE_STYLES, key)) {

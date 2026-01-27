@@ -44,6 +44,12 @@ class PrerequisitoryOrchestrator {
         }
     }
 
+    setAnimations(enabled)
+    {
+        this.grapher.animatePrereqChains = enabled;
+        this.grapher.animateIntro = enabled;
+    }
+
     handleCourseAction(course, node) {
         const mode = this.semesterManager.graphMode;
         
