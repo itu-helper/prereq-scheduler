@@ -5,22 +5,22 @@ window.onload = (_) => {
 };
 
 function nextStep() {
-    if (prereqGrapher == undefined) {
+    if (prereqManager == undefined) {
         return;
-    } else if (prereqGrapher.graphMode == 0) {
-        prereqGrapher.switchGraphMode(1);
+    } else if (prereqManager.graphMode == GraphMode.TAKEN_COURSES) {
+        prereqManager.switchGraphMode(GraphMode.COURSES_TO_TAKE);
         document.getElementById("previousStep").disabled = false;
         updateStepText(1);
-    } else if (prereqGrapher.graphMode == 1) {
+    } else if (prereqManager.graphMode == GraphMode.COURSES_TO_TAKE) {
         location.href = "#CoursePlanCreator";
     }
 }
 
 function previousStep() {
-    if (prereqGrapher == undefined) {
+    if (prereqManager == undefined) {
         return;
-    } else if (prereqGrapher.graphMode == 1) {
-        prereqGrapher.switchGraphMode(0);
+    } else if (prereqManager.graphMode == GraphMode.COURSES_TO_TAKE) {
+        prereqManager.switchGraphMode(GraphMode.TAKEN_COURSES);
         document.getElementById("previousStep").disabled = true;
         updateStepText(0);
     }

@@ -39,6 +39,7 @@
             type="image/png" />
         <link rel="stylesheet" href="assets/css/main.css" />
         <link rel="stylesheet" href="assets/css/promo_popup.css" />
+        <link rel="stylesheet" href="assets/css/selective_course_popup.css" />
 
         <noscript>
             <link rel="stylesheet" href="assets/css/noscript.css" />
@@ -47,6 +48,16 @@
     </head>
 
     <body class="is-preload">
+        <div id="SelectiveCourseSelection" class="popup-overlay" style="display: none;">
+            <div class="popup-content">
+                <h3 class="major" id="selCourseTitle">😳👉👈 Iııh, şey... Sanırım hata verdim 🤭</h3>
+                <select name="courseSel" id="selCourseDropdown">
+                    <option value="default">-- Seçiniz --</option>
+                </select>
+                <p class="selectiveCourseWarning" style="display: none;">Bazı dersler, farklı bir seçmeli ders slotunda seçildiğinden dolayı kapatıldı.</p>
+                <div class="close-popup-button">Kapat</div>
+            </div>
+        </div>
         <div id="extensionPopup" class="popup-overlay" style="display: none;">
             <div class="popup-content">
                 <h2>ITU Helper | Ders Planı Oluşturucu</h2>
@@ -85,7 +96,7 @@
                 <div class="content" style="width: 85%">
                     <div class="inner">
                         <h1>ÖN ŞART DİYAGRAMI</h1>
-                        <p>Powered by <a href="https://github.com/itu-helper/sdk">ITU Helper™️</a></p>
+                        <p>Powered by <a href="https://github.com/itu-helper/sdk">ITU Helper SDK</a></p>
                     </div>
                 </div>
                 <div style="width: 75%">
@@ -126,7 +137,7 @@
                                     </tr>
                                 </table>
                                 <input type="button" value="Ders Zincirini Göster" id="submitPreqButton"
-                                    onclick="graphPrerequistoryGraph(-1);" disabled />
+                                    onclick="graphPrerequistoryGraph(GraphMode.VISUALIZE);" disabled />
                             </fieldset>
                         </form>
                     </nav>
@@ -138,13 +149,6 @@
 
             <!-- Main -->
             <div id="main" style="width: 85%">
-                <article id="SelectiveCourseSelection">
-                    <h3 class="major" id="selCourseTitle">😳👉👈 Iııh, şey... Sanırım hata verdim 🤭</h3>
-                    <select name="courseSel" id="selCourseDropdown">
-                        <option value="default">-- Seçiniz --</option>
-                    </select>
-                    <div class="close">Close</div>
-                </article>
                 <article id="0">
                     <h3 class="major" id="selCourseTitle">😳👉👈 Iııh, şey... Sanırım hata verdim 🤭</h3>
                     <div class="close">Close</div>
@@ -184,15 +188,21 @@
         <script src="https://code.jquery.com/jquery-3.4.1.min.js"></script>
         <script src="https://gw.alipayobjects.com/os/antv/pkg/_antv.g6-3.7.1/dist/g6.min.js"></script>
         
-        <script src="https://cdn.jsdelivr.net/gh/itu-helper/sdk@master/js/dist/bundle.min.js"></script>
+        <script src="https://cdn.jsdelivr.net/gh/itu-helper/sdk@js-1.0.0/js/dist/bundle.min.js"></script>
 
-        <script src="assets/js/index_onload.js"></script>
         <script src="assets/js/ui/promo_popup.js"></script>
-        <script src="assets/js/prerequisitory/prerequisitory.js"></script>
-        <script src="assets/js/prerequisitory/prerequisitory_grapher.js"></script>
-        <script src="assets/js/prerequisitory/prerequisitory_grapher_styles.js"></script>
         <script src="assets/js/ui/cascading_dropdown.js"></script>
+
+        <script src="assets/js/prerequisitory/prereq_manager/prereq_graph_anims.js"></script>
+        <script src="assets/js/prerequisitory/prereq_manager/prereq_grapher.js"></script>
+        <script src="assets/js/prerequisitory/prereq_manager/prereq_semester_manager.js"></script>
+        <script src="assets/js/prerequisitory/prereq_manager/prereq_orchestrator.js"></script>
+        <script src="assets/js/prerequisitory/prereq_manager/prerequisitory_grapher_styles.js"></script>
+        <script src="assets/js/prerequisitory/prereq_onload.js"></script>
+        <script src="assets/js/prerequisitory/prerequisitory.js"></script>
+        
         <script src="assets/js/utilities.js"></script>
+
         <script src="assets/js/website_template/breakpoints.min.js"></script>
         <script src="assets/js/website_template/browser.min.js"></script>
         <script src="assets/js/website_template/jquery.min.js"></script>
