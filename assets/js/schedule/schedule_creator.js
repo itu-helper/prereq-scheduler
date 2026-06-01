@@ -61,7 +61,7 @@ class ScheduleCreator {
             );
             this.courseRowRenderer.onCourseChange = (rowId) => this._handleCourseChange(rowId);
             this.courseRowRenderer.onInstructorChange = (rowId) => this._handleInstructorChange(rowId);
-            this.courseRowRenderer.onRemoveCourse = (rowId) => this._handleRemoveCourse(rowId);
+            this.courseRowRenderer.onRemoveCourse = (rowId, courseData) => this._handleRemoveCourse(rowId, courseData);
         }
         
         // Initialize export popup
@@ -250,7 +250,10 @@ class ScheduleCreator {
      * Handle course removal
      * @private
      */
-    async _handleRemoveCourse(rowId) {
+    async _handleRemoveCourse(rowId, courseData = null) {
+        if (courseData && courseData.course) {
+            this.scheduleStateManager.removePinsForCourse(courseData.course);
+        }
         await this._regenerateSchedules();
         this._displayCurrentSchedule();
         this._updateURL();

@@ -180,7 +180,16 @@ class ScheduleStateManager {
         }
         
         const filteredSchedules = this.availableSchedules.filter(schedule => {
-            const scheduleCRNs = new Set(schedule.lessons.map(l => l.lesson.crn));
+            const scheduleCRNs = new Set();
+            (schedule.lessons || []).forEach(l => {
+                const lesson = l.lesson || l;
+                if (Array.isArray(lesson.crnList) && lesson.crnList.length > 0) {
+                    lesson.crnList.forEach(c => scheduleCRNs.add(c));
+                } else if (lesson.crn) {
+                    scheduleCRNs.add(lesson.crn);
+                }
+            });
+
             // Check if all pinned lessons are in this schedule
             for (const pinnedCRN of this.pinnedLessons) {
                 if (!scheduleCRNs.has(pinnedCRN)) {
@@ -306,6 +315,28 @@ class ScheduleStateManager {
      */
     clearPinnedLessons() {
         this.pinnedLessons.clear();
+    }
+
+    /**
+     * Remove pinned lessons that belong to a specific course
+     *
+     * @param {Object} course - Course object with lessons
+     */
+    removePinsForCourse(course) {
+        if (!course || !Array.isArray(course.lessons)) {
+            return;
+        }
+
+        course.lessons.forEach(lesson => {
+            if (lesson && lesson.crn) {
+                this.pinnedLessons.delete(lesson.crn);
+            }
+            if (lesson) {
+                delete lesson._displayCrn;
+                delete lesson._displayId;
+            }
+        });
+        window.pinnedLessons = this.pinnedLessons;
     }
 
     /**

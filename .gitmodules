@@ -1,0 +1,9 @@
+[submodule "libs/sdk"]
+	path = libs/sdk
+	url = https://github.com/itu-helper/sdk
+[submodule "libs/data-updater"]
+	path = libs/data-updater
+	url = https://github.com/itu-helper/data-updater
+[submodule "libs/data"]
+	path = libs/data
+	url = https://github.com/itu-helper/data

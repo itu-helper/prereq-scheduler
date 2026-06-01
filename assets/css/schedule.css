@@ -819,6 +819,36 @@ body, html {
     border-left: 2px dashed #959595 !important;
 }
 
+.schedule-lesson.crn-open {
+    overflow: visible;
+    z-index: 50;
+}
+
+.schedule-container.crn-open {
+    overflow: visible;
+}
+
+.lesson-crn-row {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 6px;
+    min-height: 18px;
+}
+
+.lesson-crn-select {
+    height: 18px;
+    line-height: 18px;
+    padding: 0 6px;
+    max-width: 96px;
+    font-size: 0.7rem;
+    border: 1px solid rgba(255, 255, 255, 0.35) !important;
+    border-radius: 4px;
+    background: rgba(0, 0, 0, 0.15) !important;
+    white-space: nowrap;
+    transform: translateX(-6px);
+}
+
 .schedule-cell {
     position: relative;
 }

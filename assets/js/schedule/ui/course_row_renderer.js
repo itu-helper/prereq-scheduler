@@ -89,13 +89,15 @@ class CourseRowRenderer {
      * @param {number} rowId - ID of the row to remove
      */
     removeRow(rowId) {
+        const courseData = this.courseSelectionManager.getCourses().find(c => c.rowId === rowId) || null;
+
         // Remove from data first
         this.courseSelectionManager.removeCourse(rowId);
         
         // Trigger removal callback before DOM changes
         // This allows schedule regeneration to happen before UI update
         if (this.onRemoveCourse) {
-            this.onRemoveCourse(rowId);
+            this.onRemoveCourse(rowId, courseData);
         }
         
         // Remove from DOM

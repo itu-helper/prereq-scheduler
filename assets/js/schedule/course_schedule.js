@@ -130,140 +130,184 @@ class CourseSchedule {
     }
 
     static async generateAllAvailableSchedules(courses, unavailableSlots = [], pinnedCRNs = new Set(), cancellationToken = null, progressCallback = null, selectedProgrammeCodes = []) {
-        const allSchedules = [];
-        
-        // Filter out courses that don't have lessons or have empty lessons array
-        const validCourses = courses.filter(courseInfo => {
-            const course = courseInfo.course || courseInfo;
-            return course.lessons && course.lessons.length > 0;
+    const allSchedules = [];
+    
+    // Filter out courses that don't have lessons or have empty lessons array
+    const validCourses = courses.filter(courseInfo => {
+        const course = courseInfo.course || courseInfo;
+        return course.lessons && course.lessons.length > 0;
+    });
+    
+    // If no valid courses, return empty array
+    if (validCourses.length === 0) {
+        return allSchedules;
+    }
+    
+    // Helper: group lessons that have identical day+time into single representative
+    function groupLessonsByDayTime(lessons) {
+        const map = {};
+        for (const l of lessons) {
+            const day = (l.day || '').toString().trim();
+            const time = (l.time || '').toString().trim();
+            // Use day+time as key to dedupe repeated CRNs for same slot.
+            const key = `${day}|${time}`;
+            if (!map[key]) map[key] = [];
+            map[key].push(l);
+        }
+        return Object.keys(map).map(k => {
+            const group = map[k];
+            const rep = Object.assign({}, group[0]);
+            rep.crnList = group.map(x => x.crn).filter(Boolean);
+            rep._groupedLessons = group;
+            // keep a representative crn for backwards compatibility
+            if ((!rep.crn || rep.crn === '') && rep.crnList.length > 0) rep.crn = rep.crnList[0];
+            return rep;
         });
-        
-        // If no valid courses, return empty array
-        if (validCourses.length === 0) {
-            return allSchedules;
+    }
+    
+    // Track iterations to periodically yield control to browser
+    let iterationCount = 0;
+    const YIELD_INTERVAL = 500; // Yield every 500 iterations
+    const PROGRESS_INTERVAL = 100; // Report progress every 100 iterations
+    
+    // Async recursive function to generate all combinations
+    async function generateCombinations(courseIndex, currentSchedule) {
+        // Check if operation was cancelled
+        if (cancellationToken && cancellationToken.cancelled) {
+            return;
         }
         
-        // Track iterations to periodically yield control to browser
-        let iterationCount = 0;
-        const YIELD_INTERVAL = 500; // Yield every 500 iterations
-        const PROGRESS_INTERVAL = 100; // Report progress every 100 iterations
+        // Base case: if we've processed all courses, add the current schedule
+        // Note: Schedule is already validated during construction (early overlap detection)
+        if (courseIndex === validCourses.length) {
+            const sch = new CourseSchedule([...currentSchedule], unavailableSlots);
+            allSchedules.push(sch);
+            return;
+        }
+
+        if (allSchedules.length >= MAX_SCHEDULE_COMBINATIONS) {
+            return;
+        }
         
-        // Async recursive function to generate all combinations
-        async function generateCombinations(courseIndex, currentSchedule) {
-            // Check if operation was cancelled
+        // Get the current course's lessons
+        const courseInfo = validCourses[courseIndex];
+        const currentCourse = courseInfo.course || courseInfo;
+        const selectedInstructor = courseInfo.instructor || null;
+        const lessons = currentCourse.lessons;
+        
+        // Filter out lessons without valid day/time and valid for selected programme
+        let validLessons = lessons.filter(lesson => CourseSchedule._isValidLesson(lesson, unavailableSlots, selectedProgrammeCodes));
+
+        // If the user has pinned CRNs for this course, prefer the pinned lesson(s)
+        // pinnedCRNs refers to lesson.crn values
+        const pinnedLessonInCourse = validLessons.find(lesson => {
+            if (!lesson) return false;
+            // If grouped representative, check its crnList
+            if (Array.isArray(lesson.crnList) && lesson.crnList.length > 0) {
+                return lesson.crnList.some(c => pinnedCRNs.has(c));
+            }
+            // Otherwise check the lesson.crn directly
+            return pinnedCRNs.has(lesson.crn);
+        });
+        if (pinnedLessonInCourse) {
+            // Respect pinned: only consider the pinned lesson (original behavior)
+            validLessons = [pinnedLessonInCourse];
+        } else {
+            // Group lessons that share identical day/time to avoid duplicate schedule branches
+            validLessons = groupLessonsByDayTime(validLessons);
+        }
+
+        // Filter by instructor if specified. If lessons were grouped (rep objects
+        // with `_groupedLessons`), accept a representative if any grouped
+        // lesson matches the instructor.
+        if (selectedInstructor) {
+            validLessons = validLessons.filter(lesson => {
+                if (lesson && Array.isArray(lesson._groupedLessons)) {
+                    return lesson._groupedLessons.some(l => l.instructor === selectedInstructor);
+                }
+                return lesson && lesson.instructor === selectedInstructor;
+            });
+        }
+        
+        // If no valid lessons, skip this course
+        if (validLessons.length === 0) {
+            console.warn(`Course ${currentCourse.courseCode} has no valid lessons with day/time${selectedInstructor ? ` for instructor ${selectedInstructor}` : ''}`);
+            return;
+        }
+        
+        // For each lesson in the current course, recurse with it added to the schedule
+        for (let i = 0; i < validLessons.length; i++) {
+            // Check cancellation before processing
             if (cancellationToken && cancellationToken.cancelled) {
                 return;
             }
             
-            // Base case: if we've processed all courses, add the current schedule
-            // Note: Schedule is already validated during construction (early overlap detection)
-            if (courseIndex === validCourses.length) {
-                const sch = new CourseSchedule([...currentSchedule], unavailableSlots);
-                allSchedules.push(sch);
-                return;
+            // Yield control to browser periodically to prevent freezing
+            iterationCount++;
+            if (iterationCount % YIELD_INTERVAL === 0) {
+                await new Promise(resolve => setTimeout(resolve, 0));
             }
-
+            
+            // Report progress via callback
+            if (progressCallback && iterationCount % PROGRESS_INTERVAL === 0) {
+                progressCallback(iterationCount, allSchedules.length);
+            }
+            
             if (allSchedules.length >= MAX_SCHEDULE_COMBINATIONS) {
                 return;
             }
             
-            // Get the current course's lessons
-            const courseInfo = validCourses[courseIndex];
-            const currentCourse = courseInfo.course || courseInfo;
-            const selectedInstructor = courseInfo.instructor || null;
-            const lessons = currentCourse.lessons;
+            const lesson = validLessons[i];
             
-            // Filter out lessons without valid day/time and valid for selected programme
-            let validLessons = lessons.filter(lesson => CourseSchedule._isValidLesson(lesson, unavailableSlots, selectedProgrammeCodes));
-
-            // Filter out non-pinned lessons if any pinned lessons exist for this course
-            const pinnedLessonInCourse = validLessons.find(lesson => pinnedCRNs.has(lesson.crn));
-            if (pinnedLessonInCourse) {
-                validLessons = [pinnedLessonInCourse];
-            }
-
-            // Filter by instructor if specified
-            if (selectedInstructor) {
-                validLessons = validLessons.filter(lesson => lesson.instructor === selectedInstructor);
+            // Early overlap detection: Check if this lesson overlaps with any lesson already in currentSchedule
+            let hasOverlap = false;
+            for (let j = 0; j < currentSchedule.length; j++) {
+                if (CourseSchedule.prototype._doLessonsOverlap(lesson, currentSchedule[j])) {
+                    hasOverlap = true;
+                    break;
+                }
             }
             
-            // If no valid lessons, skip this course
-            if (validLessons.length === 0) {
-                console.warn(`Course ${currentCourse.courseCode} has no valid lessons with day/time${selectedInstructor ? ` for instructor ${selectedInstructor}` : ''}`);
-                return;
+            // Skip this lesson if it overlaps with existing schedule
+            if (hasOverlap) {
+                continue;
             }
             
-            // For each lesson in the current course, recurse with it added to the schedule
-            for (let i = 0; i < validLessons.length; i++) {
-                // Check cancellation before processing
-                if (cancellationToken && cancellationToken.cancelled) {
-                    return;
-                }
-                
-                // Yield control to browser periodically to prevent freezing
-                iterationCount++;
-                if (iterationCount % YIELD_INTERVAL === 0) {
-                    await new Promise(resolve => setTimeout(resolve, 0));
-                }
-                
-                // Report progress via callback
-                if (progressCallback && iterationCount % PROGRESS_INTERVAL === 0) {
-                    progressCallback(iterationCount, allSchedules.length);
-                }
-                
-                if (allSchedules.length >= MAX_SCHEDULE_COMBINATIONS) {
-                    return;
-                }
-                
-                const lesson = validLessons[i];
-                
-                // Early overlap detection: Check if this lesson overlaps with any lesson already in currentSchedule
-                let hasOverlap = false;
-                for (let j = 0; j < currentSchedule.length; j++) {
-                    if (CourseSchedule.prototype._doLessonsOverlap(lesson, currentSchedule[j])) {
-                        hasOverlap = true;
-                        break;
-                    }
-                }
-                
-                // Skip this lesson if it overlaps with existing schedule
-                if (hasOverlap) {
+            // Early unavailable slot check: Check if this lesson overlaps with unavailable slots
+            if (unavailableSlots.length > 0) {
+                const tempSchedule = new CourseSchedule([], unavailableSlots);
+                if (tempSchedule._doesLessonOverlapWithUnavailableSlots(lesson)) {
                     continue;
                 }
-                
-                // Early unavailable slot check: Check if this lesson overlaps with unavailable slots
-                if (unavailableSlots.length > 0) {
-                    const tempSchedule = new CourseSchedule([], unavailableSlots);
-                    if (tempSchedule._doesLessonOverlapWithUnavailableSlots(lesson)) {
-                        continue;
-                    }
-                }
-                
-                // Wrap lesson with course information
-                const lessonWithCourse = {
-                    lesson: lesson,
-                    course: currentCourse,
-                    courseCode: currentCourse.courseCode,
-                    courseTitle: currentCourse.courseTitle
-                };
-                currentSchedule.push(lessonWithCourse);
-                await generateCombinations(courseIndex + 1, currentSchedule);
-                currentSchedule.pop(); // Backtrack
             }
+            
+            // Wrap lesson with course information
+            const lessonWithCourse = {
+                lesson: lesson,
+                course: currentCourse,
+                courseCode: currentCourse.courseCode,
+                courseTitle: currentCourse.courseTitle
+            };
+            currentSchedule.push(lessonWithCourse);
+            await generateCombinations(courseIndex + 1, currentSchedule);
+            currentSchedule.pop(); // Backtrack
         }
-        
-        // Start the recursive generation
-        await generateCombinations(0, []);
-        
-        // Check if operation was cancelled before returning
-        if (cancellationToken && cancellationToken.cancelled) {
-            return []; // Return empty array if cancelled
-        }
-        
-        if (allSchedules.length >= MAX_SCHEDULE_COMBINATIONS) {
-            return allSchedules.slice(0, MAX_SCHEDULE_COMBINATIONS);
-        }
-
-        return allSchedules;
     }
+    
+    // Start the recursive generation
+    await generateCombinations(0, []);
+    
+    // Check if operation was cancelled before returning
+    if (cancellationToken && cancellationToken.cancelled) {
+        return []; // Return empty array if cancelled
+    }
+    
+    if (allSchedules.length >= MAX_SCHEDULE_COMBINATIONS) {
+        return allSchedules.slice(0, MAX_SCHEDULE_COMBINATIONS);
+    }
+
+    return allSchedules;
 }
+
+}
+

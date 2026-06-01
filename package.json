@@ -1,0 +1,17 @@
+{
+  "name": "prereq-scheduler",
+  "version": "1.0.0",
+  "description": "Prerequisite scheduler for ITU courses",
+  "main": "index.js",
+  "scripts": {
+    "fetch-data": "cd libs/data-updater && python src/run.py -scrap_target lesson && cp data/* ../data/",
+    "fetch-all-data": "cd libs/data-updater && python src/run.py -scrap_target lesson && python src/run.py -scrap_target course && python src/run.py -scrap_target course_plan && python src/run.py -scrap_target misc && cp data/* ../data/",
+    "start": "http-server . -p 8080",
+    "format": "prettier --write ."
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "http-server": "^14.1.1",
+    "prettier": "^3.0.0"
+  }
+}
