@@ -2,7 +2,7 @@
 // in both axes (see html.prereq-wide in main.css), so panning is entirely the browser's native scrolling.
 class PrereqViewport {
     ZOOM_DURATION = 300;
-    MIN_PINCH_CHANGE = .01;
+    MIN_PINCH_CHANGE = 0.01;
 
     // options:
     //   isEnabled() -> bool
@@ -36,10 +36,10 @@ class PrereqViewport {
         // browser would scroll the page with it during the pinch and keep scrolling with momentum after
         // release, carrying the zoomed graph off screen. Only touches of a pinch are ever prevented;
         // one-finger scrolling stays the browser's own.
-        document.addEventListener("touchstart", (e) => this.onTouchStart(e), { passive: true });
-        document.addEventListener("touchmove", (e) => this.onTouchMove(e), { passive: false });
-        document.addEventListener("touchend", (e) => this.onTouchEnd(e));
-        document.addEventListener("touchcancel", (e) => this.onTouchEnd(e));
+        document.addEventListener("touchstart", e => this.onTouchStart(e), { passive: true });
+        document.addEventListener("touchmove", e => this.onTouchMove(e), { passive: false });
+        document.addEventListener("touchend", e => this.onTouchEnd(e));
+        document.addEventListener("touchcancel", e => this.onTouchEnd(e));
 
         this.disableBrowserZoom();
     }
@@ -49,11 +49,10 @@ class PrereqViewport {
     // browsers are covered by touch-action in main.css); the graph's own pinch reads the raw touches
     // and keeps working.
     disableBrowserZoom() {
-        const prevent = (e) => {
+        const prevent = e => {
             if (this.isEnabled() && e.cancelable) e.preventDefault();
         };
-        for (const type of ["gesturestart", "gesturechange", "gestureend"])
-            document.addEventListener(type, prevent, { passive: false });
+        for (const type of ["gesturestart", "gesturechange", "gestureend"]) document.addEventListener(type, prevent, { passive: false });
     }
 
     get canvas() {
@@ -127,8 +126,7 @@ class PrereqViewport {
 
         canvas.style.transformOrigin = "0 0";
         // Some of this content (e.g. the footer) animates transform changes; the pinch must not.
-        for (const el of [...this.pinch.above, ...this.pinch.below])
-            el.style.transition = "none";
+        for (const el of [...this.pinch.above, ...this.pinch.below]) el.style.transition = "none";
     }
 
     onTouchMove(e) {
@@ -190,10 +188,8 @@ class PrereqViewport {
         // the one set here, leaving the screen on an unpainted area where the graph isn't. So when
         // zooming out, scroll to the final position while the page is still large, then shrink it;
         // when zooming in, grow the page first (below), then scroll.
-        if (changed && pinch.scale < 1)
-            window.scrollTo(...this.getPinchScroll(pinch, pinch.scale));
-        if (changed)
-            this.onPinchZoom(pinch.width * pinch.scale);
+        if (changed && pinch.scale < 1) window.scrollTo(...this.getPinchScroll(pinch, pinch.scale));
+        if (changed) this.onPinchZoom(pinch.width * pinch.scale);
 
         // The redrawn graph's width is rounded, so use its exact scale.
         const [scrollX, scrollY] = this.getPinchScroll(pinch, this.canvas.offsetWidth / pinch.width);
@@ -232,8 +228,7 @@ class PrereqViewport {
     // it to fit the screen and bring it into view. Stops as soon as the user touches the screen.
     scheduleVisibilityChecks() {
         this.cancelVisibilityChecks();
-        for (const delay of [150, 500, 1200])
-            this.visibilityChecks.push(setTimeout(() => this.checkVisibility(), delay));
+        for (const delay of [150, 500, 1200]) this.visibilityChecks.push(setTimeout(() => this.checkVisibility(), delay));
     }
 
     cancelVisibilityChecks() {
@@ -287,7 +282,7 @@ class PrereqViewport {
         const startWidth = canvas.offsetWidth;
         const startHeight = canvas.offsetHeight;
         const scale = targetWidth / startWidth;
-        if (Math.abs(scale - 1) < .001) return;
+        if (Math.abs(scale - 1) < 0.001) return;
 
         const viewWidth = this.getScreenWidth();
         const viewHeight = window.innerHeight;
@@ -305,7 +300,7 @@ class PrereqViewport {
         canvas.style.transformOrigin = "0 0";
 
         const startTime = performance.now();
-        const step = (now) => {
+        const step = now => {
             const t = Math.min((now - startTime) / this.ZOOM_DURATION, 1);
             const eased = 1 - Math.pow(1 - t, 3);
             const currentScale = 1 + (scale - 1) * eased;
@@ -325,10 +320,7 @@ class PrereqViewport {
                 this.afterZoom();
             }
 
-            window.scrollTo(
-                canvasLeft + focusX * currentScale - viewWidth / 2,
-                canvasTop + focusY * currentScale - viewHeight / 2
-            );
+            window.scrollTo(canvasLeft + focusX * currentScale - viewWidth / 2, canvasTop + focusY * currentScale - viewHeight / 2);
 
             if (t < 1) this.zoomFrame = requestAnimationFrame(step);
         };

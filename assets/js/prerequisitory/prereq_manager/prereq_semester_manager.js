@@ -1,4 +1,4 @@
-var GraphMode = {
+const GraphMode = {
     VISUALIZE: -1,
     TAKEN_COURSES: 0,
     COURSES_TO_TAKE: 1,
@@ -13,65 +13,60 @@ class PrerequisitorySemesterManager {
         this.coursesToTake = [];
         this.futureCourses = [];
         this.selections = {};
-        this.prereqCenter = undefined;
         this.graphMode = GraphMode.TAKEN_COURSES;
 
         this.maxCourseCountInSemesters = 9;
         for (let i = 0; i < this.semesters.length; i++) {
-            let courseCount = this.semesters[i].length;
-            if (courseCount > this.maxCourseCountInSemesters)
-                this.maxCourseCountInSemesters = courseCount;
+            const courseCount = this.semesters[i].length;
+            if (courseCount > this.maxCourseCountInSemesters) this.maxCourseCountInSemesters = courseCount;
 
-            for (let j = 0; j < courseCount; j++)
-                this.courses.push(this.semesters[i][j]);
+            for (let j = 0; j < courseCount; j++) this.courses.push(this.semesters[i][j]);
         }
     }
 
     switchGraphMode(desiredMode) {
         this.futureCourses = [];
         this.graphMode = desiredMode;
-        if (desiredMode == GraphMode.TAKEN_COURSES) {
+        if (desiredMode === GraphMode.TAKEN_COURSES) {
             this.takeableCourses = [];
             this.coursesToTake = [];
-        } else if (desiredMode == GraphMode.COURSES_TO_TAKE) {
+        } else if (desiredMode === GraphMode.COURSES_TO_TAKE) {
             this.updateTakeableCourses();
-        } else if (desiredMode == GraphMode.VISUALIZE) {
+        } else if (desiredMode === GraphMode.VISUALIZE) {
             this.takeableCourses = [];
             this.coursesToTake = [];
         }
     }
 
     getAllCourses() {
-        let selectiveCourses = Object.values(this.selections);
+        const selectiveCourses = Object.values(this.selections);
         return this.courses.concat(selectiveCourses);
     }
 
     updateTakeableCourses() {
         this.takeableCourses = [];
-        let allCourses = this.getAllCourses();
+        const allCourses = this.getAllCourses();
         for (let i = 0; i < allCourses.length; i++) {
-            let satisifiesRequirements = true;
-            if (allCourses[i].requirements == undefined) continue;
+            let satisfiesRequirements = true;
+            if (!allCourses[i].requirements) continue;
 
-            if (allCourses[i].requirements.length == 0)
-                this.takeableCourses.push(allCourses[i]);
+            if (allCourses[i].requirements.length === 0) this.takeableCourses.push(allCourses[i]);
 
             for (let j = 0; j < allCourses[i].requirements.length; j++) {
-                let satisifiesRequirement = false;
+                let satisfiesRequirement = false;
                 for (let k = 0; k < allCourses[i].requirements[j].length; k++) {
                     const requiredCourse = allCourses[i].requirements[j][k];
                     if (this.takenCourses.includes(requiredCourse)) {
-                        satisifiesRequirement = true;
+                        satisfiesRequirement = true;
                         break;
                     }
                 }
-                if (!satisifiesRequirement) {
-                    satisifiesRequirements = false;
+                if (!satisfiesRequirement) {
+                    satisfiesRequirements = false;
                     break;
                 }
             }
-            if (satisifiesRequirements)
-                this.takeableCourses.push(allCourses[i]);
+            if (satisfiesRequirements) this.takeableCourses.push(allCourses[i]);
         }
     }
 
@@ -85,7 +80,7 @@ class PrerequisitorySemesterManager {
             for (let i = 0; i < course.requirements.length; i++) {
                 for (let j = 0; j < course.requirements[i].length; j++) {
                     const reqCourse = course.requirements[i][j];
-                    var isReqValid = true;
+                    let isReqValid = true;
                     for (let k = 0; k < this.semesters.length; k++) {
                         if (this.semesters[k].includes(reqCourse) && this.semesters[k].includes(course)) {
                             isReqValid = false;
@@ -107,10 +102,10 @@ class PrerequisitorySemesterManager {
         this.takenCourses.splice(idx, 1);
 
         // Remove dependent courses
-        let takenCopy = [...this.takenCourses];
-        for (let tCourse of takenCopy) {
+        const takenCopy = [...this.takenCourses];
+        for (const tCourse of takenCopy) {
             if (tCourse.requirements) {
-                for (let reqGroup of tCourse.requirements) {
+                for (const reqGroup of tCourse.requirements) {
                     if (reqGroup.includes(course)) {
                         this.removeCourseFromTaken(tCourse);
                         break;
@@ -123,15 +118,15 @@ class PrerequisitorySemesterManager {
     addCourseToFuture(course) {
         if (!course) return;
 
-        let allCourses = this.getAllCourses();
+        const allCourses = this.getAllCourses();
         for (let i = 0; i < allCourses.length; i++) {
             const c = allCourses[i];
             if (!c.requirements) continue;
 
             let found = false;
-            for (let reqGroup of c.requirements) {
-                for (let req of reqGroup) {
-                    if (req.courseCode == course.courseCode) {
+            for (const reqGroup of c.requirements) {
+                for (const req of reqGroup) {
+                    if (req.courseCode === course.courseCode) {
                         found = true;
                         break;
                     }
@@ -156,16 +151,8 @@ class PrerequisitorySemesterManager {
         }
     }
 
-    toggleCourseToTake(course) {
-        if (this.coursesToTake.includes(course)) {
-            this.coursesToTake.splice(this.coursesToTake.indexOf(course), 1);
-        } else if (this.takeableCourses.includes(course) && !this.coursesToTake.includes(course)) {
-            this.coursesToTake.push(course);
-        }
-    }
-
     processInfoNodeClick(courses) {
-        if (this.graphMode == GraphMode.TAKEN_COURSES) {
+        if (this.graphMode === GraphMode.TAKEN_COURSES) {
             let rowContainsTakenCourse = false;
             for (let i = 0; i < courses.length; i++) {
                 const c = courses[i];
@@ -177,10 +164,8 @@ class PrerequisitorySemesterManager {
             for (let i = 0; i < courses.length; i++) {
                 const c = courses[i];
                 if (c) {
-                    if (rowContainsTakenCourse)
-                        this.removeCourseFromTaken(c);
-                    else
-                        this.addCourseToTaken(c);
+                    if (rowContainsTakenCourse) this.removeCourseFromTaken(c);
+                    else this.addCourseToTaken(c);
                 }
             }
         }

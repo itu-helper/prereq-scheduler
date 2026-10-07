@@ -3,8 +3,8 @@ class PrerequisitoryOrchestrator {
         this.semesterManager = new PrerequisitorySemesterManager(semesters);
         this.grapher = new PrerequisitoryGrapher(this.semesterManager);
 
-        this.grapher.setNodeClickListener((node) => this.onNodeClick(node));
-        this.grapher.setNodeSelectionListener((node) => this.onNodeSelection(node));
+        this.grapher.setNodeClickListener(node => this.onNodeClick(node));
+        this.grapher.setNodeSelectionListener(node => this.onNodeSelection(node));
     }
 
     onNodeSelection(node) {
@@ -16,49 +16,33 @@ class PrerequisitoryOrchestrator {
 
     onNodeClick(node) {
         if (node.nodeType === NodeType.SELECTIVE) {
-            if (this.semesterManager.graphMode == GraphMode.TAKEN_COURSES || 
-                this.semesterManager.graphMode == GraphMode.COURSES_TO_TAKE ||
-                this.semesterManager.graphMode == GraphMode.VISUALIZE) {
-                
-                if (node.selectedCourse == undefined) {
-                    this.grapher.openSelectiveCourseSelection(node);
-                } else {
-                    this.handleCourseAction(node.selectedCourse, node);
-                    this.grapher.refreshGraph();
-                }
+            if (node.selectedCourse === undefined) {
+                this.grapher.openSelectiveCourseSelection(node);
+            } else {
+                this.handleCourseAction(node.selectedCourse, node);
+                this.grapher.refreshGraph();
             }
-        }
-        else if (node.nodeType === NodeType.INFO) {
-            const nodesOnInfoNode = this.grapher.getNodesOnInfoNode(node);
-            let courses = [];
-            for(let n of nodesOnInfoNode) {
-                let c = n.course || n.selectedCourse;
-                if(c) courses.push(c);
-            }
+        } else if (node.nodeType === NodeType.INFO) {
+            const courses = this.grapher
+                .getNodesOnInfoNode(node)
+                .map(n => n.course || n.selectedCourse)
+                .filter(c => c);
             this.semesterManager.processInfoNodeClick(courses);
             this.grapher.refreshGraph();
-        }
-        else if (node.nodeType === NodeType.REGULAR) {
+        } else if (node.nodeType === NodeType.REGULAR) {
             this.handleCourseAction(node.course, node);
             this.grapher.refreshGraph();
         }
     }
 
-    setAnimations(enabled)
-    {
-        this.grapher.animatePrereqChains = enabled;
-        this.grapher.animateIntro = enabled;
-    }
-
     handleCourseAction(course, node) {
         const mode = this.semesterManager.graphMode;
-        
-        if (mode == GraphMode.TAKEN_COURSES || mode == GraphMode.COURSES_TO_TAKE) {
+
+        if (mode === GraphMode.TAKEN_COURSES || mode === GraphMode.COURSES_TO_TAKE) {
             this.semesterManager.toggleTakenCourse(course);
-        }
-        else if (mode == GraphMode.VISUALIZE) {
-            var wasCourseSelected = this.semesterManager.takenCourses.includes(course);
-            
+        } else if (mode === GraphMode.VISUALIZE) {
+            const wasCourseSelected = this.semesterManager.takenCourses.includes(course);
+
             this.semesterManager.resetPrereqChain();
 
             if (!wasCourseSelected || (this.grapher.prereqCenterNode && this.grapher.prereqCenterNode !== node)) {
@@ -85,6 +69,10 @@ class PrerequisitoryOrchestrator {
 
     get graph() {
         return this.grapher.graph;
+    }
+
+    get graphMode() {
+        return this.semesterManager.graphMode;
     }
 
     calculateSemesterHeight(w) {

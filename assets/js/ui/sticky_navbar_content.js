@@ -1,32 +1,32 @@
-texts = ["Aldığın Dersleri Seç", "Almak İstediğin Dersleri Seç"];
+const texts = ["Aldığın Dersleri Seç", "Almak İstediğin Dersleri Seç"];
 
-window.onload = (_) => {
+window.onload = _ => {
     updateStepText(0);
 };
 
 function nextStep() {
-    if (prereqManager == undefined) {
+    if (!prereqOrchestrator) {
         return;
-    } else if (prereqManager.graphMode == GraphMode.TAKEN_COURSES) {
-        prereqManager.switchGraphMode(GraphMode.COURSES_TO_TAKE);
+    } else if (prereqOrchestrator.graphMode === GraphMode.TAKEN_COURSES) {
+        prereqOrchestrator.switchGraphMode(GraphMode.COURSES_TO_TAKE);
         document.getElementById("previousStep").disabled = false;
         updateStepText(1);
-    } else if (prereqManager.graphMode == GraphMode.COURSES_TO_TAKE) {
+    } else if (prereqOrchestrator.graphMode === GraphMode.COURSES_TO_TAKE) {
         location.href = "#CoursePlanCreator";
     }
 }
 
 function previousStep() {
-    if (prereqManager == undefined) {
+    if (!prereqOrchestrator) {
         return;
-    } else if (prereqManager.graphMode == GraphMode.COURSES_TO_TAKE) {
-        prereqManager.switchGraphMode(GraphMode.TAKEN_COURSES);
+    } else if (prereqOrchestrator.graphMode === GraphMode.COURSES_TO_TAKE) {
+        prereqOrchestrator.switchGraphMode(GraphMode.TAKEN_COURSES);
         document.getElementById("previousStep").disabled = true;
         updateStepText(0);
     }
 }
 
 function updateStepText(index) {
-    let currentStepText = document.getElementById("currentStepText");
+    const currentStepText = document.getElementById("currentStepText");
     currentStepText.innerHTML = texts[index];
 }
