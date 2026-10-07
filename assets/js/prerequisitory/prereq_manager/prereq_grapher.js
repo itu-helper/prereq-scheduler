@@ -10,6 +10,7 @@ class PrerequisitoryGrapher {
     HORIZONTAL_NODE_RATIO = .8;
     SELECTIVE_COURSE_SELECTION_LOC = "#SelectiveCourseSelection";
     INTRO_ANIM_DURATION = 1000;
+    MAX_PIXEL_RATIO = 2;
 
     constructor(manager, animatePrereqChains=true, animateIntro=true) {
         this.manager = manager;
@@ -37,6 +38,7 @@ class PrerequisitoryGrapher {
     }
 
     createGraph(calculateSize) {
+        this.calculateSize = calculateSize;
         let [w, h] = calculateSize();
         register_intro_anims(this, this.INTRO_ANIM_DURATION);
 
@@ -44,6 +46,8 @@ class PrerequisitoryGrapher {
             container: 'mountNode',
             width: w,
             height: h,
+            // High DPR phones would otherwise exceed mobile browsers' canvas size limits and render blank.
+            pixelRatio: Math.min(window.devicePixelRatio || 1, this.MAX_PIXEL_RATIO),
         });
 
         let [nodes, edges] = this.getNodesAndEdges();
@@ -57,10 +61,23 @@ class PrerequisitoryGrapher {
         this.graph.on('node:click', (e) => this.handleNodeClick(e.item._cfg.model));
 
         this.updateGraphSize(w, h);
-        window.onresize = () => {
-            let [w, h] = calculateSize();
-            this.updateGraphSize(w, h);
-        }
+        window.onresize = () => this.resize();
+    }
+
+    // Mobile browsers fire resize whenever the address bar shows/hides while scrolling,
+    // so only re-layout when the graph's size actually changes.
+    resize() {
+        let [w, h] = this.calculateSize();
+        if (w === this.graph.get('width') && h === this.graph.get('height')) return;
+        this.updateGraphSize(w, h);
+        // G6 defers drawing to the next frame, which would briefly show the just-resized (empty) canvas.
+        this.drawNow();
+    }
+
+    drawNow() {
+        const canvas = this.graph.get('canvas');
+        if (typeof canvas._drawAll === 'function') canvas._drawAll();
+        else canvas.draw();
     }
 
     refreshGraph() {

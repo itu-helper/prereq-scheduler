@@ -79,6 +79,10 @@ class PrerequisitoryOrchestrator {
         this.grapher.createGraph(calculateSize);
     }
 
+    resize() {
+        this.grapher.resize();
+    }
+
     get graph() {
         return this.grapher.graph;
     }

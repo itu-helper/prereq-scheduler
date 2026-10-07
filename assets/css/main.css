@@ -1480,6 +1480,151 @@ body.is-preload #bg:before {
     display: none;
 }
 
+/* On desktop the graph scrolls horizontally if it is wider than the page (on mobile the page itself
+   scrolls instead, see html.prereq-wide below). */
+#mountNode {
+    overflow-x: auto;
+    overflow-y: hidden;
+}
+
+#mountNode canvas {
+    display: block;
+}
+
+/* Floating zoom buttons, fixed to the screen corner while the graph is on screen (mobile only).
+   Positioned from the left with the measured screen width, so a layout viewport wider than the
+   screen (iOS) can't push them towards or past the right edge. Kept below the popups (z-index 1000+). */
+.prereq-zoom-controls {
+    display: none;
+    position: fixed;
+    left: calc(var(--prereq-screen-width, 100vw) - 1rem);
+    bottom: calc(1rem + env(safe-area-inset-bottom, 0px));
+    -moz-transform: translateX(-100%);
+    -webkit-transform: translateX(-100%);
+    -ms-transform: translateX(-100%);
+    transform: translateX(-100%);
+    z-index: 100;
+    opacity: 0;
+    visibility: hidden;
+    -moz-transition: opacity 0.2s ease-in-out, visibility 0s linear 0.2s;
+    -webkit-transition: opacity 0.2s ease-in-out, visibility 0s linear 0.2s;
+    -ms-transition: opacity 0.2s ease-in-out, visibility 0s linear 0.2s;
+    transition: opacity 0.2s ease-in-out, visibility 0s linear 0.2s;
+    flex-direction: column;
+    border: solid 1px #ffffff;
+    border-radius: 4px;
+    background-color: rgba(27, 31, 34, 0.15);
+    -webkit-backdrop-filter: blur(8px);
+    backdrop-filter: blur(8px);
+    overflow: hidden;
+}
+
+.prereq-zoom-controls button {
+    width: 2.75rem;
+    height: 2.75rem;
+    min-width: 0;
+    padding: 0;
+    margin: 0;
+    line-height: 2.75rem;
+    font-size: 0.9rem;
+    letter-spacing: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background-color: transparent;
+}
+
+.prereq-zoom-controls button + button {
+    border-top: solid 1px #ffffff;
+}
+
+.prereq-zoom-controls button:hover {
+    background-color: rgba(255, 255, 255, 0.075);
+}
+
+.prereq-zoom-controls button:active {
+    background-color: rgba(255, 255, 255, 0.175);
+}
+
+.prereq-zoom-controls button:disabled {
+    cursor: default;
+    opacity: 0.35;
+    background-color: transparent;
+}
+
+@media screen and (max-width: 768px) {
+    .prereq-zoom-controls {
+        display: flex;
+    }
+
+    .prereq-zoom-controls.is-visible {
+        opacity: 1;
+        visibility: visible;
+        -moz-transition: opacity 0.2s ease-in-out;
+        -webkit-transition: opacity 0.2s ease-in-out;
+        -ms-transition: opacity 0.2s ease-in-out;
+        transition: opacity 0.2s ease-in-out;
+    }
+
+    /* Once the graph is shown, the page itself scrolls in both axes, so a single native gesture can
+       pan the graph horizontally and the page vertically at the same time. Everything except the
+       graph is pinned horizontally (position: sticky) so it stays on screen. */
+    html.prereq-wide {
+        overscroll-behavior-x: none;
+        /* No browser pinch or double-tap zoom; the graph has its own pinch zoom. */
+        touch-action: pan-x pan-y;
+    }
+
+    html.prereq-wide #wrapper {
+        width: max-content;
+        min-width: var(--prereq-screen-width, 100%);
+        align-items: flex-start;
+        /* The page is only as wide as the graph: some browsers (Safari) otherwise count the pinned
+           content's pinned position, and transforms while pinching, as extra scrollable width.
+           clip (unlike hidden) keeps position: sticky working. */
+        overflow-x: clip;
+    }
+
+    html.prereq-wide #header {
+        align-items: flex-start;
+    }
+
+    html.prereq-wide #header > :not(#prerequisitoryChains),
+    html.prereq-wide #main,
+    html.prereq-wide #footer,
+    html.prereq-wide #navbar:not(.sticky) {
+        position: -webkit-sticky;
+        position: sticky;
+        left: 0;
+        width: var(--prereq-screen-width, 100vw);
+    }
+
+    /* Sized from the measured screen width (set by prerequisitory.js), not vw: iOS can make the
+       layout viewport, and so vw, wider than the screen once the page scrolls horizontally. */
+    html.prereq-wide #header > .content:not(#prerequisitoryChains),
+    html.prereq-wide #main,
+    html.prereq-wide #navbar:not(.sticky) {
+        left: calc(var(--prereq-screen-width, 100vw) * 0.075);
+        margin-left: calc(var(--prereq-screen-width, 100vw) * 0.075);
+        width: calc(var(--prereq-screen-width, 100vw) * 0.85) !important;
+    }
+
+    html.prereq-wide #header > div:has(> nav):not(#prerequisitoryChains) {
+        left: calc(var(--prereq-screen-width, 100vw) * 0.125);
+        margin-left: calc(var(--prereq-screen-width, 100vw) * 0.125);
+        width: calc(var(--prereq-screen-width, 100vw) * 0.75) !important;
+    }
+
+    html.prereq-wide #prerequisitoryChains {
+        width: max-content !important;
+        min-width: var(--prereq-screen-width, 100vw);
+    }
+
+    html.prereq-wide #mountNode {
+        width: max-content;
+        overflow: visible;
+    }
+}
+
 #navbar {
     overflow: hidden;
     margin-left: auto;
