@@ -184,12 +184,12 @@ class ScheduleStyle {
      * 
      * @param {HTMLElement} element - The element to style
      * @param {string} courseColor - The background color for the lesson
-     * @param {number} height - The height in pixels
+     * @param {number|string} height - The height in pixels, or any CSS height value
      * @param {boolean} ghostStyle - Whether to apply ghost/conflict styling
      */
     static applyLessonCardStyles(element, courseColor, height, ghostStyle = false) {
         element.style.backgroundColor = courseColor;
-        element.style.height = `${height}px`;
+        element.style.height = typeof height === 'number' ? `${height}px` : height;
         element.style.padding = this.spacing.lessonCard.padding;
         element.style.borderRadius = this.spacing.lessonCard.borderRadius;
         element.style.fontSize = this.typography.lessonCard.base;

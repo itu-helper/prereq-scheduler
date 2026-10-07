@@ -124,8 +124,9 @@ class ScheduleDisplayer {
         // Calculate span for styling
         const span = this._calculateSlotSpan(schedule.startTime, schedule.endTime);
         
-        // Calculate height: each slot is 30px + 1px gap
-        const height = (span * 31) - 1; // 30px height + 1px gap between cells, minus 1 for the last gap
+        // Height spanning `span` cells: each cell's inner height (100%) plus its 2px border, plus the 1px gaps
+        // between cells. Relative to the cell, so it follows the row height (rows stretch to fit the screen on desktop).
+        const height = `calc(${span} * (100% + 2px) + ${span - 1}px)`;
         
         // Apply base lesson card styles using ScheduleStyle
         ScheduleStyle.applyLessonCardStyles(lessonDiv, courseColor, height, ghostStyle);

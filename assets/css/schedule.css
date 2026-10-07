@@ -559,7 +559,7 @@ body, html {
 }
 
 /* On mobile, ensure grid fills the container */
-@media (max-width: 1399px) {
+@media (max-width: 1023px) {
     .schedule-container {
         overflow: auto;
         -webkit-overflow-scrolling: touch;
@@ -1195,7 +1195,7 @@ body, html {
 }
 
 /* Mobile/Tablet Support - Switch to 2-row layout below 1400px */
-@media (max-width: 1399px) {
+@media (max-width: 1023px) {
     #footer {
         margin-top: 10px !important;
         margin-bottom: 0 !important;
@@ -1653,5 +1653,183 @@ body, html {
     
     .add-course-row-btn {
         display: none;
+    }
+}
+
+
+/* Desktop: the whole planner fits in one screen. The schedule's rows stretch to fill the height left
+   over by the header, warning and footer; on very short windows they stop at a minimum height and the
+   schedule scrolls instead. Scoped to .schedule-container, so the exported image keeps fixed rows. */
+@media (min-width: 1024px) {
+    .left-section {
+        width: clamp(300px, 24%, 440px);
+        flex-shrink: 0;
+        padding: 14px 16px;
+    }
+
+    /* Compact left panel: smaller header, headings and controls than the site template's defaults. */
+    .left-section-header {
+        gap: 10px;
+        margin-bottom: 12px;
+        padding-bottom: 12px;
+    }
+
+    .left-section-header img {
+        width: 34px;
+        height: 34px;
+    }
+
+    .left-section-header h2 {
+        font-size: 1.1rem;
+    }
+
+    .programme-selection {
+        margin-top: 0;
+        padding-bottom: 12px;
+    }
+
+    .programme-selection h3,
+    .course-selection h3 {
+        margin-bottom: 8px;
+        font-size: 0.85rem;
+    }
+
+    .dropdown-group {
+        margin-bottom: 0;
+    }
+
+    .programme-dropdown {
+        height: 34px;
+        padding-top: 0;
+        padding-bottom: 0;
+    }
+
+    .course-selection {
+        margin-top: 12px;
+    }
+
+    .selected-courses-list {
+        margin-bottom: 10px;
+    }
+
+    .course-row {
+        gap: 6px;
+        padding: 5px 6px 5px 8px;
+        margin-bottom: 6px;
+        margin-right: 6px;
+        max-height: none;
+    }
+
+    .course-prefix-dropdown,
+    .course-code-dropdown,
+    .instructor-dropdown {
+        height: 28px;
+        max-height: 28px;
+        padding: 0 8px;
+        font-size: 0.8rem;
+        line-height: 26px;
+    }
+
+    .remove-course-btn {
+        width: 26px;
+        height: 26px;
+    }
+
+    .add-course-row-btn {
+        height: auto;
+        padding: 9px 16px;
+        font-size: 0.85rem;
+        line-height: 1.4;
+    }
+
+    .right-section {
+        flex: 1;
+        width: auto;
+        min-width: 0;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        padding: 16px 20px 6px;
+    }
+
+    .schedule-header,
+    .schedule-warning,
+    .calendar-note,
+    .right-section #footer {
+        flex-shrink: 0;
+    }
+
+    .schedule-warning {
+        margin: 10px 0 0;
+        padding: 8px 14px;
+    }
+
+    .schedule-container {
+        flex: 1;
+        min-height: 0;
+        margin-top: 12px;
+        display: flex;
+    }
+
+    .schedule-container .schedule-grid {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .schedule-container .time-header,
+    .schedule-container .day-header {
+        flex-shrink: 0;
+        height: 40px;
+        padding: 0 8px;
+    }
+
+    .schedule-container .time-slot,
+    .schedule-container .schedule-cell {
+        flex: 1 1 0;
+        height: auto;
+        min-height: 16px;
+    }
+
+    .schedule-container .time-slot {
+        padding: 0 8px;
+        overflow: hidden;
+    }
+
+    .calendar-note {
+        margin: 3px 0 0;
+        font-size: 0.72rem;
+        line-height: 1.4;
+    }
+
+    .right-section #footer {
+        margin-top: 2px;
+        margin-bottom: 0;
+    }
+
+    /* One line: the footer's columns are vertically centered and its middle column's two lines sit side by side. */
+    .right-section #footer > div > div {
+        align-self: center !important;
+    }
+
+    .right-section #footer > div > div:nth-child(2) {
+        display: flex;
+        justify-content: center;
+        gap: 0.8rem;
+    }
+
+    .right-section #footer .copyright {
+        font-size: 0.55rem;
+        letter-spacing: 0.15rem;
+        line-height: 1.6;
+    }
+
+    /* The left panel is narrower than before on laptops; give the course name most of the row. */
+    .course-prefix-dropdown,
+    .instructor-dropdown {
+        flex: 0.8;
+    }
+
+    .course-code-dropdown {
+        flex: 1.4;
     }
 }
