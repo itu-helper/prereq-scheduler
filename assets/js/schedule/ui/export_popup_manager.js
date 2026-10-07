@@ -192,30 +192,84 @@ class ExportPopupManager {
         }
     }
 
+    // The image is always rendered as on this desktop screen size and at this width, so the same plan gives
+    // the same image on every device.
+    static EXPORT_VIEWPORT = { width: 1440, height: 900 };
+    static EXPORT_WIDTH = 1240;
+
+    /**
+     * Render a copy of the schedule grid in a hidden frame with a fixed desktop size. The page's styles are
+     * loaded there, so its media queries (and rem sizes) see a desktop screen whatever the actual device is.
+     * @private
+     * @returns {Promise<{frame: HTMLIFrameElement, clone: HTMLElement}>}
+     */
+    static async _renderInDesktopFrame(element) {
+        const frame = document.createElement('iframe');
+        frame.setAttribute('aria-hidden', 'true');
+        frame.tabIndex = -1;
+        Object.assign(frame.style, {
+            position: 'fixed',
+            left: '-20000px',
+            top: '0',
+            width: `${this.EXPORT_VIEWPORT.width}px`,
+            height: `${this.EXPORT_VIEWPORT.height}px`,
+            border: '0',
+            pointerEvents: 'none',
+        });
+        document.body.appendChild(frame);
+
+        // Written into the frame (rather than via src), so relative URLs resolve like on this page.
+        const frameDoc = frame.contentDocument;
+        frameDoc.open();
+        frameDoc.write('<!DOCTYPE html><html><head><meta charset="utf-8"></head><body></body></html>');
+        frameDoc.close();
+        frameDoc.body.style.margin = '0';
+
+        // Copy the page's styles (including the injected icon font styles).
+        const styleLoads = [];
+        document.querySelectorAll('link[rel="stylesheet"], style').forEach(node => {
+            const copy = frameDoc.importNode(node, true);
+            if (node.tagName === 'LINK') {
+                copy.href = node.href;
+                styleLoads.push(new Promise(resolve => {
+                    copy.onload = resolve;
+                    copy.onerror = resolve;
+                }));
+            }
+            frameDoc.head.appendChild(copy);
+        });
+
+        const clone = frameDoc.importNode(element, true);
+        clone.style.width = `${this.EXPORT_WIDTH}px`;
+        frameDoc.body.appendChild(clone);
+        this._prepareCloneForCapture(clone);
+
+        await Promise.all(styleLoads);
+        await frameDoc.fonts.ready;
+        return { frame, clone };
+    }
+
     /**
      * Capture the schedule grid and download as image
      * @private
      */
-    static _captureAndDownload(element, btn, originalHTML) {
-        // Clone the element to modify it without affecting the original
-        const clone = element.cloneNode(true);
-        clone.style.position = 'absolute';
-        clone.style.left = '-9999px';
-        clone.style.top = '-9999px';
-        document.body.appendChild(clone);
-        
-        // Clean up the clone for a cleaner image
-        this._prepareCloneForCapture(clone);
-        
-        html2canvas(clone, {
-            backgroundColor: '#1a1a2e',
-            scale: 2,
-            useCORS: true,
-            logging: false
-        }).then(canvas => {
-            // Remove the clone
-            document.body.removeChild(clone);
-            
+    static async _captureAndDownload(element, btn, originalHTML) {
+        let frame = null;
+        try {
+            const rendered = await this._renderInDesktopFrame(element);
+            frame = rendered.frame;
+
+            const canvas = await html2canvas(rendered.clone, {
+                backgroundColor: '#222222', // The schedule panel's dark gray
+                scale: 2,
+                useCORS: true,
+                logging: false,
+                windowWidth: this.EXPORT_VIEWPORT.width,
+                windowHeight: this.EXPORT_VIEWPORT.height,
+            });
+            frame.remove();
+            frame = null;
+
             // Boost saturation of the image
             const saturatedCanvas = this._boostSaturation(canvas, 1.3);
             
@@ -225,23 +279,23 @@ class ExportPopupManager {
             link.href = saturatedCanvas.toDataURL('image/png');
             link.click();
             
-            // Show success state
+            // Show success state. The original label is restored first: the success message restores
+            // whatever the button shows when it starts, which would otherwise be the loading spinner.
             if (btn) {
+                btn.innerHTML = originalHTML;
                 btn.disabled = false;
                 this._showCopySuccess(btn, 'İndirildi!');
             }
-        }).catch(err => {
-            // Remove the clone on error too
-            if (clone.parentNode) {
-                document.body.removeChild(clone);
-            }
+        } catch (err) {
+            // Remove the frame on error too
+            if (frame) frame.remove();
             console.error('Failed to capture schedule:', err);
             alert('Takvim resmi oluşturulamadı.');
             if (btn) {
                 btn.innerHTML = originalHTML;
                 btn.disabled = false;
             }
-        });
+        }
     }
 
     /**
@@ -249,6 +303,13 @@ class ExportPopupManager {
      * @private
      */
     static _prepareCloneForCapture(clone) {
+        // The time column and the headers are sticky, so they stay visible while the grid scrolls on
+        // screen. The clone is placed far off screen, where sticky would push them to the opposite edges
+        // (headers to the bottom, times to the right), so they are laid out normally instead.
+        clone.querySelectorAll('.time-column, .time-header, .day-header').forEach(el => {
+            el.style.position = 'static';
+        });
+
         // Hide the unselect-all button
         const unselectBtn = clone.querySelector('.unselect-all-btn');
         if (unselectBtn) {

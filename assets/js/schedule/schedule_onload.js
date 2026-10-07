@@ -12,11 +12,7 @@ window.addEventListener('load', function () {
 
     // Mobile toggle functionality
     const mobileToggleBtn = document.getElementById('mobile-toggle-btn');
-    const leftSection = document.querySelector('.left-section');
-    
-    if (mobileToggleBtn && leftSection) {
-        mobileToggleBtn.addEventListener('click', function() {
-            leftSection.classList.toggle('collapsed');
-        });
+    if (mobileToggleBtn) {
+        mobileToggleBtn.addEventListener('click', () => LeftSectionToggle.toggle());
     }
 });

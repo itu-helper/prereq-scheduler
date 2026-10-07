@@ -50,9 +50,9 @@ class CourseRowRenderer {
         
         // If the left section is collapsed (on mobile), expand it
         const leftSection = document.querySelector('.left-section');
-        const wasCollapsed = leftSection && leftSection.classList.contains('collapsed');
+        const wasCollapsed = LeftSectionToggle.isCollapsed();
         if (wasCollapsed) {
-            leftSection.classList.remove('collapsed');
+            LeftSectionToggle.setCollapsed(false);
         }
         
         // If container was showing empty state, clear it first
