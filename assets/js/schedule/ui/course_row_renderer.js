@@ -50,7 +50,8 @@ class CourseRowRenderer {
         
         // If the left section is collapsed (on mobile), expand it
         const leftSection = document.querySelector('.left-section');
-        if (leftSection && leftSection.classList.contains('collapsed')) {
+        const wasCollapsed = leftSection && leftSection.classList.contains('collapsed');
+        if (wasCollapsed) {
             leftSection.classList.remove('collapsed');
         }
         
@@ -67,20 +68,24 @@ class CourseRowRenderer {
             this.container.appendChild(row);
         }
         
-        // Smooth scroll to the newly added course row
+        // Smooth scroll to the newly added course row. It is the last row, so its scrollable parents are
+        // scrolled to the bottom (scrollIntoView would leave it under the sticky "Ders Ekle" button on
+        // mobile). If the panel was just expanded, wait for its expand animation first.
         setTimeout(() => {
             const newRow = document.getElementById(`course-row-${rowId}`);
             if (newRow) {
-                // Scroll the container to show the new row
-                newRow.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-                
+                for (let el = newRow.parentElement; el && el !== document.body; el = el.parentElement) {
+                    if (el.scrollHeight > el.clientHeight) el.scrollTo({ top: el.scrollHeight, behavior: 'smooth' });
+                    if (el === leftSection) break;
+                }
+
                 // Add blinking animation
                 newRow.classList.add('newly-added');
                 setTimeout(() => {
                     newRow.classList.remove('newly-added');
                 }, 1600);
             }
-        }, 10);
+        }, wasCollapsed ? 350 : 10);
     }
 
     /**

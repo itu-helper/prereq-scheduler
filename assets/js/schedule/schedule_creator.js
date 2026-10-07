@@ -101,11 +101,6 @@ class ScheduleCreator {
             addRowButton.addEventListener('click', () => this._handleAddCourse());
         }
 
-        // Mobile floating action button for adding courses
-        const mobileAddFab = document.getElementById('mobile-add-course-fab');
-        if (mobileAddFab) {
-            mobileAddFab.addEventListener('click', () => this._handleAddCourse());
-        }
         
         // Navigation buttons
         const prevButton = document.getElementById('prev-schedule-btn');
