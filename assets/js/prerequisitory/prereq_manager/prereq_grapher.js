@@ -5,6 +5,52 @@ const NodeType = {
     INFO: 'info'
 };
 
+const EDIT_BUTTON_NAME = 'edit-button';
+
+// Draws (or removes) the edit button on the top right corner of an elective course node, shown once a
+// course has been chosen for it. Called by the node shape whenever the node is drawn or updated.
+function updateEditButton(cfg, group) {
+    group.get('children')
+        .filter(shape => shape.get('name') === EDIT_BUTTON_NAME)
+        .forEach(shape => shape.remove(true));
+
+    if (cfg.nodeType !== NodeType.SELECTIVE || cfg.selectedCourse === undefined) return;
+
+    const [width, height] = cfg.size;
+    const x = width / 2;
+    const y = -height / 2;
+    const r = Math.max(height * .15, 9);
+
+    // Larger invisible hit area, so the button is easy to tap on phones.
+    group.addShape('circle', {
+        attrs: { x, y, r: r * 1.6, fill: 'transparent', cursor: 'pointer' },
+        name: EDIT_BUTTON_NAME,
+    });
+    group.addShape('circle', {
+        // Slightly tinted, so the node border behind it doesn't blend into the icon.
+        attrs: { x, y, r, fill: '#3c3930', fillOpacity: .55, stroke: 'white', lineWidth: Math.max(1, r * .12), cursor: 'pointer' },
+        name: EDIT_BUTTON_NAME,
+    });
+
+    // Pencil icon, pointing to the bottom left.
+    const s = r * .6;
+    group.addShape('path', {
+        attrs: {
+            path: [
+                ['M', x - .8 * s, y + .8 * s],
+                ['L', x - .6 * s, y + .2 * s],
+                ['L', x + .2 * s, y - .6 * s],
+                ['L', x + .6 * s, y - .2 * s],
+                ['L', x - .2 * s, y + .6 * s],
+                ['Z'],
+            ],
+            fill: 'white',
+            cursor: 'pointer',
+        },
+        name: EDIT_BUTTON_NAME,
+    });
+}
+
 class PrerequisitoryGrapher {
     INVERSE_ASPECT_RATIO = .15;
     HORIZONTAL_NODE_RATIO = .8;
@@ -58,7 +104,11 @@ class PrerequisitoryGrapher {
             edges: edges,
         });
 
-        this.graph.on('node:click', (e) => this.handleNodeClick(e.item._cfg.model));
+        this.graph.on('node:click', (e) => {
+            const node = e.item.getModel();
+            if (e.target && e.target.get('name') === EDIT_BUTTON_NAME) this.onEditButtonClick(node);
+            else this.handleNodeClick(node);
+        });
 
         this.updateGraphSize(w, h);
         window.onresize = () => this.resize();
@@ -380,6 +430,13 @@ class PrerequisitoryGrapher {
         if (node.nodeType === NodeType.SELECTIVE) {
             this.openSelectiveCourseSelection(node);
         }
+    }
+
+    onEditButtonClick(node) {
+        // A tap on the button must not count towards a double click on the node.
+        this.lastClickTime = 0;
+        this.lastClickNodeId = null;
+        this.openSelectiveCourseSelection(node);
     }
 
     updateGraphSize(w, h) {

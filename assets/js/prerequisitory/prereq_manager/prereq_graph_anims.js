@@ -46,7 +46,12 @@ function register_intro_anims(self, anim_dur) {
     }, 'cubic-vertical');
 
     G6.registerNode('node-intro', {
+        afterUpdate(cfg, item) {
+            updateEditButton(cfg, item.getContainer());
+        },
         afterDraw(cfg, group) {
+            updateEditButton(cfg, group);
+
             if (!self.animateIntro) return;
 
             if (group.get('hasAnimated')) return;
